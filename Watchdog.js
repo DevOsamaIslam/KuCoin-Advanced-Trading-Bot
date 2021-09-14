@@ -52,6 +52,7 @@ export default class Watchdog {
     })
   }
   async watchNewPair() {
+    console.log('monitoring new pairs...');
     // loop through all new tickers and check if their trading status (enableTrading) changed to true
     for (const pair of this.untradeables) {
       let status = (await getAllUsdtTickers()).find(tick => tick.symbol == pair.symbol).enableTrading
@@ -100,11 +101,9 @@ export default class Watchdog {
 
 
   async monitor(watchlist) {
-    let count = 0
-    process.stdout.write('.')
+    console.log('checking MACD strategy...');
     // loop through the watchlist and check the vol of each pair
     for (let pair of watchlist) {
-      count++
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       if (this.excluded.includes(pair.symbol)) continue
       let history = await getHistory(pair, timeframes[timeframes.indexOf(this.tf) + 2], 201)
@@ -161,6 +160,7 @@ export default class Watchdog {
   }
 
   async volSpike(usdtTickers) {
+    console.log('checking volume spike...');
     // loop through the USDT pairs and check the vol of each pair
     for (let pair of usdtTickers) {
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
@@ -171,8 +171,7 @@ export default class Watchdog {
       // check if the set up matches Ride The Wave (RTW) strategy
       let signal = strategy.RTW(history)
       if (signal) {
-        console.log('RTW_records.txt', `\nRIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at $${pair.sell} - ${new Date()} on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
-        appendFileSync('RTW_records.txt', `\nRIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at $${pair.sell} - ${new Date()} on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
+        console.log(`\nRIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at $${pair.sell} - ${new Date()} on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
         // buy it
         let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 4], 2)
         if (!order) continue
