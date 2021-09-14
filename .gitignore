@@ -10,3 +10,6 @@
 /RTW_records.txt
 /manualTrade.js
 /package-lock.json
+/records/MACD/*
+/records/VWAP/*
+/records/RTW/*
