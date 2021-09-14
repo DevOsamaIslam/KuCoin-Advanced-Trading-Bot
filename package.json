@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "kucoin-node-sdk": "^1.0.4",
+    "moment": "^2.29.1",
     "technicalindicators": "^3.1.0"
   },
   "devDependencies": {

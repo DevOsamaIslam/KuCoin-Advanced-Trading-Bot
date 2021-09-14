@@ -1,13 +1,10 @@
-import {
-  asyncHandler
-} from "./config/utils.js"
 import api from './main.js'
 import {
   getOrder,
 } from './config/utils.js'
-import {
-  appendFileSync
-} from 'fs'
+import log, {
+  logStrategy
+} from './log.js'
 
 export default class Trader {
 
@@ -18,6 +15,7 @@ export default class Trader {
     this.tickerInfo = options.tickerInfo
     this.isNewPair = options.isNewPair
     this.dynamicTPSL = options.dynamicTPSL
+    this.strategy = options.strategy
     this.buy().then(order => {
       if (order) {
         this.activeOrder = order;
@@ -55,10 +53,10 @@ export default class Trader {
     let order = await api.rest.Trade.Orders.postOrder(params.baseParams, params.orderParams)
     if (order.data) {
       let activeOrder = await getOrder(order.data.orderId)
-      console.log(`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} of ${this.pair.symbol} at $${activeOrder.price}`)
+      log(`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} of ${this.pair.symbol} at $${activeOrder.price}`)
       return activeOrder
     } else {
-      console.log(order);
+      log(`Something went wrong while buying: ${order.msg}`)
       return false
     }
   }
@@ -73,7 +71,7 @@ export default class Trader {
       size: this.activeOrder.dealSize
     }).then(data => {
       this.orderId = data.data.orderId
-      console.log(`Sold ${Math.floor(this.activeOrder.dealSize)} of ${this.pair.symbol}`);
+      log(`Sold ${Math.floor(this.activeOrder.dealSize)} of ${this.pair.symbol}`)
     })
   }
 
@@ -93,7 +91,19 @@ export default class Trader {
       }, {
         size: dealSize
       }).then(order => {
-        order.data ? console.log(`Stop Loss is ${this.order.SL} (${order.data.orderId})`) : console.log(order);
+        order.data ?
+          logStrategy({
+            strategy: this.strategy,
+            pair: this.pair,
+            orderId: this.activeOrder.id,
+            data: `Stop Loss is ${this.order.SL} (${order.data.orderId})`
+          }) :
+          logStrategy({
+            strategy: this.strategy,
+            pair: this.pair,
+            orderId: this.activeOrder.id,
+            data: `Something went wrong while setting a stop loss: ${order.msg}`
+          });
       })
 
     // take profit
@@ -110,26 +120,40 @@ export default class Trader {
         size: dealSize
       }).then(order => {
         this.TPOrder = order.data
-        order.data ? console.log(`Take Profit is ${this.order.TP} (${order.data.orderId})`) : console.log(order);
+        order.data ?
+          logStrategy({
+            strategy: this.strategy,
+            pair: this.pair,
+            orderId: this.activeOrder.id,
+            data: `Take Profit is ${this.order.SL} (${order.data.orderId})`
+          }) :
+          logStrategy({
+            strategy: this.strategy,
+            pair: this.pair,
+            orderId: this.activeOrder.id,
+            data: `Something went wrong while setting a take profit: ${order.msg}`
+          });
       })
   }
 
   startDynamicTPSL() {
-    let logPath = `./records/RTW/${this.isNewPair ? 'New Pair_' : ''}${this.pair.symbol}_${this.activeOrder.id}.log`
     let lastPrice = this.activeOrder.price
     let boughtPrice = parseFloat(this.activeOrder.dealFunds / this.activeOrder.size)
     this.dynamicTPSL.TP = boughtPrice * (this.dynamicTPSL.TPP / 100 + 1)
     this.dynamicTPSL.SL = this.order.SL
     this.dynamicTPSL.height = this.dynamicTPSL.TP - this.dynamicTPSL.SL
-    appendFileSync(logPath, `${new Date()} Ceiling: $${this.dynamicTPSL.TP}\n`);
-    appendFileSync(logPath, `${new Date()} Bought for: $${this.order.currentPrice}\n`);
-    appendFileSync(logPath, `${new Date()} Floor: $${this.dynamicTPSL.SL}\n`);
+    logStrategy({
+      strategy: this.strategy,
+      pair: this.pair,
+      orderId: this.activeOrder.id,
+      data: `Ceiling: $${this.dynamicTPSL.TP}\nBought for: $${this.order.currentPrice}\nFloor: $${this.dynamicTPSL.SL}`
+    });
 
     const datafeed = new api.websocket.Datafeed();
     // connect
     datafeed.connectSocket();
     const topic = `/market/ticker:${this.pair.symbol}`;
-    console.log(`Started monitoring ${this.pair.symbol}.....`);
+    log(`Started monitoring ${this.pair.symbol}.....`);
     const callbackId = datafeed.subscribe(topic, (message) => {
 
       let {
@@ -139,16 +163,30 @@ export default class Trader {
       let newPrice = bestBid
 
       if (lastPrice != newPrice) {
-        appendFileSync(logPath, `${new Date()} New Price: $${newPrice}\n`);
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          orderId: this.activeOrder.id,
+          data: `New Price: $${newPrice}`
+        });
         lastPrice = newPrice
       }
       if (newPrice > this.dynamicTPSL.TP) {
         this.dynamicTPSL.TP = newPrice
         this.dynamicTPSL.SL = newPrice - this.dynamicTPSL.height
-        appendFileSync(logPath, `New TP: ${this.dynamicTPSL.TP}\n`);
-        appendFileSync(logPath, `New SL: ${this.dynamicTPSL.SL}\n`);
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          orderId: this.activeOrder.id,
+          data: `New TP: ${this.dynamicTPSL.TP}\nNew SL: ${this.dynamicTPSL.SL}`
+        });
       } else if (newPrice <= this.dynamicTPSL.SL) {
-        appendFileSync(logPath, `SL hit: ${this.dynamicTPSL.SL}\n`);
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          orderId: this.activeOrder.id,
+          data: `SL hit: ${this.dynamicTPSL.SL}`
+        });
         this.marketSell()
         datafeed.unsubscribe(topic, callbackId)
       }

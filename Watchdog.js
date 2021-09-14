@@ -1,6 +1,5 @@
 import {
   appendFileSync,
-  writeFileSync,
 } from 'fs'
 
 import Trader from './Trader.js'
@@ -13,6 +12,10 @@ import {
   getTickerInfo,
   getEquity
 } from './config/utils.js'
+
+import log, {
+  logStrategy
+} from './log.js'
 
 import {
   timeframes
@@ -52,7 +55,7 @@ export default class Watchdog {
     })
   }
   async watchNewPair() {
-    console.log('monitoring new pairs...');
+    log('monitoring new pairs...');
     // loop through all new tickers and check if their trading status (enableTrading) changed to true
     for (const pair of this.untradeables) {
       let status = (await getAllUsdtTickers()).find(tick => tick.symbol == pair.symbol).enableTrading
@@ -85,7 +88,8 @@ export default class Watchdog {
               tf: this.tf,
               tickerInfo,
               isNewPair: true,
-              dynamicTPSL
+              dynamicTPSL,
+              strategy: 'Sniper'
             })
             datafeed.unsubscribe(topic, callbackId);
           }
@@ -93,15 +97,15 @@ export default class Watchdog {
       });
 
     }
+    this.allUsdtTickers = await getAllUsdtTickers()
     this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
-    this.allUsdtTickers = await getAllUsdtTickers() || this.allUsdtTickers
     this.watchNewPair()
   }
 
 
 
   async monitor(watchlist) {
-    console.log('checking MACD strategy...');
+    log('checking MACD strategy...');
     // loop through the watchlist and check the vol of each pair
     for (let pair of watchlist) {
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
@@ -114,8 +118,7 @@ export default class Watchdog {
       if (signal) {
         let balance = await isSufficient()
         if (!balance) continue
-        console.log(`\nMACD strategy gives the green light to buy ${pair.symbol} at $${pair.sell} - ${new Date()} on ${timeframes[timeframes.indexOf(this.tf) + 2].text} timeframe\n`);
-        appendFileSync(`./records/MACD/buy ${pair.symbol} at ${pair.sell} on ${timeframes[timeframes.indexOf(this.tf) + 2].text} timeframe.json`, JSON.stringify(history));
+        log(`MACD strategy gives the green light to buy ${pair.symbol} at $${pair.sell} on ${timeframes[timeframes.indexOf(this.tf) + 2].text} timeframe`);
 
         // buy it
         let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 2], 1.5)
@@ -125,6 +128,7 @@ export default class Watchdog {
           order,
           tf: timeframes[timeframes.indexOf(this.tf) + 2],
           tickerInfo,
+          strategy: 'MACD'
         })
         // exclude from watchlist
         this.excluded.push(pair.symbol)
@@ -145,6 +149,7 @@ export default class Watchdog {
       //     order,
       //     tf: timeframes[timeframes.indexOf(this.tf) + 2],
       //     tickerInfo,
+      //     strategy: 'VWAP'
       //   })
       //   // exclude from watchlist
       //   this.excluded.push(pair.symbol)
@@ -160,7 +165,7 @@ export default class Watchdog {
   }
 
   async volSpike(usdtTickers) {
-    console.log('checking volume spike...');
+    log('checking volume spike...');
     // loop through the USDT pairs and check the vol of each pair
     for (let pair of usdtTickers) {
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
@@ -171,7 +176,7 @@ export default class Watchdog {
       // check if the set up matches Ride The Wave (RTW) strategy
       let signal = strategy.RTW(history)
       if (signal) {
-        console.log(`\nRIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at $${pair.sell} - ${new Date()} on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
+        log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at $${pair.sell} on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
         // buy it
         let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 4], 2)
         if (!order) continue
@@ -186,7 +191,8 @@ export default class Watchdog {
           order,
           tf: this.tf,
           tickerInfo,
-          dynamicTPSL
+          dynamicTPSL,
+          strategy: 'RTW'
         })
         // exclude from watchlist
         this.excluded.push(pair.symbol)

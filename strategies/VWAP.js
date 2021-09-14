@@ -24,8 +24,6 @@ export default (lastPrice, history) => {
   let overEMA = emaResult[1] < lastPrice
   let vwapReady = vwapResult[3] > lastPrice && vwapResult[1] < lastPrice
 
-  if (overEMA && vwapReady)
-    console.log();
 
   return overEMA && vwapReady
 }
