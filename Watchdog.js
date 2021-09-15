@@ -125,7 +125,7 @@ export default class Watchdog {
         log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
 
         // buy it
-        let order = await defineOrder(this.equity, pair, this.tf, 1.5)
+        let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 2], 1.5)
         if (!order) continue
         new Trader({
           pair,
