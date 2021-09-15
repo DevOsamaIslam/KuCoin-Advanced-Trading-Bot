@@ -13,9 +13,6 @@ import {
   getEquity
 } from './config/utils.js'
 
-import log, {
-  logStrategy
-} from './log.js'
 
 import {
   timeframes
@@ -51,7 +48,7 @@ export default class Watchdog {
       this.monitor(this.watchlist)
 
       // monitor for volume spike
-      this.volSpike(this.usdtPairs)
+      // this.volSpike(this.usdtPairs)
     })
   }
   async watchNewPair() {
