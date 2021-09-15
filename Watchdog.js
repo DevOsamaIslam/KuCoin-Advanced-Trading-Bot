@@ -97,9 +97,13 @@ export default class Watchdog {
       });
 
     }
-    this.allUsdtTickers = await getAllUsdtTickers()
-    this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
-    this.watchNewPair()
+    // wait for one minute to check again for new pairs
+    setTimeout(async () => {
+      this.allUsdtTickers = await getAllUsdtTickers()
+      this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
+      this.watchNewPair()
+    }, 60 * 1000);
+
   }
 
 
@@ -110,7 +114,7 @@ export default class Watchdog {
     for (let pair of watchlist) {
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       if (this.excluded.includes(pair.symbol)) continue
-      let history = await getHistory(pair, timeframes[timeframes.indexOf(this.tf) + 2], 201)
+      let history = await getHistory(pair, this.tf, 201)
       if (!history || history.length < 201) continue
 
       // check if the set up matches MACD strategy
@@ -118,15 +122,15 @@ export default class Watchdog {
       if (signal) {
         let balance = await isSufficient()
         if (!balance) continue
-        log(`MACD strategy gives the green light to buy ${pair.symbol} at $${pair.sell} on ${timeframes[timeframes.indexOf(this.tf) + 2].text} timeframe`);
+        log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
 
         // buy it
-        let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 2], 1.5)
+        let order = await defineOrder(this.equity, pair, this.tf, 1.5)
         if (!order) continue
         new Trader({
           pair,
           order,
-          tf: timeframes[timeframes.indexOf(this.tf) + 2],
+          tf: this.tf,
           tickerInfo,
           strategy: 'MACD'
         })
@@ -176,7 +180,7 @@ export default class Watchdog {
       // check if the set up matches Ride The Wave (RTW) strategy
       let signal = strategy.RTW(history)
       if (signal) {
-        log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at $${pair.sell} on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
+        log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
         // buy it
         let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 4], 2)
         if (!order) continue

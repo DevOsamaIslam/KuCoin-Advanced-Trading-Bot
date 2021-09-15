@@ -99,12 +99,13 @@ export const defineOrder = async (equity, pair, tf, rr) => {
     if (!history) return false
     history.reverse()
     let atr = ATR.calculate({
+      reversedInput: true,
       high: history.map(candle => candle[3]),
       low: history.map(candle => candle[4]),
       close: history.map(candle => candle[2]),
       period: 14
-    }).reverse()[0]
-    SL = parseFloat(getLowestPriceHistory(history)) + atr
+    })
+    SL = parseFloat(getLowestPriceHistory(history)) + atr[0]
     lbPeriod += 10
   } while (SL >= parseFloat(pair.sell))
 

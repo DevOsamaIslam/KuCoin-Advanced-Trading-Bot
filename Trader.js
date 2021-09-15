@@ -19,8 +19,9 @@ export default class Trader {
     this.buy().then(order => {
       if (order) {
         this.activeOrder = order;
-        this.dynamicTPSL & this.startDynamicTPSL()
-        this.order.SL || this.order.TP & this.stopOrder()
+        if (this.dynamicTPSL)
+          this.startDynamicTPSL()
+        else if (this.order.SL || this.order.TP) this.stopOrder()
       }
     })
 
@@ -53,7 +54,7 @@ export default class Trader {
     let order = await api.rest.Trade.Orders.postOrder(params.baseParams, params.orderParams)
     if (order.data) {
       let activeOrder = await getOrder(order.data.orderId)
-      log(`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} of ${this.pair.symbol} at $${activeOrder.price}`)
+      log(`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} of ${this.pair.symbol} at $${activeOrder.dealFunds / activeOrder.dealSize}`)
       return activeOrder
     } else {
       log(`Something went wrong while buying: ${order.msg}`)
@@ -96,13 +97,13 @@ export default class Trader {
             strategy: this.strategy,
             pair: this.pair,
             orderId: this.activeOrder.id,
-            data: `Stop Loss is ${this.order.SL} (${order.data.orderId})`
+            data: [`Stop Loss is ${this.order.SL} (${order.data.orderId})`]
           }) :
           logStrategy({
             strategy: this.strategy,
             pair: this.pair,
             orderId: this.activeOrder.id,
-            data: `Something went wrong while setting a stop loss: ${order.msg}`
+            data: [`Something went wrong while setting a stop loss: ${order.msg}`]
           });
       })
 
@@ -125,13 +126,13 @@ export default class Trader {
             strategy: this.strategy,
             pair: this.pair,
             orderId: this.activeOrder.id,
-            data: `Take Profit is ${this.order.SL} (${order.data.orderId})`
+            data: [`Take Profit is ${this.order.TP} (${order.data.orderId})`]
           }) :
           logStrategy({
             strategy: this.strategy,
             pair: this.pair,
             orderId: this.activeOrder.id,
-            data: `Something went wrong while setting a take profit: ${order.msg}`
+            data: [`Something went wrong while setting a take profit: ${order.msg}`]
           });
       })
   }
@@ -146,7 +147,7 @@ export default class Trader {
       strategy: this.strategy,
       pair: this.pair,
       orderId: this.activeOrder.id,
-      data: `Ceiling: $${this.dynamicTPSL.TP}\nBought for: $${this.order.currentPrice}\nFloor: $${this.dynamicTPSL.SL}`
+      data: [`Ceiling: $${this.dynamicTPSL.TP}`, `Bought for: $${this.order.currentPrice}`, `Floor: $${this.dynamicTPSL.SL}`]
     });
 
     const datafeed = new api.websocket.Datafeed();
@@ -167,7 +168,7 @@ export default class Trader {
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
-          data: `New Price: $${newPrice}`
+          data: [`New Price: $${newPrice}`]
         });
         lastPrice = newPrice
       }
@@ -178,14 +179,14 @@ export default class Trader {
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
-          data: `New TP: ${this.dynamicTPSL.TP}\nNew SL: ${this.dynamicTPSL.SL}`
+          data: [`New TP: ${this.dynamicTPSL.TP}\nNew SL: ${this.dynamicTPSL.SL}`]
         });
       } else if (newPrice <= this.dynamicTPSL.SL) {
         logStrategy({
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
-          data: `SL hit: ${this.dynamicTPSL.SL}`
+          data: [`SL hit: ${this.dynamicTPSL.SL}`]
         });
         this.marketSell()
         datafeed.unsubscribe(topic, callbackId)
