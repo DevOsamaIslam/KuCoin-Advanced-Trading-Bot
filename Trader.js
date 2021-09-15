@@ -72,9 +72,13 @@ export default class Trader {
       remark: `Strategy: ${this.strategy} (${this.activeOrder.id})`
     }, {
       size: this.activeOrder.dealSize
-    }).then(data => {
-      this.orderId = data.data.orderId
-      log(`Sold ${Math.floor(this.activeOrder.dealSize)} of ${this.pair.symbol}`)
+    }).then(order => {
+      if (order.data) {
+        log(`Sold ${Math.floor(this.activeOrder.dealSize)} of ${this.pair.symbol} (${order.data.orderId})`)
+      } else {
+        log(`Something went wrong while selling: ${order.msg}`)
+        return false
+      }
     })
   }
 
