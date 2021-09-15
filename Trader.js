@@ -90,7 +90,7 @@ export default class Trader {
         type: 'market',
         stop: 'loss',
         stopPrice: this.order.SL,
-        stp: 'CO'
+        stp: 'CO',
         remark: `Strategy: ${this.strategy}`
       }, {
         size: dealSize
