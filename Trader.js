@@ -41,7 +41,8 @@ export default class Trader {
         side: 'buy',
         symbol: this.pair.symbol,
         type: this.order.type || 'market',
-        stp: 'CO'
+        stp: 'CO',
+        remark: `Strategy: ${this.strategy}`
       },
       orderParams: this.order.type === 'limit' ? {
         price: this.order.currentPrice,
@@ -68,6 +69,7 @@ export default class Trader {
       side: 'sell',
       symbol: this.pair.symbol,
       type: 'market',
+      remark: `Strategy: ${this.strategy}`
     }, {
       size: this.activeOrder.dealSize
     }).then(data => {
@@ -89,6 +91,7 @@ export default class Trader {
         stop: 'loss',
         stopPrice: this.order.SL,
         stp: 'CO'
+        remark: `Strategy: ${this.strategy}`
       }, {
         size: dealSize
       }).then(order => {
@@ -116,7 +119,8 @@ export default class Trader {
         type: 'market',
         stop: 'entry',
         stopPrice: this.order.TP,
-        stp: 'CO'
+        stp: 'CO',
+        remark: `Strategy: ${this.strategy}`
       }, {
         size: dealSize
       }).then(order => {
