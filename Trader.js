@@ -69,7 +69,7 @@ export default class Trader {
       side: 'sell',
       symbol: this.pair.symbol,
       type: 'market',
-      remark: `Strategy: ${this.strategy}`
+      remark: `Strategy: ${this.strategy} (${this.activeOrder.id})`
     }, {
       size: this.activeOrder.dealSize
     }).then(data => {
