@@ -29,7 +29,7 @@ export default class Trader {
 
   async buy() {
     // find the lowest quote increment decimal value
-    let decimals = this.tickerInfo.quoteIncrement.split('.')[1].length || 4
+    let decimals = this.tickerInfo.baseIncrement.split('.')[1].length || 4
     // get the order size in the base currency (the one you want to buy)
     let size = (this.order.size / (this.pair.sell || this.order.currentPrice)).toFixed(decimals)
     // check if the order size is less-than/equal-to the minimum
@@ -79,7 +79,7 @@ export default class Trader {
   }
 
   stopOrder() {
-    let decimals = this.tickerInfo.quoteIncrement.split('.')[1].length || 4
+    let decimals = this.tickerInfo.baseIncrement.split('.')[1].length || 4
     let dealSize = parseFloat(this.activeOrder.dealSize).toFixed(decimals - 1)
     // stop loss
     if (this.order.SL)
