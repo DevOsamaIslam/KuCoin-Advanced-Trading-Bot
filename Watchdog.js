@@ -13,6 +13,7 @@ import {
   getEquity
 } from './config/utils.js'
 
+import log from './log.js'
 
 import {
   timeframes
