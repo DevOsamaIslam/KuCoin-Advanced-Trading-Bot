@@ -133,7 +133,7 @@ export const asyncHandler = async fn => {
     }
     return results
   } catch (error) {
-    console.log(error);
+    console.log('asyncHandler error:', error);
     return false
   }
 }
