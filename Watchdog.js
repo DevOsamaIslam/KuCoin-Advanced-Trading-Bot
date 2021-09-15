@@ -182,7 +182,7 @@ export default class Watchdog {
       if (signal) {
         log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
         // buy it
-        let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 4], 2)
+        let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 4], 1.5)
         if (!order) continue
         order.size = this.equity * 0.05
         let dynamicTPSL = {
