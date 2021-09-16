@@ -83,7 +83,7 @@ export const getHistory = async (pair, tf, lookbackPeriods) => {
   return data.data
 }
 
-export const defineOrder = async (equity, pair, tf, rr) => {
+export const defineOrder = (equity, pair, history, rr) => {
   /*
     check the last 20 candles and get the lowest price (getLowestPriceHistory)
     Then get the RR from the environment variable and calculate the Take Profit price
@@ -93,11 +93,8 @@ export const defineOrder = async (equity, pair, tf, rr) => {
     - Take Profit
   */
   let SL = 0
-  let lbPeriod = 50
+  let lbPeriod = 20
   do {
-    let history = await getHistory(pair, tf, lbPeriod)
-    if (!history) return false
-    history.reverse()
     let atr = ATR.calculate({
       reversedInput: true,
       high: history.map(candle => candle[3]),
@@ -119,7 +116,7 @@ export const defineOrder = async (equity, pair, tf, rr) => {
     SL,
     TPP,
     TP,
-    size: equity * 0.1,
+    size: equity * 0.05,
     type: 'market'
   }
 }

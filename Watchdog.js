@@ -110,7 +110,11 @@ export default class Watchdog {
     log('checking MACD strategy...');
     // loop through the watchlist and check the vol of each pair
     for (let pair of watchlist) {
+      // get that pair's information
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
+      // if the exclusion list is more than half the watchlist, reset it
+      if (this.excluded.length > watchlist.length / 2) this.excluded = []
+      // if the pair was excluded, stop it and move on to the next
       if (this.excluded.includes(pair.symbol)) continue
       let history = await getHistory(pair, this.tf, 201)
       if (!history || history.length < 201) continue
@@ -122,8 +126,8 @@ export default class Watchdog {
         if (!balance) continue
         log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
 
-        // buy it
-        let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 2], 1.5)
+        // create an order
+        let order = defineOrder(this.equity, pair, history, 1.5)
         if (!order) continue
         new Trader({
           pair,
@@ -180,7 +184,7 @@ export default class Watchdog {
       if (signal) {
         log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
         // buy it
-        let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 4], 1.5)
+        let order = defineOrder(this.equity, pair, history, 1.5)
         if (!order) continue
         order.size = this.equity * 0.05
         let dynamicTPSL = {
