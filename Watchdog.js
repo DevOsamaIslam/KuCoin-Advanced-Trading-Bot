@@ -112,8 +112,8 @@ export default class Watchdog {
     for (let pair of watchlist) {
       // get that pair's information
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
-      // if the exclusion list is more than half the watchlist, reset it
-      if (this.excluded.length > watchlist.length / 2) this.excluded = []
+      // if the exclusion list is more than half the watchlist, remove the first element
+      if (this.excluded.length > watchlist.length / 2) this.excluded.shift()
       // if the pair was excluded, stop it and move on to the next
       if (this.excluded.includes(pair.symbol)) continue
       let history = await getHistory(pair, this.tf, 201)
