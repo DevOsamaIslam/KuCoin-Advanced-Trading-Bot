@@ -42,8 +42,7 @@ export default class Watchdog {
       // strategies
 
       // Watch for new pairs
-      this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
-      this.watchNewPair(this.untradeables)
+      this.watchNewPair()
 
       // monitor watchlist
       this.monitor(this.watchlist)
@@ -54,54 +53,57 @@ export default class Watchdog {
   }
   async watchNewPair() {
     console.log('monitoring new pairs...');
+    this.allUsdtTickers = await getAllUsdtTickers()
+    this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
     // loop through all new tickers and check if their trading status (enableTrading) changed to true
     for (const pair of this.untradeables) {
-      let status = (await getAllUsdtTickers()).find(tick => tick.symbol == pair.symbol).enableTrading
-      if (!status) continue
+      let status = this.allUsdtTickers.find(tick => tick.symbol == pair.symbol).enableTrading
+      if (status) continue
 
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
-      // monitor new pair
-      const datafeed = new api.websocket.Datafeed();
-      // connect
-      datafeed.connectSocket();
-      const topic = `/market/pair:${pair.symbol}`;
-      let callbackId = datafeed.subscribe(topic, async message => {
-        let equity = await getEquity('USDT')
-        if (equity) {
-          let feed = message.data
-          if (feed.bestAsk > 0) {
-            log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
-            let dynamicTPSL = {
-              TP: feed.bestAsk * 1.3,
-              SL: feed.bestAsk * 0.8,
-            }
-            let order = {
-              size: equity * 0.5,
-              currentPrice: feed.bestAsk,
-              type: 'limit',
-            }
-            new Trader({
-              pair: pair,
-              order,
-              tf: this.tf,
-              tickerInfo,
-              isNewPair: true,
-              dynamicTPSL,
-              strategy: 'Sniper'
-            })
-            datafeed.unsubscribe(topic, callbackId);
-          }
-        }
-      });
+      this.equity = await getEquity('USDT')
+      this.monitorNew(pair, tickerInfo)
 
     }
     // wait for one minute to check again for new pairs
     setTimeout(async () => {
-      this.allUsdtTickers = await getAllUsdtTickers()
-      this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
       this.watchNewPair()
-    }, 60 * 1000);
+    }, 30 * 1000);
 
+  }
+
+  async monitorNew(pair, tickerInfo) {
+    // monitor new pair
+    const datafeed = new api.websocket.Datafeed();
+    // connect
+    datafeed.connectSocket();
+    const topic = `/market/ticker:${pair.symbol}`;
+    let callbackId = datafeed.subscribe(topic, (message) => {
+      let feed = message.data
+      console.log(`Trying to buy ${pair.symbol}...`);
+      if (feed.bestAsk > 0) {
+        console.log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
+        let dynamicTPSL = {
+          TP: feed.bestAsk * 1.3,
+          SL: feed.bestAsk * 0.8,
+        }
+        let order = {
+          size: equity * 0.5,
+          currentPrice: feed.bestAsk,
+          type: 'limit',
+        }
+        new Trader({
+          pair,
+          order,
+          tf: this.tf,
+          tickerInfo,
+          isNewPair: true,
+          dynamicTPSL,
+          strategy: 'Sniper'
+        })
+        datafeed.unsubscribe(topic, callbackId);
+      }
+    });
   }
 
 
