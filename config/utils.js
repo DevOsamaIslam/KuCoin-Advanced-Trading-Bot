@@ -4,6 +4,8 @@ import {
 
 import api from '../main.js'
 
+import log from '../log.js'
+
 
 export const calcPerc = (newValue, oldValue) => ((newValue - oldValue) / oldValue) * 100
 
@@ -131,7 +133,7 @@ export const asyncHandler = async fn => {
     }
     return results
   } catch (error) {
-    console.log('asyncHandler error:', error);
+    log(`asyncHandler error: ${JSON.stringify(error)}`);
     return false
   }
 }
