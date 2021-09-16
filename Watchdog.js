@@ -53,7 +53,7 @@ export default class Watchdog {
     })
   }
   async watchNewPair() {
-    log('monitoring new pairs...');
+    console.log('monitoring new pairs...');
     // loop through all new tickers and check if their trading status (enableTrading) changed to true
     for (const pair of this.untradeables) {
       let status = (await getAllUsdtTickers()).find(tick => tick.symbol == pair.symbol).enableTrading
@@ -70,7 +70,7 @@ export default class Watchdog {
         if (equity) {
           let feed = message.data
           if (feed.bestAsk > 0) {
-            console.log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
+            log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
             let dynamicTPSL = {
               TP: feed.bestAsk * 1.3,
               SL: feed.bestAsk * 0.8,
@@ -107,7 +107,7 @@ export default class Watchdog {
 
 
   async monitor(watchlist) {
-    log('checking MACD strategy...');
+    console.log('checking MACD strategy...');
     // loop through the watchlist and check the vol of each pair
     for (let pair of watchlist) {
       // get that pair's information
@@ -171,7 +171,7 @@ export default class Watchdog {
   }
 
   async volSpike(usdtTickers) {
-    log('checking volume spike...');
+    console.log('checking volume spike...');
     // loop through the USDT pairs and check the vol of each pair
     for (let pair of usdtTickers) {
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
