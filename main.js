@@ -5,9 +5,6 @@ import {
   config,
 } from './config/keys.js'
 import Watchdog from './Watchdog.js'
-import {
-  getEquity
-} from './config/utils.js'
 
 dotenv.config()
 
@@ -113,7 +110,7 @@ export const timeframes = [{
 api.rest.User.Account.getAccountsList({
   type: 'trade',
   currency: 'USDT'
-}).then(data => data.data && new Watchdog(data.data[0].available, watchlist, timeframes[0]))
+}).then(data => data.data && new Watchdog(data.data[0].available, watchlist, timeframes[2]))
 
 
 export default api
