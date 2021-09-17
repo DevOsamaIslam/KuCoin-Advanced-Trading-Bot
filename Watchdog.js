@@ -89,7 +89,7 @@ export default class Watchdog {
         }
         let order = {
           size: this.equity * 0.5,
-          currentPrice: feed.bestAsk,
+          currentPrice: feed.bestAsk * 1.1,
           type: 'limit',
         }
         new Trader({
