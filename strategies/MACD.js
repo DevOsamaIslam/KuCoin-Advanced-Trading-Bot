@@ -1,20 +1,26 @@
 import {
   MACD,
   EMA,
+  WEMA
 } from 'technicalindicators'
 
 export default (lastPrice, history) => {
   // history.reverse()
-  let input = history.map(candle => parseFloat(candle[2]))
+  let input = history.map(candle => parseFloat(candle[2])).reverse()
 
-  // get EMA
-  let emaResult = EMA.calculate({
+  // // get EMA
+  // let emaResult = EMA.calculate({
+  //   period: 200,
+  //   values: input
+  // }).reverse()
+  // get WEMA - SMMA
+  let wemaResult = WEMA.calculate({
     period: 200,
     values: input
-  })
+  }).reverse()
   // get MACD
   let macdResult = MACD.calculate({
-    values: input.reverse(),
+    values: input,
     fastPeriod: 12,
     slowPeriod: 26,
     signalPeriod: 9,
@@ -25,9 +31,9 @@ export default (lastPrice, history) => {
   let cross = macd[2] < signal[2] && macd[1] > signal[1]
   let lastMACD = macd[1] < 0
 
-  // cross && console.log(`EMA: ${emaResult[0]}`);
+  // cross && console.log(`EMA: ${wemaResult[0]}`);
 
-  let overEMA = emaResult[1] < lastPrice
+  let overEMA = wemaResult[1] < lastPrice
 
   let isTrue = overEMA && cross && lastMACD
   if (isTrue)
