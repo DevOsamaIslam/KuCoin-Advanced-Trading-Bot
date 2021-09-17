@@ -52,7 +52,7 @@ export default class Watchdog {
     })
   }
   async watchNewPair() {
-    console.log('monitoring new pairs...');
+    // console.log('monitoring new pairs...');
     this.allUsdtTickers = await getAllUsdtTickers()
     this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
     // loop through all new tickers and check if their trading status (enableTrading) changed to true
@@ -89,7 +89,7 @@ export default class Watchdog {
         }
         let order = {
           size: this.equity * 0.5,
-          currentPrice: feed.bestAsk * 1.1,
+          currentPrice: parseFloat(feed.bestAsk * 1.1).toFixed(feed.bestAsk.split('.')[1].length),
           type: 'limit',
         }
         new Trader({
@@ -109,28 +109,42 @@ export default class Watchdog {
 
 
   async monitor(watchlist) {
-    console.log('checking MACD strategy...');
     // loop through the watchlist and check the vol of each pair
-    for (let pair of watchlist) {
+    let count = 0
+    setInterval(async () => {
+      let pair = watchlist[count]
+      console.log(`Checking ${pair.symbol}`);
       // get that pair's information
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       // if the exclusion list is more than half the watchlist, remove the first element
       if (this.excluded.length > watchlist.length / 2) this.excluded.shift()
       // if the pair was excluded, stop it and move on to the next
-      if (this.excluded.includes(pair.symbol)) continue
+      if (this.excluded.includes(pair.symbol)) {
+        count++
+        return
+      }
       let history = await getHistory(pair, this.tf, 201)
-      if (!history || history.length < 201) continue
+      if (!history || history.length < 200) {
+        count++
+        return
+      }
 
       // check if the set up matches MACD strategy
       let signal = strategy.MACD(pair.sell, history)
       if (signal) {
         let balance = await isSufficient()
-        if (!balance) continue
+        if (!balance) {
+          count++
+          return
+        }
         log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
 
         // create an order
         let order = defineOrder(this.equity, pair, history, 1.5)
-        if (!order) continue
+        if (!order) {
+          count++
+          return
+        }
         new Trader({
           pair,
           order,
@@ -140,7 +154,6 @@ export default class Watchdog {
         })
         // exclude from watchlist
         this.excluded.push(pair.symbol)
-        continue
       }
 
       // // check if the set up matches VWAP strategy
@@ -163,12 +176,19 @@ export default class Watchdog {
       //   this.excluded.push(pair.symbol)
       //   continue
       // }
+      count++
+      if (count >= watchlist.length) {
+        console.log('checking MACD strategy...');
+        count = 0
+      }
+      if (this.excluded.length > watchlist.length / 2) {
+        this.excluded.shift()
+        this.excluded.shift()
+        this.excluded.shift()
+        this.excluded.shift()
+      }
 
-    }
-
-    setTimeout(() => {
-      this.monitor(this.watchlist)
-    }, 5000);
+    }, 1000 * 5);
 
   }
 
