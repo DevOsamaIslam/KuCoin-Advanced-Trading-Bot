@@ -52,7 +52,7 @@ export default class Watchdog {
     })
   }
   async watchNewPair() {
-    // console.log('monitoring new pairs...');
+    console.log('monitoring new pairs...');
     this.allUsdtTickers = await getAllUsdtTickers()
     this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
     // loop through all new tickers and check if their trading status (enableTrading) changed to true
@@ -68,7 +68,7 @@ export default class Watchdog {
     // wait for one minute to check again for new pairs
     setTimeout(async () => {
       this.watchNewPair()
-    }, 30 * 1000);
+    }, 60 * 1000);
 
   }
 
