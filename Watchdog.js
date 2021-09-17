@@ -88,7 +88,7 @@ export default class Watchdog {
           SL: feed.bestAsk * 0.8,
         }
         let order = {
-          size: equity * 0.5,
+          size: this.equity * 0.5,
           currentPrice: feed.bestAsk,
           type: 'limit',
         }
