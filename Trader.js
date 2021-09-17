@@ -44,10 +44,8 @@ export default class Trader {
         stp: 'CO',
         remark: `Strategy: ${this.strategy}`
       },
-      orderParams: this.order.type === 'limit' ? {
+      orderParams: {
         price: this.order.currentPrice,
-        size
-      } : {
         size
       }
     }
@@ -63,18 +61,20 @@ export default class Trader {
     }
   }
 
-  async marketSell() {
+  async sell(options) {
     api.rest.Trade.Orders.postOrder({
       clientOid: `Sell_${this.pair.symbol}_at_${Date.now()}`,
       side: 'sell',
       symbol: this.pair.symbol,
-      type: 'market',
+      type: options.type || 'market',
       remark: `Strategy: ${this.strategy} (${this.activeOrder.id})`
     }, {
-      size: this.activeOrder.dealSize
+      size: this.activeOrder.dealSize,
+      price: options.price
     }).then(order => {
       if (order.data) {
         log(`Sold ${Math.floor(this.activeOrder.dealSize)} of ${this.pair.symbol} (${order.data.orderId})`)
+        return true
       } else {
         log(`Something went wrong while selling: ${order.msg}`)
         return false
@@ -196,7 +196,13 @@ export default class Trader {
           orderId: this.activeOrder.id,
           data: [`SL hit: ${this.dynamicTPSL.SL}`]
         });
-        this.marketSell()
+        this.sell().then(data => {
+          if (!data)
+            this.sell({
+              type: 'limit',
+              price: bestBid * 0.98
+            })
+        })
         datafeed.unsubscribe(topic, callbackId)
       }
 
