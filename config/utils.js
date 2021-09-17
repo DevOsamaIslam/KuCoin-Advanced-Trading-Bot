@@ -15,23 +15,37 @@ export const calculateSLPrice = (price, SLP) => parseFloat(price - price * SLP)
 
 export const isSufficient = async () => await getBalance() > 10
 
+export const getTickerInfo = (pair, allUsdtTickers) => allUsdtTickers.find(tick => tick.symbol === pair.symbol)
+
 export const getAllUsdtPairs = async () => {
   let allUsdtTickers = await asyncHandler(api.rest.Market.Symbols.getAllTickers())
   if (allUsdtTickers) return allUsdtTickers.data.ticker.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith('USDT'))
   else return false
 }
 
-export const getAllUsdtTickers = async () => (await asyncHandler(api.rest.Market.Symbols.getSymbolsList())).data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith('USDT')) || false
-// let allUsdtTickers = await asyncHandler(api.rest.Market.Symbols.getSymbolsList())
-// if (allUsdtTickers) return allUsdtTickers.data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith('USDT'))
-// else return false
-export const getPrice = async pair => (await asyncHandler(api.rest.Market.Symbols.getTicker(pair))).price || false
+export const getAllUsdtTickers = async () => {
+  let allUsdtTickers = await asyncHandler(api.rest.Market.Symbols.getSymbolsList())
+  if (allUsdtTickers) return allUsdtTickers.data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith('USDT'))
+  else return false
+}
 
-export const getTickerInfo = (pair, allUsdtTickers) => allUsdtTickers.find(tick => tick.symbol === pair.symbol)
+export const getPrice = async pair => {
+  let data = await asyncHandler(api.rest.Market.Symbols.getTicker(pair))
+  if (data) return data.price
+  else return false
+}
 
-export const getOrder = async id => (await asyncHandler(api.rest.Trade.Orders.getOrderByID(id))).data
+export const getOrder = async id => {
+  let data = await asyncHandler(api.rest.Trade.Orders.getOrderByID(id))
+  if (data) return data.data
+  else return false
+}
 
-export const getLastPrice = async pair => (await asyncHandler(api.rest.Market.Symbols.getTicker(pair))).data.price
+export const getLastPrice = async pair => {
+  let data = await asyncHandler(api.rest.Market.Symbols.getTicker(pair))
+  if (data) return data.data.price
+  else return false
+}
 
 export const getBalance = async () => (
   await asyncHandler(api.rest.User.Account.getAccountsList({
@@ -77,6 +91,7 @@ export const getHistory = async (pair, tf, lookbackPeriods) => {
     startAt: Math.floor((Date.now() - (tf.value * lookbackPeriods)) / 1000),
     endAt: Math.floor(Date.now() / 1000)
   }
+  // console.log('getting history...');
   let data = await asyncHandler(api.rest.Market.Histories.getMarketCandles(pair.symbol, tf.text, span))
   if (!data.data) {
     console.log('getHistory:', data);
