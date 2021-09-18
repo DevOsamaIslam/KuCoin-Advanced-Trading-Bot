@@ -113,7 +113,6 @@ export default class Watchdog {
     let count = 0
     setInterval(async () => {
       let pair = watchlist[count]
-      console.log(`Checking ${pair.symbol}`);
       // get that pair's information
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       // if the exclusion list is more than half the watchlist, remove the first element
@@ -130,6 +129,7 @@ export default class Watchdog {
       }
 
       // check if the set up matches MACD strategy
+      console.log(`Checking ${pair.symbol}`);
       let signal = strategy.MACD(pair.sell, history)
       if (signal) {
         let balance = await isSufficient()
