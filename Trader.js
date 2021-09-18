@@ -53,10 +53,18 @@ export default class Trader {
     let order = await api.rest.Trade.Orders.postOrder(params.baseParams, params.orderParams)
     if (order.data) {
       let activeOrder = await getOrder(order.data.orderId)
-      log(`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} of ${this.pair.symbol} at $${activeOrder.dealFunds / activeOrder.dealSize}`)
+      logStrategy({
+        strategy: this.strategy,
+        pair: this.pair,
+        data: [`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} at $${activeOrder.dealFunds / activeOrder.dealSize}`]
+      });
       return activeOrder
     } else {
-      log(`Something went wrong while buying: ${order.msg}`)
+      logStrategy({
+        strategy: this.strategy,
+        pair: this.pair,
+        data: [`Something went wrong while buying: ${order.msg}`]
+      });
       return false
     }
   }
