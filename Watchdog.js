@@ -131,9 +131,9 @@ export default class Watchdog {
         count++
         return
       }
-      let history = await getHistory(pair, this.tf, 201)
-      if (!history || history.length < 200) {
-        log(`Unable to pull history or not enough data: ${typeof history}`)
+      let history = await getHistory(pair, this.tf, 101)
+      if (!history || history.length < 100) {
+        log(`Unable to pull history or not enough data for ${pair.symbol}: ${typeof history}`)
         count++
         return
       }
