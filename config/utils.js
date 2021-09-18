@@ -119,7 +119,7 @@ export const defineOrder = (equity, pair, history, rr) => {
       close: history.map(candle => candle[2]),
       period: 14
     })
-    SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0] * 2
+    SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0]
     lbPeriod += 10
   } while (SL >= parseFloat(pair.sell) * 0.995)
 
