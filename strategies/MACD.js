@@ -35,7 +35,7 @@ export default (lastPrice, history) => {
 
   let overEMA = wemaResult[1] < lastPrice
 
-  let isTrue = overEMA && cross && lastMACD
-  if (isTrue)
-    return true
+  return overEMA && cross && lastMACD
+
+
 }
