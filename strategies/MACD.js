@@ -15,7 +15,7 @@ export default (lastPrice, history) => {
   // }).reverse()
   // get WEMA - SMMA
   let wemaResult = WEMA.calculate({
-    period: 200,
+    period: 100,
     values: input
   }).reverse()
   // get MACD
