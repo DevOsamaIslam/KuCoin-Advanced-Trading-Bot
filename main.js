@@ -42,7 +42,6 @@ let watchlist = [
   'ICP-USDT',
   'VET-USDT',
   'XMR-USDT',
-  'AMP-USDT',
   'COMP-USDT',
   'ZEC-USDT',
   'SNX-USDT',
