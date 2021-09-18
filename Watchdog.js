@@ -58,7 +58,7 @@ export default class Watchdog {
     // loop through all new tickers and check if their trading status (enableTrading) changed to true
     for (const pair of this.untradeables) {
       let status = this.allUsdtTickers.find(tick => tick.symbol == pair.symbol).enableTrading
-      if (status) continue
+      if (!status) continue
 
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       this.equity = await getEquity('USDT')
