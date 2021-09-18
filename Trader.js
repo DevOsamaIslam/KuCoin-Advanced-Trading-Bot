@@ -1,5 +1,6 @@
 import api from './main.js'
 import {
+  calcPerc,
   getOrder,
 } from './config/utils.js'
 import log, {
@@ -91,6 +92,7 @@ export default class Trader {
   }
 
   stopOrder() {
+    this.setTP()
     let decimals = this.tickerInfo.baseIncrement.split('.')[1].length || 4
     let dealSize = parseFloat(this.activeOrder.dealSize).toFixed(decimals - 1)
     // stop loss
@@ -151,6 +153,14 @@ export default class Trader {
             data: [`Something went wrong while setting a take profit: ${order.msg}`]
           });
       })
+  }
+
+  setTP() {
+    let price = this.activeOrder.dealFunds / this.activeOrder.dealSize
+    let SLP = calcPerc(SL, price)
+    let TPP = Math.abs(SLP) * this.order.rr
+    this.order.TP = price * (TPP / 100 + 1)
+    return TP
   }
 
   startDynamicTPSL() {

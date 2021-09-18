@@ -101,14 +101,7 @@ export const getHistory = async (pair, tf, lookbackPeriods) => {
 }
 
 export const defineOrder = (equity, pair, history, rr) => {
-  /*
-    check the last 20 candles and get the lowest price (getLowestPriceHistory)
-    Then get the RR from the environment variable and calculate the Take Profit price
 
-    Returns:
-    - Stop Loss
-    - Take Profit
-  */
   let SL = 0
   let lbPeriod = 20
   do {
@@ -123,17 +116,11 @@ export const defineOrder = (equity, pair, history, rr) => {
     lbPeriod += 10
   } while (SL >= parseFloat(pair.sell) * 0.995)
 
-  let SLP = calcPerc(SL, pair.sell)
-  let TPP = Math.abs(SLP) * rr
-  let TP = pair.sell * (TPP / 100 + 1)
-
   return {
     currentPrice: pair.sell,
-    SLP,
     SL,
-    TPP,
-    TP,
     size: equity * 0.05,
+    rr,
     type: 'market'
   }
 }
