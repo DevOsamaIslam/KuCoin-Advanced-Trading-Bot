@@ -17,36 +17,39 @@ export const isSufficient = async () => await getBalance() > 10
 
 export const getTickerInfo = (pair, allUsdtTickers) => allUsdtTickers.find(tick => tick.symbol === pair.symbol)
 
+export const getTicker = async symbol => {
+  let ticker = await asyncHandler(api.rest.Market.Symbols.getTicker(symbol))
+  if (ticker) {
+    ticker.data.symbol = symbol
+    return ticker.data
+  } else return false
+}
+
 export const getAllUsdtPairs = async () => {
   let allUsdtTickers = await asyncHandler(api.rest.Market.Symbols.getAllTickers())
   if (allUsdtTickers) return allUsdtTickers.data.ticker.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith('USDT'))
   else return false
 }
-
 export const getAllUsdtTickers = async () => {
   let allUsdtTickers = await asyncHandler(api.rest.Market.Symbols.getSymbolsList())
   if (allUsdtTickers) return allUsdtTickers.data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith('USDT'))
   else return false
 }
-
 export const getPrice = async pair => {
   let data = await asyncHandler(api.rest.Market.Symbols.getTicker(pair))
   if (data) return data.price
   else return false
 }
-
 export const getOrder = async id => {
   let data = await asyncHandler(api.rest.Trade.Orders.getOrderByID(id))
   if (data) return data.data
   else return false
 }
-
 export const getLastPrice = async pair => {
   let data = await asyncHandler(api.rest.Market.Symbols.getTicker(pair))
   if (data) return data.data.price
   else return false
 }
-
 export const getBalance = async () => (
   await asyncHandler(api.rest.User.Account.getAccountsList({
     type: 'trade',
@@ -114,10 +117,10 @@ export const defineOrder = (equity, pair, history, rr) => {
     })
     SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0]
     lbPeriod += 10
-  } while (SL >= parseFloat(pair.sell) * 0.995)
+  } while (SL >= parseFloat(pair.bestAsk) * 0.995)
 
   return {
-    currentPrice: pair.sell,
+    currentPrice: pair.bestAsk,
     SL,
     size: equity * 0.05,
     rr,

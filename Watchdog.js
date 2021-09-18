@@ -10,7 +10,8 @@ import {
   getAllUsdtPairs,
   getAllUsdtTickers,
   getTickerInfo,
-  getEquity
+  getEquity,
+  getTicker
 } from './config/utils.js'
 
 import log from './log.js'
@@ -37,7 +38,6 @@ export default class Watchdog {
         return
       }
       this.usdtPairs = data
-      this.watchlist = this.usdtPairs.filter(pair => watchlist.includes(pair.symbol))
 
       // strategies
 
@@ -116,7 +116,12 @@ export default class Watchdog {
         console.log('checking MACD strategy...');
         count = 0
       }
-      let pair = watchlist[count]
+      let pair = await getTicker(watchlist[count])
+      if (!pair) {
+        log(`Pair not found: ${watchlist[count]}`)
+        count++
+        return
+      }
       // get that pair's information
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       // if the exclusion list is more than half the watchlist, remove the first element
@@ -128,16 +133,18 @@ export default class Watchdog {
       }
       let history = await getHistory(pair, this.tf, 201)
       if (!history || history.length < 200) {
+        log(`Unable to pull history or not enough data: ${typeof history}`)
         count++
         return
       }
 
       // check if the set up matches MACD strategy
       console.log(`Checking ${pair.symbol}`);
-      let signal = strategy.MACD(pair.sell, history)
+      let signal = strategy.MACD(pair.bestAsk, history)
       if (signal) {
         let balance = await isSufficient()
         if (!balance) {
+          log(`Insufficient balance!`)
           count++
           return
         }
@@ -146,6 +153,7 @@ export default class Watchdog {
         // create an order
         let order = defineOrder(this.equity, pair, history, 1.5)
         if (!order) {
+          log(`Error while setting the order for ${pair.symbol}`)
           count++
           return
         }
@@ -181,13 +189,6 @@ export default class Watchdog {
       //   continue
       // }
       count++
-      if (this.excluded.length > watchlist.length / 2) {
-        this.excluded.shift()
-        this.excluded.shift()
-        this.excluded.shift()
-        this.excluded.shift()
-      }
-
     }, 1000 * 5);
 
   }
