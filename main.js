@@ -42,7 +42,6 @@ let watchlist = [
   'ICP-USDT',
   'VET-USDT',
   'XMR-USDT',
-  'AAXS-USDT',
   'AMP-USDT',
   'COMP-USDT',
   'ZEC-USDT',
@@ -50,6 +49,14 @@ let watchlist = [
   'BAT-USDT',
   'TEL-USDT',
   'ZEN-USDT',
+  'HBAR-USDT',
+  'FLOW-USDT',
+  'DYDX-USDT',
+  'UNI-USDT',
+  'HBAR-USDT',
+  'IOST-USDT',
+  'NEO-USDT',
+  'XLM-USDT',
 ]
 
 export const timeframes = [{
