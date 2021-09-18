@@ -157,7 +157,7 @@ export default class Trader {
 
   setTP() {
     let price = this.activeOrder.dealFunds / this.activeOrder.dealSize
-    let SLP = calcPerc(SL, price)
+    let SLP = calcPerc(this.order.SL, price)
     let TPP = Math.abs(SLP) * this.order.rr
     this.order.TP = price * (TPP / 100 + 1)
     return TP
