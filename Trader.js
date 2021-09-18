@@ -160,7 +160,7 @@ export default class Trader {
     let SLP = calcPerc(this.order.SL, price)
     let TPP = Math.abs(SLP) * this.order.rr
     this.order.TP = price * (TPP / 100 + 1)
-    return TP
+    return this.order.TP
   }
 
   startDynamicTPSL() {
