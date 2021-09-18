@@ -112,6 +112,10 @@ export default class Watchdog {
     // loop through the watchlist and check the vol of each pair
     let count = 0
     setInterval(async () => {
+      if (count >= watchlist.length) {
+        console.log('checking MACD strategy...');
+        count = 0
+      }
       let pair = watchlist[count]
       // get that pair's information
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
@@ -177,10 +181,6 @@ export default class Watchdog {
       //   continue
       // }
       count++
-      if (count >= watchlist.length) {
-        console.log('checking MACD strategy...');
-        count = 0
-      }
       if (this.excluded.length > watchlist.length / 2) {
         this.excluded.shift()
         this.excluded.shift()
