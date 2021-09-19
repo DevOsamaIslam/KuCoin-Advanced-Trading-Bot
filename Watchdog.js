@@ -1,6 +1,4 @@
-import {
-  appendFileSync,
-} from 'fs'
+import settings from './config/settings.js'
 
 import Trader from './Trader.js'
 import {
@@ -16,18 +14,14 @@ import {
 
 import log from './log.js'
 
-import {
-  timeframes
-} from './main.js'
-
 import strategy from './strategies/index.js'
 
 import api from './main.js'
 
 export default class Watchdog {
-  constructor(equity, watchlist, tf) {
-    this.watchlist = watchlist
-    this.tf = tf
+  constructor(equity) {
+    this.watchlist = settings.watchlist
+    this.tf = settings.tf
     this.equity = equity
     this.excluded = []
 
@@ -39,11 +33,6 @@ export default class Watchdog {
       }
       this.usdtPairs = data
 
-      // strategies
-
-      // Watch for new pairs
-      this.watchNewPair()
-
       // monitor watchlist
       this.monitor(this.watchlist)
 
@@ -51,61 +40,60 @@ export default class Watchdog {
       // this.volSpike(this.usdtPairs)
     })
   }
-  async watchNewPair() {
-    console.log('monitoring new pairs...');
-    this.allUsdtTickers = await getAllUsdtTickers()
-    this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
-    // loop through all new tickers and check if their trading status (enableTrading) changed to true
-    for (const pair of this.untradeables) {
-      let status = this.allUsdtTickers.find(tick => tick.symbol == pair.symbol).enableTrading
-      if (!status) continue
-      console.log(`New Pair found: ${pair.symbol}`);
-      let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
-      this.equity = await getEquity('USDT')
-      this.monitorNew(pair, tickerInfo)
+  // async watchNewPair() {
+  //   console.log('monitoring new pairs...');
+  //   this.allUsdtTickers = await getAllUsdtTickers()
+  //   if (!this.allUsdtTickers)
+  //     return
+  //   this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
+  //   // loop through all new tickers and check if their trading status (enableTrading) changed to true
+  //   for (const pair of this.untradeables) {
+  //     let status = this.allUsdtTickers.find(tick => tick.symbol == pair.symbol).enableTrading
+  //     if (!status) continue
+  //     console.log(`New Pair found: ${pair.symbol}`);
+  //     let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
+  //     this.equity = await getEquity('USDT')
+  //     this.monitorNew(pair, tickerInfo)
 
-    }
-    // wait for one minute to check again for new pairs
-    setTimeout(async () => {
-      this.watchNewPair()
-    }, 60 * 1000);
+  //   }
+  //   // wait for one minute to check again for new pairs
+  //   setTimeout(() => this.watchNewPair(), 60 * 1000);
 
-  }
+  // }
 
-  async monitorNew(pair, tickerInfo) {
-    // monitor new pair
-    const datafeed = new api.websocket.Datafeed();
-    // connect
-    datafeed.connectSocket();
-    const topic = `/market/ticker:${pair.symbol}`;
-    let callbackId = datafeed.subscribe(topic, (message) => {
-      let feed = message.data
-      console.log(`Trying to buy ${pair.symbol}...`);
-      log(`Trying to buy ${pair.symbol}...`);
-      if (feed.bestAsk > 0) {
-        console.log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
-        let dynamicTPSL = {
-          TP: feed.bestAsk * 1.3,
-          SL: feed.bestAsk * 0.8,
-        }
-        let order = {
-          size: this.equity * 0.5,
-          currentPrice: parseFloat(feed.bestAsk * 1.1).toFixed(feed.bestAsk.split('.')[1].length),
-          type: 'limit',
-        }
-        new Trader({
-          pair,
-          order,
-          tf: this.tf,
-          tickerInfo,
-          isNewPair: true,
-          dynamicTPSL,
-          strategy: 'Sniper'
-        })
-        datafeed.unsubscribe(topic, callbackId);
-      }
-    });
-  }
+  // async monitorNew(pair, tickerInfo) {
+  //   // monitor new pair
+  //   const datafeed = new api.websocket.Datafeed();
+  //   // connect
+  //   datafeed.connectSocket();
+  //   const topic = `/market/ticker:${pair.symbol}`;
+  //   let callbackId = datafeed.subscribe(topic, (message) => {
+  //     let feed = message.data
+  //     log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
+  //     if (feed.bestAsk > 0) {
+  //       log(`Trying to buy ${pair.symbol}...`);
+  //       let dynamicTPSL = {
+  //         TP: feed.bestAsk * settings.strategies.SNIPER.params.TPP,
+  //         SL: feed.bestAsk * settings.strategies.SNIPER.params.SLP,
+  //       }
+  //       let order = {
+  //         size: this.equity * settings.strategies.SNIPER.params.risk,
+  //         currentPrice: parseFloat(feed.bestAsk * 1.1).toFixed(feed.bestAsk.split('.')[1].length),
+  //         type: 'limit',
+  //       }
+  //       new Trader({
+  //         pair,
+  //         order,
+  //         tf: this.tf,
+  //         tickerInfo,
+  //         isNewPair: true,
+  //         dynamicTPSL,
+  //         strategy: 'Sniper'
+  //       })
+  //       datafeed.unsubscribe(topic, callbackId);
+  //     }
+  //   });
+  // }
 
 
 
@@ -129,9 +117,10 @@ export default class Watchdog {
         count++
         return
       }
-      let history = await getHistory(pair, this.tf, 101)
-      if (!history || history.length < 100) {
-        log(`Unable to pull history or not enough data for ${pair.symbol}: ${typeof history}`)
+      let history = await getHistory(pair, this.tf, settings.strategies.lookbackPeriod + 1)
+      if (!history || history.length < settings.strategies.lookbackPeriod) {
+        if (!history) log(`Unable to pull history for ${pair.symbol}`)
+        if (history.length < settings.strategies.lookbackPeriod) log(`Data not enough for ${pair.symbol}: ${history.length}`)
         count++
         return
       }
@@ -149,7 +138,7 @@ export default class Watchdog {
         log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
 
         // create an order
-        let order = defineOrder(this.equity, pair, history, 1.5)
+        let order = defineOrder(this.equity, pair, history, settings.strategies.MACD.params.rr)
         if (!order) {
           log(`Error while setting the order for ${pair.symbol}`)
           count++
@@ -165,27 +154,6 @@ export default class Watchdog {
         // exclude from watchlist
         this.excluded.push(pair.symbol)
       }
-
-      // // check if the set up matches VWAP strategy
-      // signal = strategy.VWAP(pair.sell, history)
-      // if (signal) {
-      //   console.log(`\nVWAP strategy gives the green light to buy ${pair.symbol} at $${pair.sell} - ${new Date()} on ${timeframes[timeframes.indexOf(this.tf) + 2].text} timeframe\n`);
-      //   appendFileSync(`./records/VWAP/buy ${pair.symbol} at ${pair.sell} on ${timeframes[timeframes.indexOf(this.tf) + 2].text} timeframe.json`, JSON.stringify(history));
-
-      //   // buy it
-      //   let order = await defineOrder(this.equity, pair, timeframes[timeframes.indexOf(this.tf) + 2], 1.5)
-      //   if (!order) continue
-      //   new Trader({
-      //     pair,
-      //     order,
-      //     tf: timeframes[timeframes.indexOf(this.tf) + 2],
-      //     tickerInfo,
-      //     strategy: 'VWAP'
-      //   })
-      //   // exclude from watchlist
-      //   this.excluded.push(pair.symbol)
-      //   continue
-      // }
       count++
     }, 1000 * 5);
 
@@ -197,13 +165,13 @@ export default class Watchdog {
     for (let pair of usdtTickers) {
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       if (this.excluded.includes(pair.symbol)) continue
-      let history = await getHistory(pair, timeframes[timeframes.indexOf(this.tf) + 4], 51)
+      let history = await getHistory(pair, this.tf, 51)
       if (!history || history.length < 50) continue
 
       // check if the set up matches Ride The Wave (RTW) strategy
       let signal = strategy.RTW(history)
       if (signal) {
-        log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${timeframes[timeframes.indexOf(this.tf) + 4].text} timeframe`);
+        log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
         // buy it
         let order = defineOrder(this.equity, pair, history, 1.5)
         if (!order) continue
