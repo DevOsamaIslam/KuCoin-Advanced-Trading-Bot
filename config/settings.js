@@ -101,7 +101,7 @@ export default {
   ],
   "tf": timeframes[2],
   "strategies": {
-    "lookbackPeriod": 100,
+    "lookbackPeriod": 200,
     "MACD": {
       "enable": true,
       "params": {

@@ -11,7 +11,7 @@ let {
 
 export default (lastPrice, history) => {
   // history.reverse()
-  let input = history.map(candle => parseFloat(candle[2]))
+  let input = history.map(candle => parseFloat(candle[2])).reverse()
 
   // // get EMA
   // let emaResult = EMA.calculate({
@@ -20,13 +20,11 @@ export default (lastPrice, history) => {
   // }).reverse()
   // get WEMA - SMMA
   let wemaResult = WEMA.calculate({
-    reversedInput: true,
     period: strategies.MACD.params.ma.period,
     values: input
   }).reverse()
   // get MACD
   let macdResult = MACD.calculate({
-    reversedInput: true,
     values: input,
     fastPeriod: strategies.MACD.params.fastPeriod,
     slowPeriod: strategies.MACD.params.slowPeriod,
