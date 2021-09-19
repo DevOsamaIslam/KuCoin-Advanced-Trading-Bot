@@ -33,6 +33,8 @@ export default (lastPrice, history) => {
 
   // cross && console.log(`EMA: ${wemaResult[0]}`);
 
+  wemaResult[1] *= 1.008
+
   let overEMA = wemaResult[1] < lastPrice
 
   return overEMA && cross && lastMACD
