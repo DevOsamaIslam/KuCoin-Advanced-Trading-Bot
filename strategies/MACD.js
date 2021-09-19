@@ -37,7 +37,7 @@ export default (lastPrice, history) => {
   let lastMACD = macd[1] < 0
 
   // hot fixing the deviation in WEMA
-  wemaResult[1] *= 1.008
+  wemaResult[1] *= 1.0008
 
   let overEMA = wemaResult[1] < lastPrice
 
