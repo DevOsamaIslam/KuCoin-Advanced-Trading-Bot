@@ -59,7 +59,7 @@ export default class Watchdog {
     for (const pair of this.untradeables) {
       let status = this.allUsdtTickers.find(tick => tick.symbol == pair.symbol).enableTrading
       if (!status) continue
-
+      console.log(`New Pair found: ${pair.symbol}`);
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       this.equity = await getEquity('USDT')
       this.monitorNew(pair, tickerInfo)
@@ -81,6 +81,7 @@ export default class Watchdog {
     let callbackId = datafeed.subscribe(topic, (message) => {
       let feed = message.data
       console.log(`Trying to buy ${pair.symbol}...`);
+      log(`Trying to buy ${pair.symbol}...`);
       if (feed.bestAsk > 0) {
         console.log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
         let dynamicTPSL = {
@@ -112,10 +113,7 @@ export default class Watchdog {
     // loop through the watchlist and check the vol of each pair
     let count = 0
     setInterval(async () => {
-      if (count >= watchlist.length) {
-        console.log('checking MACD strategy...');
-        count = 0
-      }
+      if (count >= watchlist.length) count = 0
       let pair = await getTicker(watchlist[count])
       if (!pair) {
         log(`Pair not found: ${watchlist[count]}`)
@@ -139,7 +137,7 @@ export default class Watchdog {
       }
 
       // check if the set up matches MACD strategy
-      console.log(`Checking ${pair.symbol}`);
+      console.log(`checking ${pair.symbol}`);
       let signal = strategy.MACD(pair.bestAsk, history)
       if (signal) {
         let balance = await isSufficient()
