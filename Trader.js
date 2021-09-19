@@ -72,7 +72,7 @@ export default class Trader {
 
   async sell(options) {
     api.rest.Trade.Orders.postOrder({
-      clientOid: `Sell_${this.pair.symbol}_at_${Date.now()}`,
+      clientOid: `Sell_${this.activeOrder.id}`,
       side: 'sell',
       symbol: this.pair.symbol,
       type: options.type || 'market',
@@ -82,10 +82,18 @@ export default class Trader {
       price: options.price
     }).then(order => {
       if (order.data) {
-        log(`Sold ${Math.floor(this.activeOrder.dealSize)} of ${this.pair.symbol} (${order.data.orderId})`)
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          data: [`Sold ${Math.floor(this.activeOrder.dealSize)} (${order.data.orderId})`]
+        });
         return true
       } else {
-        log(`Something went wrong while selling: ${order.msg}`)
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          data: [`Something went wrong while selling: ${order.msg}`]
+        });
         return false
       }
     })
@@ -98,7 +106,7 @@ export default class Trader {
     // stop loss
     if (this.order.SL)
       api.rest.Trade.StopOrder.postStopOrder({
-        clientOid: `SLSell_${this.pair.symbol}_at_${Date.now()}`,
+        clientOid: `SL_${this.activeOrder.id}`,
         side: 'sell',
         symbol: this.pair.symbol,
         type: 'market',
@@ -127,7 +135,7 @@ export default class Trader {
     // take profit
     if (this.order.TP)
       api.rest.Trade.StopOrder.postStopOrder({
-        clientOid: `TPSell_${this.pair.symbol}_at_${Date.now()}`,
+        clientOid: `TP_${this.activeOrder.id}`,
         side: 'sell',
         symbol: this.pair.symbol,
         type: 'market',
