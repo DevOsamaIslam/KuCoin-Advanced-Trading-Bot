@@ -117,7 +117,7 @@ export default class Watchdog {
         count++
         return
       }
-      let history = await getHistory(pair, this.tf, settings.strategies.lookbackPeriod + 1)
+      let history = await getHistory(pair, this.tf, settings.strategies.lookbackPeriod + 5)
       if (!history || history.length < settings.strategies.lookbackPeriod) {
         if (!history) log(`Unable to pull history for ${pair.symbol}`)
         if (history.length < settings.strategies.lookbackPeriod) log(`Data not enough for ${pair.symbol}: ${history.length}`)
