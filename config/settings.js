@@ -109,8 +109,8 @@ export default {
         "slowPeriod": 13, // default 26
         "signalPeriod": 4, // default 9
         "ma": {
-          "type": "wema",
-          "period": 100,
+          "type": "ema",
+          "period": 200,
           "isOver": true
         },
         "rr": 1.5
