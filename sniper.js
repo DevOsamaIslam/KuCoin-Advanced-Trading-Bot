@@ -40,8 +40,8 @@ const monitorNew = async (pair, tickerInfo, equity) => {
     if (feed.bestAsk > 0) {
       log(`Trying to buy ${pair.symbol}...`);
       let dynamicTPSL = {
-        TP: feed.bestAsk * settings.strategies.SNIPER.params.TPP,
-        SL: feed.bestAsk * settings.strategies.SNIPER.params.SLP,
+        TPP: settings.strategies.SNIPER.params.TPP,
+        SLP: settings.strategies.SNIPER.params.SLP,
       }
       let order = {
         size: equity * settings.strategies.SNIPER.params.risk,
