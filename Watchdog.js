@@ -114,7 +114,6 @@ export default class Watchdog {
       if (!history || history.length < 50) continue
 
       // check if the set up matches Ride The Wave (RTW) strategy
-      console.log(`checking volume spike of ${pair.symbol}...`);
       let signal = strategy.RTW(history)
       if (signal) {
         log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
