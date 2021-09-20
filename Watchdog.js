@@ -107,7 +107,8 @@ export default class Watchdog {
   async volSpike(pairs) {
     // loop through the USDT pairs and check the vol of each pair
     for (let pair of pairs) {
-      pair = await getTicker(pair.symbol)
+      pair = await getTicker(pair)
+      if (!pair) continue
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       if (this.excluded.includes(pair.symbol)) continue
       let history = await getHistory(pair, this.tf, 51)
