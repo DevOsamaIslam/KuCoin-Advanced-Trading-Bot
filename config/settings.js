@@ -105,9 +105,9 @@ export default {
     "MACD": {
       "enable": true,
       "params": {
-        "fastPeriod": 12,
-        "slowPeriod": 26,
-        "signalPeriod": 9,
+        "fastPeriod": 6, // default 12
+        "slowPeriod": 13, // default 26
+        "signalPeriod": 4, // default 9
         "ma": {
           "type": "wema",
           "period": 100,
