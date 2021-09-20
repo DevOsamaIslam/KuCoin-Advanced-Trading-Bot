@@ -37,64 +37,9 @@ export default class Watchdog {
       this.monitor(this.watchlist)
 
       // monitor for volume spike
-      // this.volSpike(this.usdtPairs)
+      this.volSpike(this.usdtPairs)
     })
   }
-  // async watchNewPair() {
-  //   console.log('monitoring new pairs...');
-  //   this.allUsdtTickers = await getAllUsdtTickers()
-  //   if (!this.allUsdtTickers)
-  //     return
-  //   this.untradeables = this.allUsdtTickers.filter(ticker => !ticker.enableTrading)
-  //   // loop through all new tickers and check if their trading status (enableTrading) changed to true
-  //   for (const pair of this.untradeables) {
-  //     let status = this.allUsdtTickers.find(tick => tick.symbol == pair.symbol).enableTrading
-  //     if (!status) continue
-  //     console.log(`New Pair found: ${pair.symbol}`);
-  //     let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
-  //     this.equity = await getEquity('USDT')
-  //     this.monitorNew(pair, tickerInfo)
-
-  //   }
-  //   // wait for one minute to check again for new pairs
-  //   setTimeout(() => this.watchNewPair(), 60 * 1000);
-
-  // }
-
-  // async monitorNew(pair, tickerInfo) {
-  //   // monitor new pair
-  //   const datafeed = new api.websocket.Datafeed();
-  //   // connect
-  //   datafeed.connectSocket();
-  //   const topic = `/market/ticker:${pair.symbol}`;
-  //   let callbackId = datafeed.subscribe(topic, (message) => {
-  //     let feed = message.data
-  //     log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
-  //     if (feed.bestAsk > 0) {
-  //       log(`Trying to buy ${pair.symbol}...`);
-  //       let dynamicTPSL = {
-  //         TP: feed.bestAsk * settings.strategies.SNIPER.params.TPP,
-  //         SL: feed.bestAsk * settings.strategies.SNIPER.params.SLP,
-  //       }
-  //       let order = {
-  //         size: this.equity * settings.strategies.SNIPER.params.risk,
-  //         currentPrice: parseFloat(feed.bestAsk * 1.1).toFixed(feed.bestAsk.split('.')[1].length),
-  //         type: 'limit',
-  //       }
-  //       new Trader({
-  //         pair,
-  //         order,
-  //         tf: this.tf,
-  //         tickerInfo,
-  //         isNewPair: true,
-  //         dynamicTPSL,
-  //         strategy: 'Sniper'
-  //       })
-  //       datafeed.unsubscribe(topic, callbackId);
-  //     }
-  //   });
-  // }
-
 
 
   async monitor(watchlist) {
@@ -159,16 +104,17 @@ export default class Watchdog {
 
   }
 
-  async volSpike(usdtTickers) {
-    console.log('checking volume spike...');
+  async volSpike(usdtPairs) {
     // loop through the USDT pairs and check the vol of each pair
-    for (let pair of usdtTickers) {
+    for (let pair of usdtPairs) {
+      pair = await getTicker(pair.symbol)
       let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
       if (this.excluded.includes(pair.symbol)) continue
       let history = await getHistory(pair, this.tf, 51)
       if (!history || history.length < 50) continue
 
       // check if the set up matches Ride The Wave (RTW) strategy
+      console.log(`checking volume spike of ${pair.symbol}...`);
       let signal = strategy.RTW(history)
       if (signal) {
         log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
@@ -177,8 +123,8 @@ export default class Watchdog {
         if (!order) continue
         order.size = this.equity * 0.05
         let dynamicTPSL = {
-          TPP: order.TPP,
-          SLP: order.SLP
+          TPP: settings.strategies.SNIPER.params.TPP,
+          SLP: settings.strategies.SNIPER.params.SLP
         }
 
         new Trader({
