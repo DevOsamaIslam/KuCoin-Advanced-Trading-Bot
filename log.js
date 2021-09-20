@@ -11,8 +11,9 @@ export const logStrategy = async options => {
     pair,
     orderId,
     data,
+    fileName
   } = options
 
-  data.forEach(line => appendFileSync(`./records/${strategy.toUpperCase()}/${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${pair.symbol} ${line}\n`))
+  data.forEach(line => appendFileSync(`./records/${strategy.toUpperCase()}/${fileName || moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${pair.symbol} ${line}\n`))
 
 }

@@ -173,15 +173,16 @@ export default class Trader {
 
   startDynamicTPSL() {
     let lastPrice = this.activeOrder.price
-    let boughtPrice = parseFloat(this.activeOrder.dealFunds / this.activeOrder.size)
+    let boughtPrice = parseFloat(this.activeOrder.dealFunds / this.activeOrder.dealSize)
     this.dynamicTPSL.TP = boughtPrice * (this.dynamicTPSL.TPP / 100 + 1)
     this.dynamicTPSL.SL = this.order.SL
     this.dynamicTPSL.height = this.dynamicTPSL.TP - this.dynamicTPSL.SL
     logStrategy({
+      fileName: `${this.pair.symbol}_${this.activeOrder.id}`,
       strategy: this.strategy,
       pair: this.pair,
       orderId: this.activeOrder.id,
-      data: [`Ceiling: $${this.dynamicTPSL.TP}`, `Bought for: $${this.order.currentPrice}`, `Floor: $${this.dynamicTPSL.SL}`]
+      data: [`Ceiling: $${this.dynamicTPSL.TP}`, `Bought for: $${boughtPrice}`, `Floor: $${this.dynamicTPSL.SL}`]
     });
 
     const datafeed = new api.websocket.Datafeed();
@@ -199,6 +200,7 @@ export default class Trader {
 
       if (lastPrice != newPrice) {
         logStrategy({
+          fileName: `${this.pair.symbol}_${this.activeOrder.id}`,
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
@@ -210,6 +212,7 @@ export default class Trader {
         this.dynamicTPSL.TP = newPrice
         this.dynamicTPSL.SL = newPrice - this.dynamicTPSL.height
         logStrategy({
+          fileName: `${this.pair.symbol}_${this.activeOrder.id}`,
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
@@ -217,6 +220,7 @@ export default class Trader {
         });
       } else if (newPrice <= this.dynamicTPSL.SL) {
         logStrategy({
+          fileName: `${this.pair.symbol}_${this.activeOrder.id}`,
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
