@@ -37,7 +37,7 @@ export default class Watchdog {
       this.monitor(this.watchlist)
 
       // monitor for volume spike
-      this.volSpike(this.usdtPairs)
+      this.volSpike(this.watchlist)
     })
   }
 
@@ -118,12 +118,12 @@ export default class Watchdog {
       if (signal) {
         log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
         // buy it
-        let order = defineOrder(this.equity, pair, history, 1.5)
+        let order = defineOrder(this.equity, pair, history, settings.strategies.RTW.params.risk)
         if (!order) continue
-        order.size = this.equity * 0.05
+        order.size = this.equity * settings.strategies.RTW.params.risk
         let dynamicTPSL = {
-          TPP: settings.strategies.SNIPER.params.TPP,
-          SLP: settings.strategies.SNIPER.params.SLP
+          TPP: settings.strategies.RTW.params.TPP,
+          SLP: settings.strategies.RTW.params.SLP
         }
 
         new Trader({
