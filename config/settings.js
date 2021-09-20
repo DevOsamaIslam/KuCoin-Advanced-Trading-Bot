@@ -139,7 +139,10 @@ export default {
       "params": {
         "avgVolumePeriod": 20,
         "priceIncreasePercentage": 3,
-        "volumeIncreasePercentage": 200
+        "volumeIncreasePercentage": 200,
+        "TPP": 1.1,
+        "SLP": 0.95,
+        "risk": 0.05
       }
     }
   }
