@@ -99,7 +99,7 @@ export default {
     "NEO-USDT",
     "XLM-USDT"
   ],
-  "tf": timeframes[3],
+  "tf": timeframes[0],
   "strategies": {
     "lookbackPeriod": 200,
     "MACD": {
