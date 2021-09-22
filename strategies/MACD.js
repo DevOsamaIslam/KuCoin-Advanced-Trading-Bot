@@ -38,5 +38,7 @@ export default (lastPrice, history) => {
   let lastMACD = macd[1] < 0
   let overEMA = emaResult < lastPrice && lastCandle[1] > emaResult
 
+  history.reverse()
+
   return overEMA && cross && lastMACD
 }
