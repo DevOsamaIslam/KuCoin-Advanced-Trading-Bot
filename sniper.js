@@ -41,7 +41,7 @@ const monitorNew = async (pair, tickerInfo, equity) => {
   const topic = `/market/ticker:${pair.symbol}`;
   let callbackId = datafeed.subscribe(topic, (message) => {
     let feed = message.data
-    log(`\n\nNew Pair ${pair.symbol} found..............\n\n`);
+    log(`New Pair ${pair.symbol} found..............`);
     if (feed.bestAsk > 0) {
       log(`Trying to buy ${pair.symbol}...`);
       let dynamicTPSL = {
