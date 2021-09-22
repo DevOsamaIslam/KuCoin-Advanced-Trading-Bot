@@ -1,12 +1,17 @@
 import {
   getAllUsdtTickers,
   getTickerInfo,
-  getEquity
+  getEquity,
+  getDecimalPlaces
 } from './config/utils.js'
 
 import Trader from './Trader.js';
 
 import settings from './config/settings.js';
+
+import api from './main.js'
+
+import log from './log.js'
 
 export default async () => {
   setInterval(async () => {
@@ -25,7 +30,7 @@ export default async () => {
       monitorNew(pair, tickerInfo, equity)
 
     }
-  }, 60 * 1000);
+  }, 1000);
 }
 
 const monitorNew = async (pair, tickerInfo, equity) => {
@@ -45,7 +50,7 @@ const monitorNew = async (pair, tickerInfo, equity) => {
       }
       let order = {
         size: equity * settings.strategies.SNIPER.params.risk,
-        currentPrice: parseFloat(feed.bestAsk * 1.1).toFixed(feed.bestAsk.split('.')[1].length),
+        currentPrice: parseFloat(feed.bestAsk * 1.1).toFixed(getDecimalPlaces(feed.bestAsk)),
         type: 'limit',
       }
       new Trader({
