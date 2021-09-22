@@ -107,17 +107,14 @@ export const defineOrder = (equity, pair, history, rr) => {
 
   let SL = 0
   let lbPeriod = 20
-  do {
-    let atr = ATR.calculate({
-      reversedInput: true,
-      high: history.map(candle => candle[3]),
-      low: history.map(candle => candle[4]),
-      close: history.map(candle => candle[2]),
-      period: 14
-    })
-    SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0]
-    lbPeriod += 10
-  } while (SL >= parseFloat(pair.bestAsk) * 0.995)
+  let atr = ATR.calculate({
+    reversedInput: true,
+    high: history.map(candle => candle[3]),
+    low: history.map(candle => candle[4]),
+    close: history.map(candle => candle[2]),
+    period: 14
+  })
+  SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0]
 
   return {
     currentPrice: pair.bestAsk,
