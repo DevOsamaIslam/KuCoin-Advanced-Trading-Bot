@@ -175,7 +175,7 @@ export default class Trader {
     let lastPrice = this.activeOrder.price
     let boughtPrice = parseFloat(this.activeOrder.dealFunds / this.activeOrder.dealSize)
     this.dynamicTPSL.TP = boughtPrice * (this.dynamicTPSL.TPP / 100 + 1)
-    this.dynamicTPSL.SL = this.order.SL
+    this.dynamicTPSL.SL = boughtPrice * (this.dynamicTPSL.SLP / 100 - 1)
     this.dynamicTPSL.height = this.dynamicTPSL.TP - this.dynamicTPSL.SL
     logStrategy({
       fileName: `${this.pair.symbol}_${this.activeOrder.id}`,
