@@ -12,7 +12,9 @@ import {
   getTicker
 } from './config/utils.js'
 
-import log from './log.js'
+import log, {
+  err
+} from './log.js'
 
 import strategy from './strategies/index.js'
 
@@ -49,7 +51,7 @@ export default class Watchdog {
       if (count >= watchlist.length) count = 0
       let pair = await getTicker(watchlist[count])
       if (!pair) {
-        log(`Pair not found: ${watchlist[count]}`)
+        err(`Pair not found: ${watchlist[count]}`)
         count++
         return
       }
@@ -64,44 +66,46 @@ export default class Watchdog {
       }
       let history = await getHistory(pair, this.tf, settings.strategies.lookbackPeriod + 5)
       if (!history || history.length < settings.strategies.lookbackPeriod) {
-        if (!history) log(`Unable to pull history for ${pair.symbol}`)
-        if (history.length < settings.strategies.lookbackPeriod) log(`Data not enough for ${pair.symbol}: ${history.length}`)
+        if (!history) err(`Unable to pull history for ${pair.symbol}`)
+        if (history.length < settings.strategies.lookbackPeriod) err(`Data not enough for ${pair.symbol}: ${history.length}`)
         count++
         return
       }
 
       // check if the set up matches MACD strategy
       console.log(`checking ${pair.symbol}`);
-      let signal = strategy.MACD(pair.bestAsk, history)
-      if (signal) {
-        let balance = await isSufficient()
-        if (!balance) {
-          log(`Insufficient balance!`)
-          count++
-          return
-        }
-        log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
-
-        // create an order
-        let order = defineOrder(this.equity, pair, history, settings.strategies.MACD.params.rr)
-        if (!order) {
-          log(`Error while setting the order for ${pair.symbol}`)
-          count++
-          return
-        }
-        new Trader({
-          pair,
-          order,
-          tf: this.tf,
-          tickerInfo,
-          strategy: 'MACD'
-        })
-        // exclude from watchlist
-        this.excluded.push(pair.symbol)
-      }
+      strategy.MACD(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'MACD')
+      strategy.VWAP(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'VWAP')
       count++
     }, 1000 * 5);
 
+  }
+
+  async enter(pair, tickerInfo, strategy) {
+    let balance = await isSufficient()
+    if (!balance) {
+      log(`Insufficient balance!`)
+      count++
+      return
+    }
+    log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
+
+    // create an order
+    let order = defineOrder(this.equity, pair, history, settings.strategies.MACD.params.rr)
+    if (!order) {
+      err(`Error while setting the order for ${pair.symbol}`)
+      count++
+      return
+    }
+    new Trader({
+      pair,
+      order,
+      tf: this.tf,
+      tickerInfo,
+      strategy
+    })
+    // exclude from watchlist
+    this.excluded.push(pair.symbol)
   }
 
   async volSpike(pairs) {

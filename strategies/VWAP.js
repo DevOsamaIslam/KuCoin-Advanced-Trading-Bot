@@ -1,7 +1,9 @@
 import {
   VWAP,
-  WEMA,
 } from 'technicalindicators'
+import {
+  EMA
+} from 'trading-signals'
 
 import settings from '../config/settings.js'
 
@@ -10,24 +12,25 @@ let {
 } = settings
 
 export default (lastPrice, history) => {
-  let close = history.map(candle => parseFloat(candle[2]))
+  history.reverse()
+  let ema = new EMA(strategies.MACD.params.ma.period)
+  let close = history.map(candle => {
+    // get EMA
+    ema.update(candle[2])
+    return parseFloat(candle[2])
+  })
 
   // get VWAP
   let vwapResult = VWAP.calculate({
-    reversedInput: true,
-    close: close,
+    close,
     high: history.map(candle => parseFloat(candle[3])),
     low: history.map(candle => parseFloat(candle[4])),
-    volume: history.map(candle => parseFloat(candle[5]))
+    volume: history.map(candle => parseFloat(candle[6]))
   })
-  // get EMA
-  let wemaResult = WEMA.calculate({
-    reversedInput: true,
-    period: strategies.VWAP.params.ma.period,
-    values: input
-  }).reverse()
 
-  let overEMA = wemaResult[1] < lastPrice
+  let emaResult = ema.getResult().toNumber()
+
+  let overEMA = emaResult < lastPrice
   let vwapReady = vwapResult[3] > lastPrice && vwapResult[1] < lastPrice
 
   return overEMA && vwapReady
