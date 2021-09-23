@@ -85,7 +85,6 @@ export default class Watchdog {
     let balance = await isSufficient()
     if (!balance) {
       log(`Insufficient balance!`)
-      count++
       return
     }
     log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
@@ -94,7 +93,6 @@ export default class Watchdog {
     let order = defineOrder(this.equity, pair, history, settings.strategies.MACD.params.rr)
     if (!order) {
       err(`Error while setting the order for ${pair.symbol}`)
-      count++
       return
     }
     new Trader({
