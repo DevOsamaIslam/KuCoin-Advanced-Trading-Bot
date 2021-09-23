@@ -50,7 +50,8 @@ export default async () => {
       let tickerInfo = getTickerInfo(pair, allUsdtTickers)
       let equity = await getEquity('USDT')
       monitorNew(pair, tickerInfo, equity)
-
+      untradables.splice(untradables.indexOf(pair), 1)
+      writeFileSync(untradablesPath, JSON.stringify(untradables))
     }
   }, 1000);
 }
