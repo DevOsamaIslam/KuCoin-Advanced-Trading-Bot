@@ -20,7 +20,7 @@ api.rest.User.Account.getAccountsList({
 }).then(data => {
   if (data.data) {
     new Watchdog(data.data[0].available, settings)
-    sniper()
+    // sniper()
   }
 })
 
