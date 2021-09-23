@@ -5,7 +5,7 @@ import moment from 'moment'
 
 export default async data => appendFileSync(`./records/logs/${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
 
-export const err = async () => appendFileSync(`./records/logs/errors_${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
+export const err = async data => appendFileSync(`./records/logs/errors_${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
 
 export const logStrategy = async options => {
   let {

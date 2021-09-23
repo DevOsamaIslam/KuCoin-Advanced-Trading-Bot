@@ -74,14 +74,14 @@ export default class Watchdog {
 
       // check if the set up matches MACD strategy
       console.log(`checking ${pair.symbol}`);
-      strategy.MACD(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'MACD')
-      strategy.VWAP(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'VWAP')
+      strategy.MACD(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'MACD', history)
+      strategy.VWAP(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'VWAP', history)
       count++
     }, 1000 * 5);
 
   }
 
-  async enter(pair, tickerInfo, strategy) {
+  async enter(pair, tickerInfo, strategy, history) {
     let balance = await isSufficient()
     if (!balance) {
       log(`Insufficient balance!`)
