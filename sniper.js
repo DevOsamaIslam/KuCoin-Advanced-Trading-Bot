@@ -36,7 +36,7 @@ export default async () => {
       }
       writeFileSync(untradablesPath, JSON.stringify(untradables))
     }
-  }, 3 * 60 * 1000);
+  }, 60 * 1000);
 
   setInterval(async () => {
 
