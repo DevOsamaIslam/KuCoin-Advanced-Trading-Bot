@@ -27,6 +27,6 @@ const getWinrate = async () => {
 
 }
 
-update().then(() => getWinrate().then(() => exit()))
+getWinrate().then(() => exit())
 
 const exit = () => process.exit()
