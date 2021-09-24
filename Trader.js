@@ -146,7 +146,7 @@ export default class Trader {
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
-          data: [`Stop Loss is ${this.order.SL} (${SLOrder.id})`]
+          data: [`Stop Loss is ${this.order.SL} (${SLOrder.orderId})`]
         })
       } else
         logStrategy({
@@ -177,7 +177,7 @@ export default class Trader {
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
-          data: [`Take Profit is ${this.order.TP} (${TPOrder.id})`]
+          data: [`Take Profit is ${this.order.TP} (${TPOrder.orderId})`]
         })
       } else logStrategy({
         strategy: this.strategy,
