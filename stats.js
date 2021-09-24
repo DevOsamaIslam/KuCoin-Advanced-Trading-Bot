@@ -9,36 +9,7 @@ import {
 
 database.connect
 
-const update = async () => {
-  let orders = await Orders.find({})
-  if (orders) {
-    for (const i in orders) {
-      let order = orders[i]
-      let SLOrder = order.relatedOrders.SL
-      let TPOrder = order.relatedOrders.TP
-      let updatedSL = false
-      let updatedTP = false
 
-      do {
-        if (!updatedSL) updatedSL = await getOrder(SLOrder.id)
-        if (!updatedTP) updatedTP = await getOrder(TPOrder.id)
-      } while (!updatedSL || !updatedTP)
-
-      if (updatedSL.stopTriggered) {
-        order.status = 'SL'
-        order.relatedOrders.SL = updatedSL
-        cancelOrder(order.relatedOrders.TP.id)
-        orders[i].save()
-      } else if (updatedTP.stopTriggered) {
-        order.status = 'TP'
-        order.relatedOrders.TP = updatedTP
-        cancelOrder(order.relatedOrders.SL.id)
-        orders[i].save()
-      }
-    }
-
-  }
-}
 
 const getWinrate = async () => {
   let orders = await Orders.find({

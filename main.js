@@ -1,6 +1,11 @@
 import api from 'kucoin-node-sdk'
 import dotenv from 'dotenv'
 import sniper from './sniper.js'
+import Orders from './records/model.js'
+import {
+  getOrder,
+  cancelOrder
+} from './config/utils.js'
 
 import {
   config,
@@ -23,8 +28,46 @@ api.rest.User.Account.getAccountsList({
   if (data.data) {
     new Watchdog(data.data[0].available, settings)
     // sniper()
+    setInterval(() => {
+      update()
+    }, 60 * 1000);
   }
 })
+
+const update = async () => {
+  let orders = await Orders.find({
+    status: 'ongoing'
+  })
+  if (orders) {
+    for (const i in orders) {
+      let order = orders[i]
+      let SLOrder = order.relatedOrders.SL
+      let TPOrder = order.relatedOrders.TP
+      let updatedSL = false
+      let updatedTP = false
+
+      do {
+        if (!updatedSL) updatedSL = await getOrder(SLOrder.id)
+        if (!updatedTP) updatedTP = await getOrder(TPOrder.id)
+      } while (!updatedSL || !updatedTP)
+
+      if (updatedSL.stopTriggered) {
+        console.log(`Loss on ${order.symbol}`);
+        order.status = 'SL'
+        order.relatedOrders.SL = updatedSL
+        cancelOrder(order.relatedOrders.TP.id)
+        orders[i].save()
+      } else if (updatedTP.stopTriggered) {
+        console.log(`Profit on ${order.symbol}`);
+        order.status = 'TP'
+        order.relatedOrders.TP = updatedTP
+        cancelOrder(order.relatedOrders.SL.id)
+        orders[i].save()
+      }
+    }
+
+  }
+}
 
 
 export default api
