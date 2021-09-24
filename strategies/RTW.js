@@ -14,9 +14,9 @@ let {
 
 export default history => {
   // pull the closing price
-  let prices = history.map(candle => parseFloat(candle[2]))
+  let prices = history.map(candle => parseFloat(candle.close))
   // pull the volume
-  let volume = history.map(candle => parseFloat(candle[6]))
+  let volume = history.map(candle => parseFloat(candle.volume))
   // get average volume of the past 20 candles
   let avgVolume = SMA.calculate({
     period: strategies.RTW.params.avgVolumePeriod,
@@ -34,8 +34,3 @@ export default history => {
     actualPriceChangePercentage >= priceIncreasePercentage // The price increased by at least 5%
   )
 }
-
-
-// console.log(`volumeChange = calcPerc(${volume[0]}, ${avgVolume[1]})`);
-// console.log(`actualPriceChangePercentage = calcPerc(${prices[0]}, ${prices[1]})`);
-// console.log(`${volumeChange} !== Infinity && ${volumeChange} >= ${volumeIncreasePercentage} && ${actualPriceChangePercentage} >= ${priceIncreasePercentage}`);

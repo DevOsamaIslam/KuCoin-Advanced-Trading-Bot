@@ -72,7 +72,7 @@ export default class Watchdog {
         return
       }
 
-      // check if the set up matches MACD strategy
+      // check if the set up matches MACD or VWAP strategy
       console.log(`checking ${pair.symbol}`);
       strategy.MACD(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'MACD', history)
       strategy.VWAP(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'VWAP', history)
@@ -84,10 +84,10 @@ export default class Watchdog {
   async enter(pair, tickerInfo, strategy, history) {
     let balance = await isSufficient()
     if (!balance) {
-      log(`Insufficient balance!`)
+      err(`Insufficient balance!`)
       return
     }
-    log(`MACD strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
+    log(`${strategy} strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
 
     // create an order
     let order = defineOrder(this.equity, pair, history, settings.strategies.MACD.params.rr)

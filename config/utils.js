@@ -4,7 +4,9 @@ import {
 
 import api from '../main.js'
 
-import log from '../log.js'
+import {
+  err
+} from '../log.js'
 
 export const getDecimalPlaces = value => {
   if (typeof value === 'number')
@@ -77,7 +79,7 @@ export const getLowestPriceHistory = history => {
   */
   let lowestPrice = 999999999999
   for (let candle of history) {
-    let low = parseFloat(candle[4])
+    let low = parseFloat(candle.low)
     if (low <= lowestPrice)
       lowestPrice = low
   }
@@ -86,13 +88,12 @@ export const getLowestPriceHistory = history => {
 
 export const getATR = history => {
   let input = {
-    close: history.map(candle => candle[2]),
-    high: history.map(candle => candle[3]),
-    low: history.map(candle => candle[4]),
+    close: history.map(candle => candle.close),
+    high: history.map(candle => candle.high),
+    low: history.map(candle => candle.low),
     period: 14
   }
   let atr = ATR.calculate(input)[0]
-  console.log('atr:', atr);
   return atr
 }
 
@@ -107,7 +108,17 @@ export const getHistory = async (pair, tf, lookbackPeriods) => {
     console.log('getHistory:', data);
     return false
   }
-  return data.data
+  return data.data.map(candle => {
+    candle = {
+      timestamp: candle[0],
+      open: candle[1],
+      close: candle[2],
+      high: candle[3],
+      low: candle[4],
+      volume: candle[6],
+    }
+    return candle
+  })
 }
 
 export const defineOrder = (equity, pair, history, rr) => {
@@ -116,9 +127,9 @@ export const defineOrder = (equity, pair, history, rr) => {
   let lbPeriod = 20
   let atr = ATR.calculate({
     reversedInput: true,
-    high: history.map(candle => candle[3]),
-    low: history.map(candle => candle[4]),
-    close: history.map(candle => candle[2]),
+    high: history.map(candle => candle.high),
+    low: history.map(candle => candle.low),
+    close: history.map(candle => candle.close),
     period: 14
   })
   SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0]
@@ -142,7 +153,7 @@ export const asyncHandler = async fn => {
     }
     return results
   } catch (error) {
-    log(`asyncHandler error: ${JSON.stringify(error)}`);
+    err(`asyncHandler error: ${JSON.stringify(error)}`);
     return false
   }
 }
