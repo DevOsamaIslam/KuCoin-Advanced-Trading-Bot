@@ -78,7 +78,7 @@ export default class Watchdog {
       // check if the set up matches MACD or VWAP strategy
       // console.log(`checking ${pair.symbol}`);
       strategy.MACD(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'MACD', history)
-      strategy.VWAP(pair.bestAsk, vwapHistory, history) && this.enter(pair, tickerInfo, 'VWAP', history)
+      // strategy.VWAP(pair.bestAsk, vwapHistory, history) && this.enter(pair, tickerInfo, 'VWAP', history)
       count++
     }, 1000 * 5);
 
