@@ -1,4 +1,6 @@
-import settings from './config/settings.js'
+import settings, {
+  timeframes
+} from './config/settings.js'
 
 import Trader from './Trader.js'
 import {
@@ -65,6 +67,7 @@ export default class Watchdog {
         return
       }
       let history = await getHistory(pair, this.tf, settings.strategies.lookbackPeriod + 5)
+      let vwapHistory = await getHistory(pair, timeframes[timeframes.indexOf(this.tf) + 2], settings.strategies.lookbackPeriod)
       if (!history || history.length < settings.strategies.lookbackPeriod) {
         if (!history) err(`Unable to pull history for ${pair.symbol}`)
         if (history.length < settings.strategies.lookbackPeriod) err(`Data not enough for ${pair.symbol}: ${history.length}`)
@@ -73,9 +76,9 @@ export default class Watchdog {
       }
 
       // check if the set up matches MACD or VWAP strategy
-      console.log(`checking ${pair.symbol}`);
+      // console.log(`checking ${pair.symbol}`);
       strategy.MACD(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'MACD', history)
-      // strategy.VWAP(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'VWAP', history)
+      strategy.VWAP(pair.bestAsk, vwapHistory, history) && this.enter(pair, tickerInfo, 'VWAP', history)
       count++
     }, 1000 * 5);
 

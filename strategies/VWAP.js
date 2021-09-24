@@ -11,22 +11,26 @@ let {
   strategies
 } = settings
 
-export default (lastPrice, history) => {
+export default (lastPrice, vwapHistory, history) => {
   history.reverse()
   let ema = new EMA(strategies.MACD.params.ma.period)
-  let close = history.map(candle => {
-    // get EMA
-    ema.update(candle.close)
-    return parseFloat(candle.close)
-  })
+  history.map(candle => ema.update(candle.close))
 
   // get VWAP
+  let vwapCandles = []
+  for (const candle of vwapHistory) {
+    let timestamp = candle.timestamp * 1000
+    let date = new Date(timestamp)
+    vwapCandles.push(candle)
+    if (date.getUTCHours() == '16' && date.getMinutes() == '00') break
+  }
   let vwapResult = VWAP.calculate({
-    close,
-    high: history.map(candle => parseFloat(candle.high)),
-    low: history.map(candle => parseFloat(candle.low)),
-    volume: history.map(candle => parseFloat(candle.volume))
-  })
+    reversedInput: true,
+    close: vwapCandles.map(candle => parseFloat(candle.close)),
+    high: vwapCandles.map(candle => parseFloat(candle.high)),
+    low: vwapCandles.map(candle => parseFloat(candle.low)),
+    volume: vwapCandles.map(candle => parseFloat(candle.volume))
+  }).reverse()
 
   history.reverse()
   let lastCandle = history[1]
