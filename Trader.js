@@ -2,6 +2,7 @@ import api from './main.js'
 import {
   calcPerc,
   getOrder,
+  getDecimalPlaces
 } from './config/utils.js'
 import log, {
   logStrategy
@@ -26,7 +27,7 @@ export default class Trader {
 
   async buy() {
     // find the lowest quote increment decimal value
-    let decimals = this.tickerInfo.baseIncrement ? this.tickerInfo.baseIncrement.split('.')[1].length : 4
+    let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
     // get the order size in the base currency (the one you want to buy)
     let size = (this.order.size / (this.pair.bestAsk || this.order.currentPrice)).toFixed(decimals)
     // check if the order size is less-than/equal-to the minimum
@@ -123,7 +124,7 @@ export default class Trader {
     this.setTP()
     let TPOrder = {}
     let SLOrder = {}
-    let decimals = this.tickerInfo.baseIncrement.split('.')[1].length || 4
+    let decimals = getDecimalPlaces(this.tickerInfo.baseIncrement) || 4
     let dealSize = parseFloat(this.activeOrder.dealSize).toFixed(decimals - 1)
     // stop loss
     if (this.order.SL) {
@@ -145,7 +146,7 @@ export default class Trader {
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
-          data: [`Stop Loss is ${this.order.SL} (${SLOrder.id})`]
+          data: [`Stop Loss is ${this.order.SL} (${SLOrder.orderId})`]
         })
       } else
         logStrategy({
@@ -176,7 +177,7 @@ export default class Trader {
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
-          data: [`Take Profit is ${this.order.TP} (${TPOrder.id})`]
+          data: [`Take Profit is ${this.order.TP} (${TPOrder.orderId})`]
         })
       } else logStrategy({
         strategy: this.strategy,
