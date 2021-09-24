@@ -41,18 +41,18 @@ const update = async () => {
 }
 
 const getWinrate = async () => {
-  let lastOrders = await Orders.find({
+  let orders = await Orders.find({
     status: {
       $ne: 'ongoing'
     }
-  }).sort('-1').limit(100).lean()
-  let wonOrders = lastOrders.filter(order => order.status === 'TP')
-  let lostOrders = lastOrders.filter(order => order.status === 'SL')
+  }).sort('-1').limit(300).lean()
+  let wonOrders = orders.filter(order => order.status === 'TP')
+  let lostOrders = orders.filter(order => order.status === 'SL')
 
-  console.log(`No. of trades: ${lastOrders.length}`);
+  console.log(`No. of trades: ${orders.length}`);
   console.log(`Won: ${wonOrders.length}`);
   console.log(`Lost: ${lostOrders.length}`);
-  console.log(`Winning percentage: ${wonOrders.length}%`);
+  console.log(`Winning percentage: ${wonOrders.length / orders.length}%`);
 
 }
 
