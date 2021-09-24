@@ -1,4 +1,9 @@
-let timeframes = [{
+import mongoose from "mongoose"
+
+import log, {
+  err
+} from '../log.js'
+export const timeframes = [{
     "value": 60000,
     "text": "1min"
   },
@@ -51,6 +56,16 @@ let timeframes = [{
     "text": "1week"
   }
 ]
+
+export const database = {
+  connect: mongoose.connect('mongodb://localhost:27017/KuCoinTradingBot', {
+      useNewUrlParser: true,
+    })
+    .then(data => {
+      if (data) log('Connected to the database...')
+    })
+    .catch(error => err(`Database connection: ${error.message}`))
+}
 
 export default {
   "watchlist": [

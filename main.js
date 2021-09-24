@@ -6,13 +6,15 @@ import {
   config,
 } from './config/keys.js'
 import Watchdog from './Watchdog.js'
-import settings from './config/settings.js'
+import settings, {
+  database
+} from './config/settings.js'
 
 dotenv.config()
 
 api.init(config)
 
-
+database.connect
 
 api.rest.User.Account.getAccountsList({
   type: 'trade',

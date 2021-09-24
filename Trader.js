@@ -6,6 +6,7 @@ import {
 import log, {
   logStrategy
 } from './log.js'
+import Orders from './records/model.js'
 
 export default class Trader {
 
@@ -18,12 +19,7 @@ export default class Trader {
     this.dynamicTPSL = options.dynamicTPSL
     this.strategy = options.strategy
     this.buy().then(order => {
-      if (order) {
-        this.activeOrder = order;
-        if (this.dynamicTPSL)
-          this.startDynamicTPSL()
-        else if (this.order.SL || this.order.TP) this.stopOrder()
-      }
+      this.afterBuy(order)
     })
 
   }
@@ -70,6 +66,30 @@ export default class Trader {
     }
   }
 
+  async afterBuy(order) {
+    if (order) {
+      this.activeOrder = order;
+      if (this.dynamicTPSL)
+        this.startDynamicTPSL()
+      else if (this.order.SL || this.order.TP) {
+        let {
+          TPOrder,
+          SLOrder
+        } = await this.stopOrder()
+
+        Orders.create({
+          strategy: this.strategy,
+          data: this.activeOrder,
+          status: 'ongoing',
+          relatedOrders: {
+            SL: SLOrder,
+            TP: TPOrder
+          }
+        })
+      }
+    }
+  }
+
   async sell(options) {
     api.rest.Trade.Orders.postOrder({
       clientOid: `Sell_${this.activeOrder.id}`,
@@ -99,13 +119,15 @@ export default class Trader {
     })
   }
 
-  stopOrder() {
+  async stopOrder() {
     this.setTP()
+    let TPOrder = {}
+    let SLOrder = {}
     let decimals = this.tickerInfo.baseIncrement.split('.')[1].length || 4
     let dealSize = parseFloat(this.activeOrder.dealSize).toFixed(decimals - 1)
     // stop loss
-    if (this.order.SL)
-      api.rest.Trade.StopOrder.postStopOrder({
+    if (this.order.SL) {
+      SLOrder = await api.rest.Trade.StopOrder.postStopOrder({
         clientOid: `SL_${this.activeOrder.id}`,
         side: 'sell',
         symbol: this.pair.symbol,
@@ -116,25 +138,27 @@ export default class Trader {
         remark: `Strategy: ${this.strategy}`
       }, {
         size: dealSize
-      }).then(order => {
-        order.data ?
-          logStrategy({
-            strategy: this.strategy,
-            pair: this.pair,
-            orderId: this.activeOrder.id,
-            data: [`Stop Loss is ${this.order.SL} (${order.data.orderId})`]
-          }) :
-          logStrategy({
-            strategy: this.strategy,
-            pair: this.pair,
-            orderId: this.activeOrder.id,
-            data: [`Something went wrong while setting a stop loss: ${order.msg}`]
-          });
       })
+      if (SLOrder.data) {
+        SLOrder = SLOrder.data
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          orderId: this.activeOrder.id,
+          data: [`Stop Loss is ${this.order.SL} (${SLOrder.id})`]
+        })
+      } else
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          orderId: this.activeOrder.id,
+          data: [`Something went wrong while setting a stop loss: ${order.msg}`]
+        });
+    }
 
     // take profit
-    if (this.order.TP)
-      api.rest.Trade.StopOrder.postStopOrder({
+    if (this.order.TP) {
+      TPOrder = await api.rest.Trade.StopOrder.postStopOrder({
         clientOid: `TP_${this.activeOrder.id}`,
         side: 'sell',
         symbol: this.pair.symbol,
@@ -145,22 +169,28 @@ export default class Trader {
         remark: `Strategy: ${this.strategy}`
       }, {
         size: dealSize
-      }).then(order => {
-        this.TPOrder = order.data
-        order.data ?
-          logStrategy({
-            strategy: this.strategy,
-            pair: this.pair,
-            orderId: this.activeOrder.id,
-            data: [`Take Profit is ${this.order.TP} (${order.data.orderId})`]
-          }) :
-          logStrategy({
-            strategy: this.strategy,
-            pair: this.pair,
-            orderId: this.activeOrder.id,
-            data: [`Something went wrong while setting a take profit: ${order.msg}`]
-          });
       })
+      if (TPOrder.data) {
+        TPOrder = TPOrder.data
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          orderId: this.activeOrder.id,
+          data: [`Take Profit is ${this.order.TP} (${TPOrder.id})`]
+        })
+      } else logStrategy({
+        strategy: this.strategy,
+        pair: this.pair,
+        orderId: this.activeOrder.id,
+        data: [`Something went wrong while setting a take profit: ${order.msg}`]
+      });
+    }
+
+
+    return {
+      TPOrder: await getOrder(TPOrder.orderId),
+      SLOrder: await getOrder(SLOrder.orderId)
+    }
   }
 
   setTP() {

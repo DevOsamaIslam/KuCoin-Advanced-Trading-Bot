@@ -12,6 +12,7 @@
   "dependencies": {
     "kucoin-node-sdk": "^1.0.4",
     "moment": "^2.29.1",
+    "mongoose": "^6.0.7",
     "technicalindicators": "^3.1.0",
     "trading-signals": "^2.3.0"
   },
