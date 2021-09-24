@@ -105,7 +105,6 @@ export const getHistory = async (pair, tf, lookbackPeriods) => {
   // console.log('getting history...');
   let data = await asyncHandler(api.rest.Market.Histories.getMarketCandles(pair.symbol, tf.text, span))
   if (!data.data) {
-    console.log('getHistory:', data);
     return false
   }
   return data.data.map(candle => {
@@ -157,9 +156,6 @@ export const asyncHandler = async fn => {
     return false
   }
 }
-
-
-
 
 
 export default {
