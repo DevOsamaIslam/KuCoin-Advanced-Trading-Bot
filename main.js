@@ -52,13 +52,13 @@ const update = async () => {
       } while (!updatedSL || !updatedTP)
 
       if (updatedSL.stopTriggered) {
-        console.log(`Loss on ${order.symbol}`);
+        console.log(`Loss on ${order.data.symbol}`);
         order.status = 'SL'
         order.relatedOrders.SL = updatedSL
         cancelOrder(order.relatedOrders.TP.id)
         orders[i].save()
       } else if (updatedTP.stopTriggered) {
-        console.log(`Profit on ${order.symbol}`);
+        console.log(`Profit on ${order.data.symbol}`);
         order.status = 'TP'
         order.relatedOrders.TP = updatedTP
         cancelOrder(order.relatedOrders.SL.id)
