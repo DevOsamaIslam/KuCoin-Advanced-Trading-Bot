@@ -15,9 +15,14 @@ const update = async () => {
       let order = orders[i]
       let SLOrder = order.relatedOrders.SL
       let TPOrder = order.relatedOrders.TP
-      let updatedSL = await getOrder(SLOrder.id)
-      let updatedTP = await getOrder(TPOrder.id)
-      if (!updatedSL && !updatedTP) continue
+      let updatedSL = false
+      let updatedTP = false
+
+      do {
+        if (!updatedSL) updatedSL = await getOrder(SLOrder.id)
+        if (!updatedTP) updatedTP = await getOrder(TPOrder.id)
+      } while (!updatedSL || !updatedTP)
+
       if (updatedSL.stopTriggered) {
         order.status = 'SL'
         order.relatedOrders.SL = updatedSL
