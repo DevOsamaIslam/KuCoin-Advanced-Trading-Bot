@@ -54,6 +54,11 @@ export const getOrder = async id => {
   if (data) return data.data
   else return false
 }
+export const cancelOrder = async id => {
+  let data = await asyncHandler(api.rest.Trade.Orders.cancelOrder(id))
+  if (data) return data.data
+  else return false
+}
 export const getLastPrice = async pair => {
   let data = await asyncHandler(api.rest.Market.Symbols.getTicker(pair))
   if (data) return data.data.price

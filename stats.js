@@ -3,7 +3,8 @@ import settings, {
 } from './config/settings.js'
 import Orders from './records/model.js'
 import {
-  getOrder
+  getOrder,
+  cancelOrder
 } from './config/utils.js'
 
 database.connect
@@ -26,11 +27,12 @@ const update = async () => {
       if (updatedSL.stopTriggered) {
         order.status = 'SL'
         order.relatedOrders.SL = updatedSL
+        cancelOrder(order.relatedOrders.TP.id)
         orders[i].save()
-      }
-      if (updatedTP.stopTriggered) {
+      } else if (updatedTP.stopTriggered) {
         order.status = 'TP'
         order.relatedOrders.TP = updatedTP
+        cancelOrder(order.relatedOrders.SL.id)
         orders[i].save()
       }
     }
