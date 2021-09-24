@@ -9,7 +9,7 @@ import {
 database.connect
 
 const update = async () => {
-  let orders = await Orders.find({}).lean()
+  let orders = await Orders.find({})
   if (orders) {
     for (const i in orders) {
       let order = orders[i]
@@ -17,16 +17,16 @@ const update = async () => {
       let TPOrder = order.relatedOrders.TP
       let updatedSL = await getOrder(SLOrder.id)
       let updatedTP = await getOrder(TPOrder.id)
-      if (!updatedSL || !updatedTP) continue
+      if (!updatedSL && !updatedTP) continue
       if (updatedSL.stopTriggered) {
         order.status = 'SL'
         order.relatedOrders.SL = updatedSL
-        order.save()
+        orders[i].save()
       }
       if (updatedTP.stopTriggered) {
         order.status = 'TP'
         order.relatedOrders.TP = updatedTP
-        order.save()
+        orders[i].save()
       }
     }
 
@@ -49,6 +49,6 @@ const getWinrate = async () => {
 
 }
 
-getWinrate().then(() => exit())
+update().then(() => getWinrate().then(() => exit()))
 
 const exit = () => process.exit()
