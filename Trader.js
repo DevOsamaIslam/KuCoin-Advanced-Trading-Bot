@@ -153,7 +153,7 @@ export default class Trader {
           strategy: this.strategy,
           pair: this.pair,
           orderId: this.activeOrder.id,
-          data: [`Something went wrong while setting a stop loss: ${order.msg}`]
+          data: [`Something went wrong while setting a stop loss: ${SLOrder.msg}`]
         });
     }
 
@@ -183,7 +183,7 @@ export default class Trader {
         strategy: this.strategy,
         pair: this.pair,
         orderId: this.activeOrder.id,
-        data: [`Something went wrong while setting a take profit: ${order.msg}`]
+        data: [`Something went wrong while setting a take profit: ${TPOrder.msg}`]
       });
     }
 
