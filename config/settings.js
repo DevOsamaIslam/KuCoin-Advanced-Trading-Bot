@@ -114,7 +114,6 @@ export default {
   ],
   "tf": timeframes[0],
   "strategies": {
-    "lookbackPeriod": 200,
     "MACD": {
       "enable": true,
       "params": {
@@ -128,6 +127,7 @@ export default {
         },
         "rr": 1.5
       },
+      "lookbackPeriod": 200,
     },
     "CMF_MACD": {
       "enable": true,
@@ -138,6 +138,7 @@ export default {
         "length": 20,
         "rr": 1
       },
+      "lookbackPeriod": 200,
     },
     "VWAP": {
       "enable": false,
@@ -147,7 +148,8 @@ export default {
           "period": 100
         },
         "rr": 1.5
-      }
+      },
+      "lookbackPeriod": 1500,
     },
     "SNIPER": {
       "enable": true,
@@ -166,7 +168,8 @@ export default {
         "TPP": 1.1,
         "SLP": 0.95,
         "risk": 0.05
-      }
+      },
+      "lookbackPeriod": 100,
     }
   }
 }

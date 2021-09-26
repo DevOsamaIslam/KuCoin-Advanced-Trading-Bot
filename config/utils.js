@@ -102,7 +102,7 @@ export const getATR = history => {
   return atr
 }
 
-export const getHistory = async (pair, tf, lookbackPeriods) => {
+export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
   let span = {
     startAt: Math.floor((Date.now() - (tf.value * lookbackPeriods)) / 1000),
     endAt: Math.floor(Date.now() / 1000)
@@ -112,7 +112,7 @@ export const getHistory = async (pair, tf, lookbackPeriods) => {
   if (!data.data) {
     return false
   }
-  return data.data.map(candle => {
+  let candle = data.data.map(candle => {
     candle = {
       timestamp: parseInt(candle[0]),
       open: parseFloat(candle[1]),
@@ -123,6 +123,8 @@ export const getHistory = async (pair, tf, lookbackPeriods) => {
     }
     return candle
   })
+  candle.shift()
+  return candle
 }
 
 export const defineOrder = (equity, pair, history, rr) => {

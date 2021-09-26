@@ -16,6 +16,8 @@ import {
 } from './config/utils.js'
 import Orders from './records/model.js'
 
+import api from './main.js'
+
 import log, {
   err
 } from './log.js'
@@ -27,6 +29,10 @@ export default class Watchdog {
     this.equity = options.equity
     this.strategy = options.strategy
     this.excluded = []
+    this.history = []
+    this.datafeed = new api.websocket.Datafeed();
+    // connect
+    this.datafeed.connectSocket();
 
     getAllUsdtPairs().then(async data => {
       this.allUsdtTickers = await getAllUsdtTickers()
@@ -37,71 +43,113 @@ export default class Watchdog {
       this.usdtPairs = data
 
       // monitor watchlist
-      this.monitor(this.watchlist)
+      await this.collectHistory(this.watchlist)
+      for (const pair of this.history) {
+        this.monitor(pair)
+      }
 
       // monitor for volume spike
-      this.volSpike(this.watchlist)
+      // this.volSpike(this.watchlist)
 
       setInterval(() => this.update(), 60 * 1000);
     })
   }
 
-
-  async monitor(watchlist) {
-    // loop through the watchlist and check the vol of each pair
-    let count = 0
-    setInterval(async () => {
-      if (count >= watchlist.length) count = 0
-      let pair = await getTicker(watchlist[count])
+  async collectHistory(watchlist) {
+    while (this.history.length < watchlist.length) {
+      let index = this.history.length
+      let pair = await getTicker(watchlist[index])
       if (!pair) {
         err(`Pair not found: ${watchlist[count]}`)
-        count++
-        return
+        continue
       }
-      // get that pair's information
-      let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
-      // if the exclusion list is more than half the watchlist, remove the first element
-      if (this.excluded.length > watchlist.length / 2) this.excluded.shift()
-      // if the pair was excluded, stop it and move on to the next
-      if (this.excluded.includes(pair.symbol)) {
-        count++
-        return
-      }
-      let history = await getHistory(pair, this.tf, settings.strategies.lookbackPeriod + 5)
-      let vwapHistory = await getHistory(pair, timeframes[timeframes.indexOf(this.tf) + 2], settings.strategies.lookbackPeriod)
-      if (!history || history.length < settings.strategies.lookbackPeriod) {
+      let history = await getHistory(pair, this.tf)
+      if (!history || history.length < 1441) {
         if (!history) err(`Unable to pull history for ${pair.symbol}`)
-        if (history.length < settings.strategies.lookbackPeriod) err(`Data not enough for ${pair.symbol}: ${history.length}`)
-        count++
-        return
+        if (history.length < 1441) err(`Data not enough for ${pair.symbol}: ${history.length}`)
+        continue
       }
+      this.history.push({
+        ...pair,
+        tickerInfo: getTickerInfo(pair, this.allUsdtTickers),
+        history
+      })
+    }
+  }
 
-      // check if the set up matches MACD or VWAP strategy
-      // console.log(`checking ${pair.symbol}`);
-      this.strategy.MACD && this.strategy.MACD(pair.bestAsk, history) && this.enter({
-        pair,
-        tickerInfo,
-        strategy: 'MACD',
-        rr: settings.strategies.MACD.params.rr,
-        history
-      })
-      this.strategy.CMF_MACD && this.strategy.CMF_MACD(history) && this.enter({
-        pair,
-        tickerInfo,
-        strategy: 'CMF+MACD',
-        rr: settings.strategies.CMF_MACD.params.rr,
-        history
-      })
-      this.strategy.VWAP && this.strategy.VWAP(pair.bestAsk, vwapHistory, history) && this.enter({
-        pair,
-        tickerInfo,
-        strategy: 'VWAP',
-        rr: settings.strategies.VWAP.params.rr,
-        history
-      })
-      count++
-    }, 1000 * 5);
+  async monitor(pair) {
+    let openTime = false
+    let lastread = false
 
+    // subscribe
+    const topic = `/market/candles:${pair.symbol}_${this.tf.text}`;
+    this.datafeed.subscribe(topic, message => {
+      let data = message.data.candles
+
+      let candle = {
+        timestamp: parseInt(data[0]),
+        open: parseFloat(data[1]),
+        close: parseFloat(data[2]),
+        high: parseFloat(data[3]),
+        low: parseFloat(data[4]),
+        volume: parseFloat(data[6]),
+      }
+      if (!lastread) lastread = candle
+
+      if (candle.timestamp !== lastread.timestamp) {
+        pair.history.unshift(lastread)
+        console.log(`checking ${pair.symbol}`);
+        if (!this.excluded.includes(pair.symbol)) {
+
+          // check if the MACD strategy is enabled
+          if (this.strategy.MACD) {
+            // enter a trade if the MACD strategy gives the green light and exclude from the watchlist
+            if (this.strategy.MACD(pair.bestAsk, pair.history)) {
+              this.enter({
+                pair,
+                tickerInfo: pair.tickerInfo,
+                strategy: 'MACD',
+                rr: settings.strategies.MACD.params.rr,
+                history: pair.history
+              })
+              this.excluded.push(pair.symbol)
+            }
+          }
+
+          // check if the CMF_MACD strategy is enabled
+          else if (this.strategy.CMF_MACD) {
+            // enter a trade if the CMF_MACD strategy gives the green light and exclude from the watchlist
+            if (this.strategy.CMF_MACD(pair.history)) {
+              this.enter({
+                pair,
+                tickerInfo: pair.tickerInfo,
+                strategy: 'CMF+MACD',
+                rr: settings.strategies.CMF_MACD.params.rr,
+                history: pair.history
+              })
+              this.excluded.push(pair.symbol)
+            }
+          }
+
+          // check if the VWAP strategy is enabled
+          else if (this.strategy.VWAP) {
+            // enter a trade if the VWAP strategy gives the green light and exclude from the watchlist
+            if (this.strategy.VWAP(pair.bestAsk, pair.history)) {
+              this.enter({
+                pair,
+                tickerInfo: pair.tickerInfo,
+                strategy: 'VWAP',
+                rr: settings.strategies.VWAP.params.rr,
+                history: pair.history
+              })
+              this.excluded.push(pair.symbol)
+            }
+          }
+        }
+        lastread = candle
+      } else lastread = candle
+
+    });
   }
 
   async enter(options) {
