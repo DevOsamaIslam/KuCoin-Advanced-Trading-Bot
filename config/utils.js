@@ -114,12 +114,12 @@ export const getHistory = async (pair, tf, lookbackPeriods) => {
   }
   return data.data.map(candle => {
     candle = {
-      timestamp: candle[0],
-      open: candle[1],
-      close: candle[2],
-      high: candle[3],
-      low: candle[4],
-      volume: candle[6],
+      timestamp: parseInt(candle[0]),
+      open: parseFloat(candle[1]),
+      close: parseFloat(candle[2]),
+      high: parseFloat(candle[3]),
+      low: parseFloat(candle[4]),
+      volume: parseFloat(candle[6]),
     }
     return candle
   })

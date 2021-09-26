@@ -129,6 +129,16 @@ export default {
         "rr": 1.5
       },
     },
+    "CMF_MACD": {
+      "enable": true,
+      "params": {
+        "fastPeriod": 12, // default 12
+        "slowPeriod": 26, // default 26
+        "signalPeriod": 9, // default 9
+        "length": 20,
+        "rr": 1
+      },
+    },
     "VWAP": {
       "enable": false,
       "params": {
