@@ -15,6 +15,13 @@ import settings, {
   database
 } from './config/settings.js'
 
+import {
+  MACD,
+  CMF_MACD,
+  RTW,
+  VWAP
+} from './strategies/index.js'
+
 dotenv.config()
 
 api.init(config)
@@ -26,8 +33,13 @@ api.rest.User.Account.getAccountsList({
   currency: 'USDT'
 }).then(data => {
   if (data.data) {
-    new Watchdog(data.data[0].available, settings)
-    // sniper()
+    new Watchdog({
+      equity: data.data[0].available,
+      strategy: {
+        MACD,
+        CMF_MACD
+      }
+    })
     setInterval(() => {
       update()
     }, 60 * 1000);
@@ -45,7 +57,7 @@ const update = async () => {
       let TPOrder = order.relatedOrders.TP
       let updatedSL = false
       let updatedTP = false
-
+      if (!SLOrder || !TPOrder) continue
       do {
         if (!updatedSL) updatedSL = await getOrder(SLOrder.id)
         if (!updatedTP) updatedTP = await getOrder(TPOrder.id)

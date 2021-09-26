@@ -1,15 +1,16 @@
-import MACD from './MACD.js'
-import VWAP from './VWAP.js'
-import PSAR_MACD from './PSAR_MACD.js'
-import Alligator from './Alligator.js'
-import RTW from './RTW.js'
-import sniper from './sniper.js'
+import strategyMACD from './MACD.js'
+import strategyVWAP from './VWAP.js'
+import strategyCMF_MACD from './CMF_MACD.js'
+import strategyRTW from './RTW.js'
+
+export const MACD = strategyMACD
+export const VWAP = strategyVWAP
+export const CMF_MACD = strategyCMF_MACD
+export const RTW = strategyRTW
 
 export default {
   MACD,
   VWAP,
-  PSAR_MACD,
-  Alligator,
+  CMF_MACD,
   RTW,
-  sniper
 }

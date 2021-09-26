@@ -10,7 +10,6 @@ import {
   getAllUsdtPairs,
   getAllUsdtTickers,
   getTickerInfo,
-  getEquity,
   getTicker
 } from './config/utils.js'
 
@@ -18,15 +17,12 @@ import log, {
   err
 } from './log.js'
 
-import strategy from './strategies/index.js'
-
-import api from './main.js'
-
 export default class Watchdog {
-  constructor(equity) {
+  constructor(options) {
     this.watchlist = settings.watchlist
     this.tf = settings.tf
-    this.equity = equity
+    this.equity = options.equity
+    this.strategy = options.strategy
     this.excluded = []
 
     getAllUsdtPairs().then(async data => {
@@ -77,8 +73,9 @@ export default class Watchdog {
 
       // check if the set up matches MACD or VWAP strategy
       // console.log(`checking ${pair.symbol}`);
-      strategy.MACD(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'MACD', history)
-      // strategy.VWAP(pair.bestAsk, vwapHistory, history) && this.enter(pair, tickerInfo, 'VWAP', history)
+      this.strategy.MACD && this.strategy.MACD(pair.bestAsk, history) && this.enter(pair, tickerInfo, 'MACD', history)
+      this.strategy.CMF_MACD && this.strategy.CMF_MACD(history) && this.enter(pair, tickerInfo, 'CMF+MACD', history)
+      this.strategy.VWAP && this.strategy.VWAP(pair.bestAsk, vwapHistory, history) && this.enter(pair, tickerInfo, 'VWAP', history)
       count++
     }, 1000 * 5);
 
@@ -120,7 +117,7 @@ export default class Watchdog {
       if (!history || history.length < 50) continue
 
       // check if the set up matches Ride The Wave (RTW) strategy
-      let signal = strategy.RTW(history)
+      let signal = this.strategy.RTW && this.strategy.RTW(history)
       if (signal) {
         log(`RIDE THE WAVE strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
         // buy it

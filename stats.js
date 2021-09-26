@@ -2,9 +2,6 @@ import settings, {
   database
 } from './config/settings.js'
 import Orders from './records/model.js'
-import {
-  calcPerc,
-} from './config/utils.js'
 
 database.connect
 
