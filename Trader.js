@@ -68,7 +68,7 @@ export default class Trader {
   }
 
   async afterBuy(order) {
-    if (order) {
+    if (order.id) {
       this.activeOrder = order;
       if (this.dynamicTPSL)
         this.startDynamicTPSL()
