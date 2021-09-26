@@ -13,12 +13,12 @@ let {
 } = settings
 
 export default (lastPrice, history) => {
-  let lastCandle = history[0]
+  let lastCandle = history[1]
   history.reverse()
   let ema = new EMA(strategies.MACD.params.ma.period)
   let input = history.map(candle => {
     // get EMA
-    ema.update(candle.close)
+    ema.update(candle.close * 1.005)
     return parseFloat(candle.close)
   })
 
