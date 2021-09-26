@@ -10,8 +10,11 @@ import {
   getAllUsdtPairs,
   getAllUsdtTickers,
   getTickerInfo,
-  getTicker
+  getTicker,
+  getOrder,
+  cancelOrder
 } from './config/utils.js'
+import Orders from './records/model.js'
 
 import log, {
   err
@@ -38,6 +41,8 @@ export default class Watchdog {
 
       // monitor for volume spike
       this.volSpike(this.watchlist)
+
+      setInterval(() => this.update(), 60 * 1000);
     })
   }
 
@@ -167,6 +172,43 @@ export default class Watchdog {
       }
     }
     this.volSpike(this.watchlist)
+  }
+
+  async update() {
+    let orders = await Orders.find({
+      status: 'ongoing'
+    })
+    if (orders) {
+      for (const i in orders) {
+        let order = orders[i]
+        let SLOrder = order.relatedOrders.SL
+        let TPOrder = order.relatedOrders.TP
+        let updatedSL = false
+        let updatedTP = false
+        if (!SLOrder || !TPOrder) continue
+        do {
+          if (!updatedSL) updatedSL = await getOrder(SLOrder.id)
+          if (!updatedTP) updatedTP = await getOrder(TPOrder.id)
+        } while (!updatedSL || !updatedTP)
+
+        if (updatedSL.stopTriggered) {
+          console.log(`Loss on ${order.data.symbol}`);
+          order.status = 'SL'
+          order.relatedOrders.SL = updatedSL
+          cancelOrder(order.relatedOrders.TP.id)
+          this.excluded.splice(this.excluded.indexOf(pair.symbol), 1)
+          orders[i].save()
+        } else if (updatedTP.stopTriggered) {
+          console.log(`Profit on ${order.data.symbol}`);
+          order.status = 'TP'
+          order.relatedOrders.TP = updatedTP
+          cancelOrder(order.relatedOrders.SL.id)
+          this.excluded.splice(this.excluded.indexOf(pair.symbol), 1)
+          orders[i].save()
+        }
+      }
+
+    }
   }
 
 
