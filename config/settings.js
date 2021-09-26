@@ -145,8 +145,8 @@ export default {
         "ma": {
           "type": "wema",
           "period": 100
-        }
-
+        },
+        "rr": 1.5
       }
     },
     "SNIPER": {
