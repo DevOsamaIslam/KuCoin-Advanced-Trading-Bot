@@ -15,10 +15,10 @@ const getWinrate = async () => {
     status: {
       $ne: 'ongoing'
     }
-  }).sort('-1').limit(300).lean()
+  }).sort('-1').lean()
   let wonOrders = orders.filter(order => order.status === 'TP')
   let lostOrders = orders.filter(order => order.status === 'SL')
-  let winRatio = calcPerc(wonOrders, orders.length).toFixed(1)
+  let winRatio = calcPerc(wonOrders.length, orders.length).toFixed(1)
 
   console.log(`No. of trades: ${orders.length}`);
   console.log(`Won: ${wonOrders.length}`);
