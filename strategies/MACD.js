@@ -13,12 +13,12 @@ let {
 } = settings
 
 export default (lastPrice, history) => {
-  let lastCandle = history[1]
+  let lastCandle = history[0]
   history.reverse()
   let ema = new EMA(strategies.MACD.params.ma.period)
   let input = history.map(candle => {
     // get EMA
-    ema.update(candle.close * 1.005)
+    ema.update(candle.close)
     return parseFloat(candle.close)
   })
 
@@ -34,8 +34,8 @@ export default (lastPrice, history) => {
 
   let macd = macdResult.map(point => point.MACD)
   let signal = macdResult.map(point => point.signal)
-  let cross = macd[2] < signal[2] && macd[1] > signal[1]
-  let lastMACD = macd[1] < 0
+  let cross = macd[1] < signal[1] && macd[0] > signal[0]
+  let lastMACD = macd[0] < 0
   let overEMA = emaResult < lastPrice && lastCandle.open > emaResult
 
   history.reverse()
