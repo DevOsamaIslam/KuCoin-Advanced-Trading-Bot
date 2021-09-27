@@ -98,7 +98,7 @@ export default class Watchdog {
 
         if (candle.timestamp !== lastread.timestamp) {
           pair.history.unshift(lastread)
-          // console.log(`checking ${pair.symbol}`);
+          console.log(`checking ${pair.symbol}`);
           if (!this.excluded.includes(pair.symbol)) {
 
             // check if the MACD strategy is enabled
