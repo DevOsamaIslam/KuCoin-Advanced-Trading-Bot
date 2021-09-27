@@ -78,76 +78,78 @@ export default class Watchdog {
   }
 
   async monitor(pair) {
-    let openTime = false
     let lastread = false
 
     // subscribe
     const topic = `/market/candles:${pair.symbol}_${this.tf.text}`;
     this.datafeed.subscribe(topic, message => {
-      let data = message.data.candles
+      if (message.topic === topic) {
+        let data = message.data.candles
 
-      let candle = {
-        timestamp: parseInt(data[0]),
-        open: parseFloat(data[1]),
-        close: parseFloat(data[2]),
-        high: parseFloat(data[3]),
-        low: parseFloat(data[4]),
-        volume: parseFloat(data[6]),
-      }
-      if (!lastread) lastread = candle
-
-      if (candle.timestamp !== lastread.timestamp) {
-        pair.history.unshift(lastread)
-        // console.log(`checking ${pair.symbol}`);
-        if (!this.excluded.includes(pair.symbol)) {
-
-          // check if the MACD strategy is enabled
-          if (this.strategy.MACD) {
-            // enter a trade if the MACD strategy gives the green light and exclude from the watchlist
-            if (this.strategy.MACD(pair.bestAsk, pair.history)) {
-              this.enter({
-                pair,
-                tickerInfo: pair.tickerInfo,
-                strategy: 'MACD',
-                rr: settings.strategies.MACD.params.rr,
-                history: pair.history
-              })
-              this.excluded.push(pair.symbol)
-            }
-          }
-
-          // check if the CMF_MACD strategy is enabled
-          else if (this.strategy.CMF_MACD) {
-            // enter a trade if the CMF_MACD strategy gives the green light and exclude from the watchlist
-            if (this.strategy.CMF_MACD(pair.history)) {
-              this.enter({
-                pair,
-                tickerInfo: pair.tickerInfo,
-                strategy: 'CMF+MACD',
-                rr: settings.strategies.CMF_MACD.params.rr,
-                history: pair.history
-              })
-              this.excluded.push(pair.symbol)
-            }
-          }
-
-          // check if the VWAP strategy is enabled
-          else if (this.strategy.VWAP) {
-            // enter a trade if the VWAP strategy gives the green light and exclude from the watchlist
-            if (this.strategy.VWAP(pair.bestAsk, pair.history)) {
-              this.enter({
-                pair,
-                tickerInfo: pair.tickerInfo,
-                strategy: 'VWAP',
-                rr: settings.strategies.VWAP.params.rr,
-                history: pair.history
-              })
-              this.excluded.push(pair.symbol)
-            }
-          }
+        let candle = {
+          timestamp: parseInt(data[0]),
+          open: parseFloat(data[1]),
+          close: parseFloat(data[2]),
+          high: parseFloat(data[3]),
+          low: parseFloat(data[4]),
+          volume: parseFloat(data[6]),
         }
-        lastread = candle
-      } else lastread = candle
+        if (!lastread) lastread = candle
+
+        if (candle.timestamp !== lastread.timestamp) {
+          pair.history.unshift(lastread)
+          console.log(`checking ${pair.symbol}`);
+          if (!this.excluded.includes(pair.symbol)) {
+
+            // check if the MACD strategy is enabled
+            if (this.strategy.MACD) {
+              // enter a trade if the MACD strategy gives the green light and exclude from the watchlist
+              if (this.strategy.MACD(pair.bestAsk, pair.history)) {
+                this.enter({
+                  pair,
+                  tickerInfo: pair.tickerInfo,
+                  strategy: 'MACD',
+                  rr: settings.strategies.MACD.params.rr,
+                  history: pair.history
+                })
+                this.excluded.push(pair.symbol)
+              }
+            }
+
+            // check if the CMF_MACD strategy is enabled
+            else if (this.strategy.CMF_MACD) {
+              // enter a trade if the CMF_MACD strategy gives the green light and exclude from the watchlist
+              if (this.strategy.CMF_MACD(pair.history)) {
+                this.enter({
+                  pair,
+                  tickerInfo: pair.tickerInfo,
+                  strategy: 'CMF+MACD',
+                  rr: settings.strategies.CMF_MACD.params.rr,
+                  history: pair.history
+                })
+                this.excluded.push(pair.symbol)
+              }
+            }
+
+            // check if the VWAP strategy is enabled
+            else if (this.strategy.VWAP) {
+              // enter a trade if the VWAP strategy gives the green light and exclude from the watchlist
+              if (this.strategy.VWAP(pair.bestAsk, pair.history)) {
+                this.enter({
+                  pair,
+                  tickerInfo: pair.tickerInfo,
+                  strategy: 'VWAP',
+                  rr: settings.strategies.VWAP.params.rr,
+                  history: pair.history
+                })
+                this.excluded.push(pair.symbol)
+              }
+            }
+          }
+          lastread = candle
+        } else lastread = candle
+      }
+
 
     });
   }
@@ -244,14 +246,14 @@ export default class Watchdog {
           order.status = 'SL'
           order.relatedOrders.SL = updatedSL
           cancelOrder(order.relatedOrders.TP.id)
-          this.excluded.splice(this.excluded.indexOf(pair.symbol), 1)
+          this.excluded.splice(this.excluded.indexOf(order.data.symbol), 1)
           orders[i].save()
         } else if (updatedTP.stopTriggered) {
           console.log(`Profit on ${order.data.symbol}`);
           order.status = 'TP'
           order.relatedOrders.TP = updatedTP
           cancelOrder(order.relatedOrders.SL.id)
-          this.excluded.splice(this.excluded.indexOf(pair.symbol), 1)
+          this.excluded.splice(this.excluded.indexOf(order.data.symbol), 1)
           orders[i].save()
         }
       }
