@@ -32,7 +32,7 @@ api.rest.User.Account.getAccountsList({
       equity: data.data[0].available,
       strategy: {
         MACD,
-        // CMF_MACD
+        CMF_MACD
       }
     })
   }
