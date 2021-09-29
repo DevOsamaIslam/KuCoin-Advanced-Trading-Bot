@@ -34,7 +34,7 @@ const getWinrate = async () => {
     let winRatio = ((wonOrders.length * 100) / strategy.orders.length).toFixed(1)
 
     console.log(`Strategy Name: ${strategy.name}`);
-    console.log(`No. of trades: ${orders.length}`);
+    console.log(`No. of trades: ${strategy.orders.length}`);
     console.log(`Won: ${wonOrders.length}`);
     console.log(`Lost: ${lostOrders.length}`);
     console.log(`Winning percentage: ${winRatio}%`);
