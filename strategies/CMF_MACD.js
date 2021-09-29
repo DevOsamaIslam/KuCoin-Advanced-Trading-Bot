@@ -31,7 +31,7 @@ export default history => {
     fastPeriod: strategies.CMF_MACD.params.fastPeriod,
     slowPeriod: strategies.CMF_MACD.params.slowPeriod,
     signalPeriod: strategies.CMF_MACD.params.signalPeriod,
-  }).reverse()
+  })
 
 
   let macd = macdResult.map(point => point.MACD)
