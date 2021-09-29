@@ -117,7 +117,7 @@ export default class Watchdog {
             }
 
             // check if the CMF_MACD strategy is enabled
-            else if (this.strategy.CMF_MACD) {
+            if (this.strategy.CMF_MACD) {
               // enter a trade if the CMF_MACD strategy gives the green light and exclude from the watchlist
               if (this.strategy.CMF_MACD(pair.history)) {
                 this.enter({
@@ -132,7 +132,7 @@ export default class Watchdog {
             }
 
             // check if the VWAP strategy is enabled
-            else if (this.strategy.VWAP) {
+            if (this.strategy.VWAP) {
               // enter a trade if the VWAP strategy gives the green light and exclude from the watchlist
               if (this.strategy.VWAP(pair.bestAsk, pair.history)) {
                 this.enter({
