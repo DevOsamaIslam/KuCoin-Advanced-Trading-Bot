@@ -136,7 +136,7 @@ export default {
         "slowPeriod": 26, // default 26
         "signalPeriod": 9, // default 9
         "length": 20,
-        "rr": 1
+        "rr": 2
       },
       "lookbackPeriod": 200,
     },
