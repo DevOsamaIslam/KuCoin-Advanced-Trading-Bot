@@ -13,14 +13,34 @@ const getWinrate = async () => {
       $ne: 'ongoing'
     }
   }).sort('-1').lean()
-  let wonOrders = orders.filter(order => order.status === 'TP')
-  let lostOrders = orders.filter(order => order.status === 'SL')
-  let winRatio = ((wonOrders.length * 100) / orders.length).toFixed(1)
+  let strategies = []
+  for (let order of orders) {
+    if (!strategies.find(strategy => strategy.name === order.strategy)) {
+      strategies.push({
+        name: order.strategy,
+        orders: [order]
+      })
+    } else {
+      strategies.find(x => {
+        if (x.name == order.name)
+          x.orders.push(order)
+      })
+    }
 
-  console.log(`No. of trades: ${orders.length}`);
-  console.log(`Won: ${wonOrders.length}`);
-  console.log(`Lost: ${lostOrders.length}`);
-  console.log(`Winning percentage: ${winRatio}%`);
+  }
+  strategies.forEach(strategy => {
+    let wonOrders = strategy.orders.filter(order => order.status === 'TP')
+    let lostOrders = strategy.orders.filter(order => order.status === 'SL')
+    let winRatio = ((wonOrders.length * 100) / strategy.orders.length).toFixed(1)
+
+    console.log(`Strategy Name: ${strategy.name}`);
+    console.log(`No. of trades: ${orders.length}`);
+    console.log(`Won: ${wonOrders.length}`);
+    console.log(`Lost: ${lostOrders.length}`);
+    console.log(`Winning percentage: ${winRatio}%`);
+    console.log(`---------------------------------`);
+  })
+
 
 }
 
