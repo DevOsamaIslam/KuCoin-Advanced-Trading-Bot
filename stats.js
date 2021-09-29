@@ -22,7 +22,7 @@ const getWinrate = async () => {
       })
     } else {
       strategies.find(x => {
-        if (x.name == order.name)
+        if (x.name == order.strategy)
           x.orders.push(order)
       })
     }
