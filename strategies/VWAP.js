@@ -7,6 +7,9 @@ import {
 } from 'trading-signals'
 
 import settings from '../config/settings.js'
+import {
+  getLowestPriceHistory
+} from '../config/utils.js'
 
 let {
   strategies
