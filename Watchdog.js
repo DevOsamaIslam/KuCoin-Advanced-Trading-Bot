@@ -19,7 +19,8 @@ import Orders from './records/model.js'
 import api from './main.js'
 
 import log, {
-  err
+  err,
+  verbose
 } from './log.js'
 
 export default class Watchdog {
@@ -98,7 +99,7 @@ export default class Watchdog {
 
         if (candle.timestamp !== lastread.timestamp) {
           pair.history.unshift(lastread)
-          // console.log(`checking ${pair.symbol}`);
+          verbose(`checking ${pair.symbol}`);
           if (!this.excluded.includes(pair.symbol)) {
 
             // check if the MACD strategy is enabled
