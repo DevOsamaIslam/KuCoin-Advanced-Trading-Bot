@@ -144,7 +144,7 @@ export default class Watchdog {
                 pair,
                 equity: this.equity
               })
-              if (this.strategy.VWAP(pair.history)) {
+              if (order) {
                 this.enter({
                   pair,
                   tickerInfo: pair.tickerInfo,
