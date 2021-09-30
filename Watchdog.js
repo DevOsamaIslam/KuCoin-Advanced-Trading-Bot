@@ -134,7 +134,7 @@ export default class Watchdog {
             // check if the VWAP strategy is enabled
             if (this.strategy.VWAP) {
               // enter a trade if the VWAP strategy gives the green light and exclude from the watchlist
-              if (this.strategy.VWAP(pair.bestAsk, pair.history)) {
+              if (this.strategy.VWAP(pair.history)) {
                 this.enter({
                   pair,
                   tickerInfo: pair.tickerInfo,

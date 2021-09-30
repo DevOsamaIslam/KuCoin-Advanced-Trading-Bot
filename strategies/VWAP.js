@@ -11,14 +11,15 @@ let {
   strategies
 } = settings
 
-export default (lastPrice, vwapHistory, history) => {
+export default history => {
   history.reverse()
-  let ema = new EMA(strategies.MACD.params.ma.period)
+  let ema = new EMA(strategies.VWAP.params.ma.period)
   history.map(candle => ema.update(candle.close))
 
   // get VWAP
+  history.reverse()
   let vwapCandles = []
-  for (const candle of vwapHistory) {
+  for (const candle of history) {
     let timestamp = candle.timestamp * 1000
     let date = new Date(timestamp)
     vwapCandles.push(candle)
@@ -30,15 +31,20 @@ export default (lastPrice, vwapHistory, history) => {
     high: vwapCandles.map(candle => parseFloat(candle.high)),
     low: vwapCandles.map(candle => parseFloat(candle.low)),
     volume: vwapCandles.map(candle => parseFloat(candle.volume))
-  }).reverse()
+  })
 
-  history.reverse()
-  let lastCandle = history[1]
+  let lastCandle = history[0]
 
   let emaResult = ema.getResult().toNumber()
 
-  let overEMA = emaResult < lastPrice
-  let vwapReady = lastCandle.low < vwapResult[1] && lastCandle.close > vwapResult[1] && lastPrice > vwapResult[0] // vwapResult[3] > lastPrice && vwapResult[1] < lastPrice
+  let overEMA = emaResult < lastCandle.close
+  let vwapReady = (
+    lastCandle.low < vwapResult[0] &&
+    lastCandle.open > vwapResult[0] &&
+    lastCandle.close > lastCandle.open &&
+    lastCandle.close > vwapResult[0] &&
+    (lastCandle.close - lastCandle.open) > (lastCandle.high - lastCandle.close) * 2
+  )
 
   return overEMA && vwapReady
 }

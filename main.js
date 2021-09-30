@@ -31,8 +31,9 @@ api.rest.User.Account.getAccountsList({
     new Watchdog({
       equity: data.data[0].available,
       strategy: {
-        // MACD,
-        CMF_MACD
+        MACD,
+        CMF_MACD,
+        VWAP
       }
     })
   }

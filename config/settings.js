@@ -144,8 +144,8 @@ export default {
       "enable": false,
       "params": {
         "ma": {
-          "type": "wema",
-          "period": 100
+          "type": "ema",
+          "period": 200
         },
         "rr": 1.5
       },
