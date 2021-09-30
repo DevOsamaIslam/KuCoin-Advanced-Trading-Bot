@@ -64,11 +64,13 @@ export const getLastPrice = async pair => {
   if (data) return data.data.price
   else return false
 }
-export const getBalance = async () => (
-  await asyncHandler(api.rest.User.Account.getAccountsList({
+export const getBalance = async () => {
+  let results = await asyncHandler(api.rest.User.Account.getAccountsList({
     type: 'trade',
     currency: 'USDT'
-  }))).data[0].available
+  }))
+  results ? results.data[0].available : false
+}
 
 export const getEquity = async (currency) => (await api.rest.User.Account.getAccountsList({
   type: 'trade',
@@ -127,27 +129,7 @@ export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
   return candle
 }
 
-export const defineOrder = (equity, pair, history, rr) => {
 
-  let SL = 0
-  let lbPeriod = 20
-  let atr = ATR.calculate({
-    reversedInput: true,
-    high: history.map(candle => candle.high),
-    low: history.map(candle => candle.low),
-    close: history.map(candle => candle.close),
-    period: 14
-  })
-  SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0]
-
-  return {
-    currentPrice: pair.bestAsk,
-    SL,
-    size: equity * 0.05,
-    rr,
-    type: 'market'
-  }
-}
 
 
 export const asyncHandler = async fn => {
@@ -173,7 +155,6 @@ export default {
   getBalance,
   getLowestPriceHistory,
   getHistory,
-  defineOrder,
   getAllUsdtPairs,
   getAllUsdtTickers,
   getPrice,

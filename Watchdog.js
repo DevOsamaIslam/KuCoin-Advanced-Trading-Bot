@@ -6,7 +6,6 @@ import Trader from './Trader.js'
 import {
   isSufficient,
   getHistory,
-  defineOrder,
   getAllUsdtPairs,
   getAllUsdtTickers,
   getTickerInfo,
@@ -101,17 +100,20 @@ export default class Watchdog {
           pair.history.unshift(lastread)
           verbose(`checking ${pair.symbol}`);
           if (!this.excluded.includes(pair.symbol)) {
-
+            let order = false
             // check if the MACD strategy is enabled
             if (this.strategy.MACD) {
               // enter a trade if the MACD strategy gives the green light and exclude from the watchlist
-              if (this.strategy.MACD(pair.bestAsk, pair.history)) {
+              order = this.strategy.MACD({
+                pair,
+                equity: this.equity
+              })
+              if (order) {
                 this.enter({
                   pair,
                   tickerInfo: pair.tickerInfo,
                   strategy: 'MACD',
-                  rr: settings.strategies.MACD.params.rr,
-                  history: pair.history
+                  order
                 })
                 this.excluded.push(pair.symbol)
               }
@@ -120,13 +122,16 @@ export default class Watchdog {
             // check if the CMF_MACD strategy is enabled
             if (this.strategy.CMF_MACD) {
               // enter a trade if the CMF_MACD strategy gives the green light and exclude from the watchlist
-              if (this.strategy.CMF_MACD(pair.history)) {
+              order = this.strategy.CMF_MACD({
+                pair,
+                equity: this.equity
+              })
+              if (order) {
                 this.enter({
                   pair,
                   tickerInfo: pair.tickerInfo,
                   strategy: 'CMF+MACD',
-                  rr: settings.strategies.CMF_MACD.params.rr,
-                  history: pair.history
+                  order
                 })
                 this.excluded.push(pair.symbol)
               }
@@ -135,13 +140,16 @@ export default class Watchdog {
             // check if the VWAP strategy is enabled
             if (this.strategy.VWAP) {
               // enter a trade if the VWAP strategy gives the green light and exclude from the watchlist
+              order = this.strategy.VWAP({
+                pair,
+                equity: this.equity
+              })
               if (this.strategy.VWAP(pair.history)) {
                 this.enter({
                   pair,
                   tickerInfo: pair.tickerInfo,
                   strategy: 'VWAP',
-                  rr: settings.strategies.VWAP.params.rr,
-                  history: pair.history
+                  order
                 })
                 this.excluded.push(pair.symbol)
               }
@@ -160,8 +168,7 @@ export default class Watchdog {
       pair,
       tickerInfo,
       strategy,
-      rr,
-      history
+      order
     } = options
     let balance = await isSufficient()
     if (!balance) {
@@ -170,12 +177,6 @@ export default class Watchdog {
     }
     log(`${strategy} strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
 
-    // create an order
-    let order = defineOrder(this.equity, pair, history, rr)
-    if (!order) {
-      err(`Error while setting the order for ${pair.symbol}`)
-      return
-    }
     new Trader({
       pair,
       order,

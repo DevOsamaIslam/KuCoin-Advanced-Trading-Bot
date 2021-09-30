@@ -1,5 +1,6 @@
 import {
   VWAP,
+  ATR
 } from 'technicalindicators'
 import {
   EMA
@@ -11,7 +12,8 @@ let {
   strategies
 } = settings
 
-export default history => {
+export default options => {
+  let history = options.pair.history
   history.reverse()
   let ema = new EMA(strategies.VWAP.params.ma.period)
   history.map(candle => ema.update(candle.close))
@@ -45,6 +47,31 @@ export default history => {
     lastCandle.close > vwapResult[0] &&
     (lastCandle.close - lastCandle.open) > (lastCandle.high - lastCandle.close) * 2
   )
+  let conditions = vwapReady
+  return conditions ? defineOrder(options) : false
+}
 
-  return overEMA && vwapReady
+const defineOrder = options => {
+  let rr = strategies.VWAP.params.rr
+  let equity = options.equity
+  let pair = options.pair
+  let history = pair.history
+  let SL = 0
+  let lbPeriod = 20
+  let atr = ATR.calculate({
+    reversedInput: true,
+    high: history.map(candle => candle.high),
+    low: history.map(candle => candle.low),
+    close: history.map(candle => candle.close),
+    period: 14
+  })
+  SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0]
+
+  return {
+    currentPrice: pair.bestAsk,
+    SL,
+    size: equity * 0.05,
+    rr,
+    type: 'market'
+  }
 }

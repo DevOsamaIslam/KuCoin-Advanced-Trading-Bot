@@ -117,15 +117,15 @@ export default {
     "MACD": {
       "enable": true,
       "params": {
-        "fastPeriod": 6, // default 12
-        "slowPeriod": 13, // default 26
-        "signalPeriod": 4, // default 9
+        "fastPeriod": 12, // default 12
+        "slowPeriod": 26, // default 26
+        "signalPeriod": 9, // default 9
         "ma": {
           "type": "ema",
           "period": 200,
           "isOver": true
         },
-        "rr": 1.5
+        "rr": 2
       },
       "lookbackPeriod": 200,
     },

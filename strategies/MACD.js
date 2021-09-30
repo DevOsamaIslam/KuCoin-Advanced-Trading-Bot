@@ -1,10 +1,15 @@
 import {
   MACD,
+  ATR
 } from 'technicalindicators'
 
 import {
   EMA
 } from 'trading-signals'
+
+import {
+  getLowestPriceHistory
+} from '../config/utils.js'
 
 import settings from '../config/settings.js'
 
@@ -12,7 +17,9 @@ let {
   strategies
 } = settings
 
-export default (lastPrice, history) => {
+export default options => {
+  let lastPrice = options.pair.bestAsk
+  let history = options.pair.history
   let lastCandle = history[0]
   history.reverse()
   let ema = new EMA(strategies.MACD.params.ma.period)
@@ -40,5 +47,32 @@ export default (lastPrice, history) => {
 
   history.reverse()
 
-  return overEMA && cross && lastMACD
+  let conditions = overEMA && cross && lastMACD
+
+  return conditions ? defineOrder(options) : false
+}
+
+const defineOrder = options => {
+  let rr = strategies.MACD.params.rr
+  let equity = options.equity
+  let pair = options.pair
+  let history = pair.history
+  let SL = 0
+  let lbPeriod = 20
+  let atr = ATR.calculate({
+    reversedInput: true,
+    high: history.map(candle => candle.high),
+    low: history.map(candle => candle.low),
+    close: history.map(candle => candle.close),
+    period: 14
+  })
+  SL = parseFloat(getLowestPriceHistory(history.splice(0, lbPeriod))) - atr[0]
+
+  return {
+    currentPrice: pair.bestAsk,
+    SL,
+    size: equity * 0.05,
+    rr,
+    type: 'market'
+  }
 }
