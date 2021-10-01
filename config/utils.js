@@ -69,9 +69,8 @@ export const getBalance = async () => {
     type: 'trade',
     currency: 'USDT'
   }))
-  results ? results.data[0].available : false
+  return results ? results.data[0].available : false
 }
-
 export const getEquity = async (currency) => (await api.rest.User.Account.getAccountsList({
   type: 'trade',
   currency: currency
@@ -92,7 +91,6 @@ export const getLowestPriceHistory = history => {
   }
   return lowestPrice
 }
-
 export const getATR = history => {
   let input = {
     close: history.map(candle => candle.close),
@@ -103,7 +101,6 @@ export const getATR = history => {
   let atr = ATR.calculate(input)[0]
   return atr
 }
-
 export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
   let span = {
     startAt: Math.floor((Date.now() - (tf.value * lookbackPeriods)) / 1000),
@@ -128,10 +125,6 @@ export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
   candle.shift()
   return candle
 }
-
-
-
-
 export const asyncHandler = async fn => {
   try {
     let results = await fn

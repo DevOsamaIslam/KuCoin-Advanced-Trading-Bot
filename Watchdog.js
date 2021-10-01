@@ -30,9 +30,6 @@ export default class Watchdog {
     this.strategy = options.strategy
     this.excluded = []
     this.history = []
-    this.datafeed = new api.websocket.Datafeed();
-    // connect
-    this.datafeed.connectSocket();
 
     getAllUsdtPairs().then(async data => {
       this.allUsdtTickers = await getAllUsdtTickers()
@@ -79,10 +76,13 @@ export default class Watchdog {
 
   async monitor(pair) {
     let lastread = false
+    let datafeed = new api.websocket.Datafeed();
+    // connect
+    datafeed.connectSocket();
 
     // subscribe
     const topic = `/market/candles:${pair.symbol}_${this.tf.text}`;
-    this.datafeed.subscribe(topic, message => {
+    datafeed.subscribe(topic, message => {
       if (message.topic === topic) {
         let data = message.data.candles
 
@@ -155,8 +155,8 @@ export default class Watchdog {
               }
             }
           }
-          lastread = candle
-        } else lastread = candle
+        }
+        lastread = candle
       }
 
 
@@ -173,7 +173,7 @@ export default class Watchdog {
     let balance = await isSufficient()
     if (!balance) {
       err(`Insufficient balance!`)
-      return
+      return false
     }
     log(`${strategy} strategy gives the green light to buy ${pair.symbol} at market value on ${this.tf.text} timeframe`);
 

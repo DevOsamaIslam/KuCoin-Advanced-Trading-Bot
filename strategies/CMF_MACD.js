@@ -38,8 +38,8 @@ export default options => {
 
   let macd = macdResult.map(point => point.MACD)
   let signal = macdResult.map(point => point.signal)
-  let cross = macd[2] < signal[2] && macd[1] > signal[1]
-  let lastMACD = macd[1] > 0
+  let cross = macd[1] < signal[1] && macd[0] > signal[0]
+  let lastMACD = macd[0] > 0
   let positiveMf = mf > 0
 
   let conditions = positiveMf && cross && lastMACD
