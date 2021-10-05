@@ -113,7 +113,7 @@ export default {
     // "NEO-USDT",
     // "XLM-USDT"
   ],
-  "tf": timeframes[2],
+  "tf": timeframes[3],
   "strategies": {
     "MACD": {
       "enable": true,
