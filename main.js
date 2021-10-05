@@ -25,7 +25,7 @@ database.connect
 
 api.rest.User.Account.getAccountsList({
   type: 'trade',
-  currency: 'USDT'
+  currency: settings.base
 }).then(data => {
   if (data.data) {
     new Watchdog({

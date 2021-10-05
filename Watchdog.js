@@ -6,8 +6,8 @@ import Trader from './Trader.js'
 import {
   isSufficient,
   getHistory,
-  getAllUsdtPairs,
-  getAllUsdtTickers,
+  getAllPairs,
+  getAllTickers,
   getTickerInfo,
   getTicker,
   getOrder,
@@ -31,25 +31,26 @@ export default class Watchdog {
     this.excluded = []
     this.history = []
 
-    getAllUsdtPairs().then(async data => {
-      this.allUsdtTickers = await getAllUsdtTickers()
-      if (!this.allUsdtTickers) {
-        getAllUsdtPairs();
-        return
-      }
-      this.usdtPairs = data
+    this.init()
+  }
 
-      // monitor watchlist
-      await this.collectHistory(this.watchlist)
-      for (const pair of this.history) {
-        this.monitor(pair)
-      }
+  async init() {
+    this.allTickers = await getAllTickers()
+    if (!this.allTickers) {
+      getAllPairs();
+      return
+    }
 
-      // monitor for volume spike
-      // this.volSpike(this.watchlist)
+    // monitor watchlist
+    await this.collectHistory(this.watchlist)
+    for (const pair of this.history) {
+      this.monitor(pair)
+    }
 
-      setInterval(() => this.update(), 60 * 1000);
-    })
+    // monitor for volume spike
+    // this.volSpike(this.watchlist)
+
+    setInterval(() => this.update(), 60 * 1000);
   }
 
   async collectHistory(watchlist) {
@@ -68,7 +69,7 @@ export default class Watchdog {
       }
       this.history.push({
         ...pair,
-        tickerInfo: getTickerInfo(pair, this.allUsdtTickers),
+        tickerInfo: getTickerInfo(pair, this.allTickers),
         history
       })
     }
@@ -189,11 +190,11 @@ export default class Watchdog {
   }
 
   async volSpike(pairs) {
-    // loop through the USDT pairs and check the vol of each pair
+    // loop through the  pairs and check the vol of each pair
     for (let pair of pairs) {
       pair = await getTicker(pair)
       if (!pair) continue
-      let tickerInfo = getTickerInfo(pair, this.allUsdtTickers)
+      let tickerInfo = getTickerInfo(pair, this.allTickers)
       if (this.excluded.includes(pair.symbol)) continue
       let history = await getHistory(pair, this.tf, 51)
       if (!history || history.length < 50) continue

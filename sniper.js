@@ -4,7 +4,7 @@ import {
 } from 'fs'
 
 import {
-  getAllUsdtTickers,
+  getAllTickers,
   getTickerInfo,
   getEquity,
   getDecimalPlaces
@@ -24,10 +24,10 @@ export default async () => {
   let untradables = JSON.parse(readFileSync(untradablesPath))
   setInterval(async () => {
     console.log('monitoring new pairs...');
-    let allUsdtTickers = await getAllUsdtTickers()
-    if (!allUsdtTickers)
+    let allTickers = await getAllTickers()
+    if (!allTickers)
       return
-    let temp = allUsdtTickers.filter(ticker => !ticker.enableTrading)
+    let temp = allTickers.filter(ticker => !ticker.enableTrading)
     if (temp.length > 0) {
       for (const tmpPair of temp) {
         let newPair = untradables.find(pair => pair.symbol === tmpPair.symbol)
@@ -42,13 +42,13 @@ export default async () => {
 
     // loop through all new tickers and check if their trading status (enableTrading) changed to true
     for (const pair of untradables) {
-      let allUsdtTickers = await getAllUsdtTickers()
-      if (!allUsdtTickers) continue
-      let status = allUsdtTickers.find(tick => tick.symbol == pair.symbol).enableTrading
+      let allTickers = await getAllTickers()
+      if (!allTickers) continue
+      let status = allTickers.find(tick => tick.symbol == pair.symbol).enableTrading
       if (!status) continue
       console.log(`New Pair found: ${pair.symbol}`);
-      let tickerInfo = getTickerInfo(pair, allUsdtTickers)
-      let equity = await getEquity('USDT')
+      let tickerInfo = getTickerInfo(pair, allTickers)
+      let equity = await getEquity(settings.base)
       monitorNew(pair, tickerInfo, equity)
       untradables.splice(untradables.indexOf(pair), 1)
       writeFileSync(untradablesPath, JSON.stringify(untradables))

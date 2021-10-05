@@ -8,13 +8,9 @@ import {
   err
 } from '../log.js'
 
-export const getDecimalPlaces = value => {
-  if (typeof value === 'number')
-    value.toString()
-  if (!value.split('.')[1])
-    return 0
-  else return value.split('.')[1].length
-}
+import settings from './settings.js'
+
+let base = settings.base
 
 export const calcPerc = (newValue, oldValue) => ((newValue - oldValue) / oldValue) * 100
 
@@ -24,8 +20,15 @@ export const calculateSLPrice = (price, SLP) => parseFloat(price - price * SLP)
 
 export const isSufficient = async () => await getBalance() > 10
 
-export const getTickerInfo = (pair, allUsdtTickers) => allUsdtTickers.find(tick => tick.symbol === pair.symbol)
+export const getTickerInfo = (pair, allTickers) => allTickers.find(tick => tick.symbol === pair.symbol)
 
+export const getDecimalPlaces = value => {
+  if (typeof value === 'number')
+    value.toString()
+  if (!value.split('.')[1])
+    return 0
+  else return value.split('.')[1].length
+}
 export const getTicker = async symbol => {
   let ticker = await asyncHandler(api.rest.Market.Symbols.getTicker(symbol))
   if (ticker) {
@@ -33,15 +36,14 @@ export const getTicker = async symbol => {
     return ticker.data
   } else return false
 }
-
-export const getAllUsdtPairs = async () => {
-  let allUsdtTickers = await asyncHandler(api.rest.Market.Symbols.getAllTickers())
-  if (allUsdtTickers) return allUsdtTickers.data.ticker.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith('USDT'))
+export const getAllPairs = async () => {
+  let allTickers = await asyncHandler(api.rest.Market.Symbols.getAllTickers())
+  if (allTickers) return allTickers.data.ticker.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith(base))
   else return false
 }
-export const getAllUsdtTickers = async () => {
-  let allUsdtTickers = await asyncHandler(api.rest.Market.Symbols.getSymbolsList())
-  if (allUsdtTickers) return allUsdtTickers.data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith('USDT'))
+export const getAllTickers = async () => {
+  let allTickers = await asyncHandler(api.rest.Market.Symbols.getSymbolsList())
+  if (allTickers) return allTickers.data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith(base))
   else return false
 }
 export const getPrice = async pair => {
@@ -64,18 +66,20 @@ export const getLastPrice = async pair => {
   if (data) return data.data.price
   else return false
 }
-export const getBalance = async () => {
+export const getBalance = async currency => {
   let results = await asyncHandler(api.rest.User.Account.getAccountsList({
     type: 'trade',
-    currency: 'USDT'
+    currency
   }))
   return results ? results.data[0].available : false
 }
-export const getEquity = async (currency) => (await api.rest.User.Account.getAccountsList({
-  type: 'trade',
-  currency: currency
-})).data[0].available
-
+export const getEquity = async (currency) => {
+  let results = await api.rest.User.Account.getAccountsList({
+    type: 'trade',
+    currency: currency
+  })
+  return results.data ? results.data[0].available : false
+}
 export const getLowestPriceHistory = history => {
   /*
     get the lowest close of the last 20 candles of a specified pair
@@ -148,8 +152,8 @@ export default {
   getBalance,
   getLowestPriceHistory,
   getHistory,
-  getAllUsdtPairs,
-  getAllUsdtTickers,
+  getAllPairs,
+  getAllTickers,
   getPrice,
   getTickerInfo,
   getOrder,

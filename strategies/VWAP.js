@@ -30,6 +30,7 @@ export default options => {
     vwapCandles.push(candle)
     if (date.getUTCHours() == '16' && date.getMinutes() == '00') break
   }
+  if (vwapCandles.length < 20) return false
   let vwapResult = VWAP.calculate({
     reversedInput: true,
     close: vwapCandles.map(candle => parseFloat(candle.close)),

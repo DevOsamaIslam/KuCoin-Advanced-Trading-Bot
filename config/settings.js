@@ -68,6 +68,7 @@ export const database = {
 }
 
 export default {
+  base: 'USDT',
   "watchlist": [
     "BTC-USDT",
     "ETH-USDT",
@@ -112,7 +113,7 @@ export default {
     // "NEO-USDT",
     // "XLM-USDT"
   ],
-  "tf": timeframes[0],
+  "tf": timeframes[2],
   "strategies": {
     "MACD": {
       "enable": true,
