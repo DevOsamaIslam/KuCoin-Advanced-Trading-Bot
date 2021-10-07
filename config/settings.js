@@ -126,7 +126,7 @@ export default {
           "period": 200,
           "isOver": true
         },
-        "rr": 2
+        "rr": 1.5
       },
       "lookbackPeriod": 200,
     },
@@ -137,7 +137,7 @@ export default {
         "slowPeriod": 26, // default 26
         "signalPeriod": 9, // default 9
         "length": 20,
-        "rr": 2
+        "rr": 1.5
       },
       "lookbackPeriod": 200,
     },
