@@ -308,11 +308,11 @@ export default class Trader {
     this.updateConstructor(_2)
     let results = await this.buy()
     if (results) {
-      this.activeOrder = await getOrder(results.id)
-      if (!this.activeOrder.isActive) {
-        results = await this._step3(_3)
-        return results
-      }
+      // this.activeOrder = await getOrder(results.id)
+      // if (!this.activeOrder.isActive) {
+      //   results = await this._step3(_3)
+      //   return results
+      // }
       let topic = `/spotMarket/tradeOrders`
       let cbid = this.datafeed.subscribe(topic, async data => {
         let orderData = data.data
@@ -333,11 +333,11 @@ export default class Trader {
     })
     if (results) {
       let topic = `/spotMarket/tradeOrders`
-      this.activeOrder = await getOrder(results.id)
-      if (!this.activeOrder.isActive) {
-        print()
-        return this.activeOrder
-      }
+      // this.activeOrder = await getOrder(results.id)
+      // if (!this.activeOrder.isActive) {
+      //   print()
+      //   return this.activeOrder
+      // }
       let cbid = this.datafeed.subscribe(topic, async data => {
         let orderData = data.data
         if (orderData.orderId == this.activeOrder.id && orderData.status == 'done') {
