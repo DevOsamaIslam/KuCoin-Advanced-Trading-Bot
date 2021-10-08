@@ -50,11 +50,11 @@ const arbitrage = async options => {
       x = true
       datafeed.unsubscribe(topic, cbid)
 
-      console.log(`Arbitrage opportunity`);
-      console.log(`Equity: ${risked}`);
-      console.log(`${symbols.AB}: ${AB} => ${ownBTC}`);
-      console.log(`${symbols.BC}: ${BC} => ${target}`);
-      console.log(`${symbols.CD}: ${CD} => ${ownUSDT}`);
+      log(`Arbitrage opportunity`);
+      log(`Equity: ${risked}`);
+      log(`${symbols.AB}: ${AB} => ${ownBTC}`);
+      log(`${symbols.BC}: ${BC} => ${target}`);
+      log(`${symbols.CD}: ${CD} => ${ownUSDT}`);
       // Buy Bitcoin ------------------------------------------------------
       order = {
         size: ownBTC,
