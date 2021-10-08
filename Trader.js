@@ -2,7 +2,8 @@ import api from './main.js'
 import {
   calcPerc,
   getOrder,
-  getDecimalPlaces
+  getDecimalPlaces,
+  getBalance
 } from './config/utils.js'
 import log, {
   logStrategy
@@ -305,6 +306,7 @@ export default class Trader {
 
   }
   async _step2(_2, _3) {
+    _2.order.size = getBalance(_2.pair.symbol.split('-')[0])
     this.updateConstructor(_2)
     let results = await this.buy()
     if (results) {
@@ -326,6 +328,7 @@ export default class Trader {
   }
 
   async _step3(_3) {
+    _3.order.size = getBalance(_2.pair.symbol.split('-')[0])
     this.updateConstructor(_3)
     let results = await this.sell({
       type: 'limit',
