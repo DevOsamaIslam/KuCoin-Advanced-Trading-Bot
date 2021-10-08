@@ -67,7 +67,7 @@ export default class Trader {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} at $${this.activeOrder.dealFunds / this.activeOrder.dealSize}`]
+        data: [`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size} at $${(this.activeOrder.dealFunds / this.activeOrder.dealSize) || this.order.currentPrice}`]
       });
       return this.activeOrder
     } else {
