@@ -68,7 +68,7 @@ export const database = {
 }
 
 export default {
-  base: 'USDT',
+  quote: 'USDT',
   "watchlist": [
     "BTC-USDT",
     "ETH-USDT",
@@ -157,7 +157,7 @@ export default {
       "params": {
         "TPP": 1.3,
         "SLP": 0.8,
-        "risk": 0.5
+        "risk": 0.15
       }
     },
     "RTW": {
@@ -171,6 +171,10 @@ export default {
         "risk": 0.05
       },
       "lookbackPeriod": 100,
+    },
+    "TRIBITRAGE": {
+      "enable": true,
+      "risk": 0.15
     }
   }
 }

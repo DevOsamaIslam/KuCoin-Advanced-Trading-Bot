@@ -12,6 +12,10 @@ import Orders from './records/model.js'
 export default class Trader {
 
   constructor(options) {
+    this.datafeed = new api.websocket.Datafeed(true);
+    // connect
+    this.datafeed.connectSocket();
+
     this.pair = options.pair
     this.order = options.order
     this.tf = options.tf
@@ -19,17 +23,25 @@ export default class Trader {
     this.isNewPair = options.isNewPair
     this.dynamicTPSL = options.dynamicTPSL
     this.strategy = options.strategy
-    this.buy().then(order => {
-      this.afterBuy(order)
-    })
+  }
 
+  async execute() {
+    this.order.side == 'buy' ?
+      this.buy().then(order => {
+        this.order.SL && this.afterBuy(order).then(data => data)
+      }) : this.sell({
+        type: this.order.type,
+        price: this.order.currentPrice
+      }).then(data => data)
   }
 
   async buy() {
     // find the lowest quote increment decimal value
     let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
     // get the order size in the base currency (the one you want to buy)
-    let size = (this.order.size / (this.pair.bestAsk || this.order.currentPrice)).toFixed(decimals)
+    let size = this.order.type == 'limit' ?
+      this.order.size.toFixed(decimals) :
+      (this.order.size / (this.pair.bestAsk || this.order.currentPrice)).toFixed(decimals)
     // check if the order size is less-than/equal-to the minimum
     if (size <= this.tickerInfo.baseMinSize) return false
 
@@ -50,13 +62,13 @@ export default class Trader {
 
     let order = await api.rest.Trade.Orders.postOrder(params.baseParams, params.orderParams)
     if (order.data) {
-      let activeOrder = await getOrder(order.data.orderId)
+      this.activeOrder = await getOrder(order.data.orderId)
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} at $${activeOrder.dealFunds / activeOrder.dealSize}`]
+        data: [`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size.toFixed(2)} at $${this.activeOrder.dealFunds / this.activeOrder.dealSize}`]
       });
-      return activeOrder
+      return this.activeOrder
     } else {
       logStrategy({
         strategy: this.strategy,
@@ -69,7 +81,6 @@ export default class Trader {
 
   async afterBuy(order) {
     if (order.id) {
-      this.activeOrder = order;
       if (this.dynamicTPSL)
         this.startDynamicTPSL()
       else if (this.order.SL || this.order.TP) {
@@ -93,20 +104,20 @@ export default class Trader {
 
   async sell(options) {
     api.rest.Trade.Orders.postOrder({
-      clientOid: `Sell_${this.activeOrder.id}`,
+      clientOid: `Sell_${this.activeOrder && this.activeOrder.id}`,
       side: 'sell',
       symbol: this.pair.symbol,
       type: options.type || 'market',
-      remark: `Strategy: ${this.strategy} (${this.activeOrder.id})`
+      remark: `Strategy: ${this.strategy} (${this.activeOrder && this.activeOrder.id})`
     }, {
-      size: this.activeOrder.dealSize,
+      size: this.activeOrder ? this.activeOrder.dealSize : this.order.size,
       price: options.price
     }).then(order => {
       if (order.data) {
         logStrategy({
           strategy: this.strategy,
           pair: this.pair,
-          data: [`Sold ${Math.floor(this.activeOrder.dealSize)} (${order.data.orderId})`]
+          data: [`Sold ${Math.floor(this.activeOrder ? this.activeOrder.dealSize : this.order.size)} (${order.data.orderId})`]
         });
         return true
       } else {
@@ -268,6 +279,92 @@ export default class Trader {
       }
 
     })
+  }
+
+  async tribitrage(steps) {
+    let _2 = steps[0]
+    let _3 = steps[1]
+    this.buy().then(async data => {
+      if (data) {
+        let isFilled = !(await getOrder(data.id)).isActive
+        if (isFilled) {
+          let results = await this._step2(_2, _3)
+          return results
+        }
+        let topic = `/spotMarket/tradeOrders`
+        let cbid = this.datafeed.subscribe(topic, async data => {
+          let orderData = data.data
+          if (orderData.orderId == this.activeOrder.id && orderData.status == 'done') {
+            this.datafeed.unsubscribe(topic, cbid)
+            let results = await this._step2(_2, _3)
+            return results
+          }
+        }, true)
+      }
+    })
+
+  }
+  async _step2(_2, _3) {
+    this.updateConstructor(_2)
+    let results = await this.buy()
+    if (results) {
+      this.activeOrder = await getOrder(results.id)
+      if (!this.activeOrder.isActive) {
+        results = await this._step3(_3)
+        return results
+      }
+      let topic = `/spotMarket/tradeOrders`
+      let cbid = this.datafeed.subscribe(topic, async data => {
+        let orderData = data.data
+        if (orderData.orderId == this.activeOrder.id && orderData.status == 'done') {
+          this.datafeed.unsubscribe(topic, cbid)
+          results = await this._step3(_3)
+          return results
+        }
+      }, true)
+    }
+  }
+
+  async _step3(_3) {
+    this.updateConstructor(_3)
+    let results = await this.sell({
+      type: 'limit',
+      price: this.order.currentPrice
+    })
+    if (results) {
+      let topic = `/spotMarket/tradeOrders`
+      this.activeOrder = await getOrder(results.id)
+      if (!this.activeOrder.isActive) {
+        print()
+        return this.activeOrder
+      }
+      let cbid = this.datafeed.subscribe(topic, async data => {
+        let orderData = data.data
+        if (orderData.orderId == this.activeOrder.id && orderData.status == 'done') {
+          this.datafeed.unsubscribe(topic, cbid)
+          print()
+          return this.activeOrder
+        }
+      }, true)
+    }
+
+    const print = () => {
+      logStrategy({
+        strategy: this.strategy,
+        pair: this.pair,
+        data: [
+          `Started with: $${this.equity}`,
+          `Ended with: $${this.activeOrder.dealSize}`
+        ]
+      })
+    }
+  }
+
+  updateConstructor(data) {
+    this.pair = data.pair
+    this.order = data.order
+    this.tickerInfo = data.tickerInfo
+    this.strategy = data.strategy
   }
 
 

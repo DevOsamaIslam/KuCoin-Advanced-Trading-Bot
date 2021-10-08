@@ -6,7 +6,7 @@ import {
 import {
   getAllTickers,
   getTickerInfo,
-  getEquity,
+  getBalance,
   getDecimalPlaces
 } from './config/utils.js'
 
@@ -48,7 +48,7 @@ export default async () => {
       if (!status) continue
       console.log(`New Pair found: ${pair.symbol}`);
       let tickerInfo = getTickerInfo(pair, allTickers)
-      let equity = await getEquity(settings.base)
+      let equity = await getBalance(settings.quote)
       monitorNew(pair, tickerInfo, equity)
       untradables.splice(untradables.indexOf(pair), 1)
       writeFileSync(untradablesPath, JSON.stringify(untradables))

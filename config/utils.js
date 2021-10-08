@@ -10,7 +10,10 @@ import {
 
 import settings from './settings.js'
 
-let base = settings.base
+let quote = settings.quote
+let currencies = {}
+
+let _datafeed = false
 
 export const calcPerc = (newValue, oldValue) => ((newValue - oldValue) / oldValue) * 100
 
@@ -18,7 +21,7 @@ export const calculateTPPrice = (price, TPP) => parseFloat(price + price * TPP)
 
 export const calculateSLPrice = (price, SLP) => parseFloat(price - price * SLP)
 
-export const isSufficient = async () => await getBalance() > 10
+export const isSufficient = async (currency) => await getBalance(currency) > 10
 
 export const getTickerInfo = (pair, allTickers) => allTickers.find(tick => tick.symbol === pair.symbol)
 
@@ -36,14 +39,14 @@ export const getTicker = async symbol => {
     return ticker.data
   } else return false
 }
-export const getAllPairs = async () => {
+export const getAllPairs = async QUOTE => {
   let allTickers = await asyncHandler(api.rest.Market.Symbols.getAllTickers())
-  if (allTickers) return allTickers.data.ticker.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith(base))
+  if (allTickers) return allTickers.data.ticker.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith(QUOTE || quote))
   else return false
 }
-export const getAllTickers = async () => {
+export const getAllTickers = async QUOTE => {
   let allTickers = await asyncHandler(api.rest.Market.Symbols.getSymbolsList())
-  if (allTickers) return allTickers.data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith(base))
+  if (allTickers) return allTickers.data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith(QUOTE || quote))
   else return false
 }
 export const getPrice = async pair => {
@@ -61,24 +64,31 @@ export const cancelOrder = async id => {
   if (data) return data.data
   else return false
 }
-export const getLastPrice = async pair => {
-  let data = await asyncHandler(api.rest.Market.Symbols.getTicker(pair))
-  if (data) return data.data.price
-  else return false
+export const getBalance = currency => {
+  // let results = await asyncHandler(api.rest.User.Account.getAccountsList({
+  //   type: 'trade',
+  //   currency
+  // }))
+  return currencies[currency].available || false
 }
-export const getBalance = async currency => {
-  let results = await asyncHandler(api.rest.User.Account.getAccountsList({
-    type: 'trade',
-    currency
-  }))
-  return results ? results.data[0].available : false
-}
-export const getEquity = async (currency) => {
-  let results = await api.rest.User.Account.getAccountsList({
-    type: 'trade',
-    currency: currency
-  })
-  return results.data ? results.data[0].available : false
+export const getCurrency = async (currency = undefined) => {
+  if (currency) {
+    let results = await asyncHandler(api.rest.User.Account.getAccountsList({
+      type: 'trade',
+      currency: currency
+    }))
+    return results.data ? results.data[0] : false
+  } else {
+    let results = await asyncHandler(api.rest.User.Account.getAccountsList({
+      type: 'trade',
+    }))
+    if (results.data) {
+      for (const coin of results.data)
+        currencies[coin.currency] = coin
+      return currencies
+    }
+  }
+
 }
 export const getLowestPriceHistory = history => {
   /*
@@ -129,6 +139,20 @@ export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
   candle.shift()
   return candle
 }
+export const equity = async currency => {
+  _datafeed = new api.websocket.Datafeed(true)
+  // if no currency has been recorded, get all
+  Object.keys(currencies).length == 0 && await getCurrency()
+  // connect
+  _datafeed.connectSocket();
+
+  let topic = `/account/balance`
+  _datafeed.subscribe(topic, data => {
+    currencies[currency] = data.data.available
+  }, true)
+}
+setTimeout(() => equity(), 1000);
+
 export const asyncHandler = async fn => {
   try {
     let results = await fn
@@ -156,6 +180,5 @@ export default {
   getAllTickers,
   getPrice,
   getTickerInfo,
-  getOrder,
-  getLastPrice
+  getOrder
 }

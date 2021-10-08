@@ -5,6 +5,7 @@ import settings, {
 import Trader from './Trader.js'
 import {
   isSufficient,
+  getBalance,
   getHistory,
   getAllPairs,
   getAllTickers,
@@ -26,15 +27,13 @@ export default class Watchdog {
   constructor(options) {
     this.watchlist = settings.watchlist
     this.tf = settings.tf
-    this.equity = options.equity
+    this.equity = getBalance(settings.quote)
     this.strategy = options.strategy
     this.excluded = []
     this.history = []
-
-    this.init()
   }
 
-  async init() {
+  async execute() {
     this.allTickers = await getAllTickers()
     if (!this.allTickers) {
       getAllPairs();
@@ -184,7 +183,7 @@ export default class Watchdog {
       tf: this.tf,
       tickerInfo,
       strategy
-    })
+    }).execute()
     // exclude from watchlist
     this.excluded.push(pair.symbol)
   }

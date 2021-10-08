@@ -17,16 +17,4 @@ export const config = {
 
 }
 
-export const indicators = {
-  macd: {
-    params: {
-      shortInterval: 12,
-      longInterval: 26,
-      signal: 9
-    }
-  }
-
-}
-
-
 export default config

@@ -1,14 +1,11 @@
 import api from 'kucoin-node-sdk'
-import dotenv from 'dotenv'
-import sniper from './sniper.js'
+
+import Watchdog from './Watchdog.js'
 
 import {
   config,
 } from './config/keys.js'
-import Watchdog from './Watchdog.js'
-import settings, {
-  database
-} from './config/settings.js'
+api.init(config)
 
 import {
   MACD,
@@ -16,30 +13,37 @@ import {
   RTW,
   VWAP
 } from './strategies/index.js'
+import tribitrage from './tribitrage.js'
 
-dotenv.config()
+setTimeout(() => {
+  tribitrage()
+}, 1000);
 
-api.init(config)
+import settings, {
+  database
+} from './config/settings.js'
+
+
+
+
 
 database.connect
 
-api.rest.User.Account.getAccountsList({
-  type: 'trade',
-  currency: settings.base
-}).then(data => {
-  if (data.data) {
-    new Watchdog({
-      equity: data.data[0].available,
-      strategy: {
-        MACD,
-        CMF_MACD,
-        VWAP
-      }
-    })
-  }
-})
-
-
+// api.rest.User.Account.getAccountsList({
+//   type: 'trade',
+//   currency: settings.quote
+// }).then(data => {
+//   if (data.data) {
+//     new Watchdog({
+//       equity: data.data[0].available,
+//       strategy: {
+//         MACD,
+//         CMF_MACD,
+//         VWAP
+//       }
+//     })
+//   }
+// })
 
 
 export default api

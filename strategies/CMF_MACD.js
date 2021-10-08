@@ -66,6 +66,7 @@ const defineOrder = options => {
     SL,
     size: equity * 0.05,
     rr,
-    type: 'market'
+    type: 'market',
+    side: 'buy'
   }
 }
