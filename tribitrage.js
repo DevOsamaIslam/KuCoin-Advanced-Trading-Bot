@@ -46,8 +46,8 @@ const arbitrage = async options => {
     let target = (ownBTC / BC) * fee
     let ownUSDT = (target * CD) * fee
     ownUSDT = floor(ownUSDT, 2)
-    risked = floor(risked, 2) + 0.03
-    if (ownUSDT >= risked) {
+    risked = Number(floor(risked, 2)) + 0.03
+    if (ownUSDT > risked) {
       x = true
       // datafeed.unsubscribe(topic, cbid)
 
