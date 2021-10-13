@@ -3,6 +3,7 @@ import {
   getAllPairs,
   getTickerInfo,
   getBalance,
+  floor
 } from './config/utils.js'
 
 import Trader from './Trader.js';
@@ -40,15 +41,15 @@ const arbitrage = async options => {
     // Housekeeping
     if (!AB || !BC || !CD) return
     // simulate Arbitragelet 
-    let risked = getBalance('USDT') * settings.strategies.TRIBITRAGE.risk
+    let risked = await getBalance('USDT') * settings.strategies.TRIBITRAGE.risk
     let ownBTC = (risked / AB) * fee
     let target = (ownBTC / BC) * fee
     let ownUSDT = (target * CD) * fee
-    ownUSDT = parseFloat(ownUSDT.toFixed(2))
-    risked = parseFloat(risked.toFixed(2)) + 0.03
+    ownUSDT = floor(ownUSDT, 2)
+    risked = floor(risked, 2) + 0.03
     if (ownUSDT >= risked) {
       x = true
-      datafeed.unsubscribe(topic, cbid)
+      // datafeed.unsubscribe(topic, cbid)
 
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
@@ -58,11 +59,11 @@ const arbitrage = async options => {
       // Buy Bitcoin ------------------------------------------------------
       order = {
         size: ownBTC,
-        currentPrice: parseFloat(AB),
+        currentPrice: AB,
         type: 'limit',
         side: 'buy'
       }
-      await new Trader({
+      new Trader({
         pair: {
           symbol: symbols.AB
         },
@@ -78,7 +79,7 @@ const arbitrage = async options => {
           },
           order: {
             size: target,
-            currentPrice: parseFloat(BC),
+            currentPrice: BC,
             type: 'limit',
             side: 'buy'
           },
@@ -92,14 +93,14 @@ const arbitrage = async options => {
           },
           order: {
             size: target,
-            currentPrice: parseFloat(CD),
+            currentPrice: CD,
             type: 'limit',
             side: 'sell'
           },
-          tickerInfo: symbols.BCI,
+          tickerInfo: symbols.CDI,
           strategy: 'Tribitrage'
         }
-      ])
+      ]).then(() => x = false)
     }
   })
 }

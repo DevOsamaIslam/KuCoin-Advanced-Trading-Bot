@@ -2,8 +2,13 @@ import api from './main.js'
 import {
   calcPerc,
   getOrder,
+  getOrderSync,
   getDecimalPlaces,
-  getBalance
+  getBalance,
+  floor,
+  postOrder,
+  getBase,
+  getQuote
 } from './config/utils.js'
 import log, {
   logStrategy
@@ -17,6 +22,7 @@ export default class Trader {
     // connect
     this.datafeed.connectSocket();
 
+    this.equity = options.equity
     this.pair = options.pair
     this.order = options.order
     this.tf = options.tf
@@ -41,14 +47,14 @@ export default class Trader {
     let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
     // get the order size in the base currency (the one you want to buy)
     let size = this.order.type == 'limit' ?
-      this.order.size.toFixed(decimals) :
-      (this.order.size / (this.pair.bestAsk || this.order.currentPrice)).toFixed(decimals)
+      floor(this.order.size, decimals) :
+      floor(this.order.size / (this.pair.bestAsk || this.order.currentPrice), decimals)
     // check if the order size is less-than/equal-to the minimum
     if (size <= this.tickerInfo.baseMinSize) return false
 
     let params = {
       baseParams: {
-        clientOid: `${this.order.type ||'Market'}_Buy_${this.pair.symbol}_at_${Date.now()}`,
+        clientOid: `${Date.now()}`,
         side: 'buy',
         symbol: this.pair.symbol,
         type: this.order.type || 'market',
@@ -61,9 +67,8 @@ export default class Trader {
       }
     }
 
-    let order = await api.rest.Trade.Orders.postOrder(params.baseParams, params.orderParams)
-    if (order.data) {
-      this.activeOrder = await getOrder(order.data.orderId)
+    this.activeOrder = await postOrder(params.baseParams, params.orderParams)
+    if (this.activeOrder) {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
@@ -74,7 +79,7 @@ export default class Trader {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`Something went wrong while buying: ${order.msg}`]
+        data: [`Something went wrong while buying`]
       });
       return false
     }
@@ -104,32 +109,40 @@ export default class Trader {
   }
 
   async sell(options) {
-    api.rest.Trade.Orders.postOrder({
-      clientOid: `Sell_${this.activeOrder && this.activeOrder.id}`,
+    // find the lowest quote increment decimal value
+    let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
+    // get the order size in the base currency (the one you want to buy)
+    let size = this.order.type == 'limit' ?
+      floor(this.order.size, decimals) :
+      floor(this.order.size / (this.pair.bestAsk || this.order.currentPrice), decimals)
+    // check if the order size is less-than/equal-to the minimum
+    if (size <= this.tickerInfo.baseMinSize) return false
+
+    let order = await postOrder({
+      clientOid: `Sell_${Date.now()}`,
       side: 'sell',
       symbol: this.pair.symbol,
       type: options.type || 'market',
       remark: `Strategy: ${this.strategy} (${this.activeOrder && this.activeOrder.id})`
     }, {
-      size: this.activeOrder ? this.activeOrder.dealSize : this.order.size,
+      size: this.order.size,
       price: options.price
-    }).then(order => {
-      if (order.data) {
-        logStrategy({
-          strategy: this.strategy,
-          pair: this.pair,
-          data: [`Sold ${Math.floor(this.activeOrder ? this.activeOrder.dealSize : this.order.size)} (${order.data.orderId})`]
-        });
-        return true
-      } else {
-        logStrategy({
-          strategy: this.strategy,
-          pair: this.pair,
-          data: [`Something went wrong while selling: ${order.msg}`]
-        });
-        return false
-      }
     })
+    if (order) {
+      logStrategy({
+        strategy: this.strategy,
+        pair: this.pair,
+        data: [`Sold ${Math.floor(this.activeOrder ? this.activeOrder.dealSize : this.order.size)} (${order.id})`]
+      });
+      return order
+    } else {
+      logStrategy({
+        strategy: this.strategy,
+        pair: this.pair,
+        data: [`Something went wrong while selling`]
+      });
+      return false
+    }
   }
 
   async stopOrder() {
@@ -137,7 +150,7 @@ export default class Trader {
     let TPOrder = {}
     let SLOrder = {}
     let decimals = getDecimalPlaces(this.tickerInfo.baseIncrement) || 4
-    let dealSize = parseFloat(this.activeOrder.dealSize).toFixed(decimals - 1)
+    let dealSize = floor(this.activeOrder.dealSize, decimals - 1)
     // stop loss
     if (this.order.SL) {
       SLOrder = await api.rest.Trade.StopOrder.postStopOrder({
@@ -216,7 +229,7 @@ export default class Trader {
 
   startDynamicTPSL() {
     let lastPrice = this.activeOrder.price
-    let boughtPrice = parseFloat(this.activeOrder.dealFunds / this.activeOrder.dealSize)
+    let boughtPrice = this.activeOrder.dealFunds / this.activeOrder.dealSize
     this.dynamicTPSL.TP = boughtPrice * (this.dynamicTPSL.TPP / 100 + 1)
     this.dynamicTPSL.SL = boughtPrice * (this.dynamicTPSL.SLP / 100 - 1)
     this.dynamicTPSL.height = this.dynamicTPSL.TP - this.dynamicTPSL.SL
@@ -283,85 +296,79 @@ export default class Trader {
   }
 
   async tribitrage(steps) {
-    let _2 = steps[0]
-    let _3 = steps[1]
-    this.buy().then(async data => {
-      if (data) {
-        let isFilled = !(await getOrder(data.id)).isActive
-        if (isFilled) {
-          let results = await this._step2(_2, _3)
+    // Step 1: Buy Bitcoin using USD
+    let order = await this.buy()
+    // check if the order has gone through
+    if (order) {
+      // If the order hasn't been filled yet, check every 0.1 seconds whether it's filled
+      let intervalId = setInterval(async () => {
+        this.activeOrder = getOrderSync(order.id)
+        // check if the order is filled
+        if (this.activeOrder && (!this.activeOrder.isActive === false || (this.activeOrder.status === 'done' && this.activeOrder.type === 'filled'))) {
+          clearInterval(intervalId)
+          // if it's filled, start the next step
+          let results = await this._step2(steps[0], steps[1])
           return results
         }
-        let topic = `/spotMarket/tradeOrders`
-        let cbid = this.datafeed.subscribe(topic, async data => {
-          let orderData = data.data
-          if (orderData.orderId == this.activeOrder.id && orderData.status == 'done') {
-            this.datafeed.unsubscribe(topic, cbid)
-            let results = await this._step2(_2, _3)
-            return results
-          }
-        }, true)
-      }
-    })
+      }, 100)
+    } else return false
 
   }
+
   async _step2(_2, _3) {
-    _2.order.size = getBalance(_2.pair.symbol.split('-')[0])
+    // Find how much we have in the quote currency to use the whole funds to buy the target currency
+    _2.order.size = (await getBalance(getQuote(_2.pair.symbol)) / _2.order.currentPrice) * 0.999
+    // update the main order information with the 2nd buy parameters
     this.updateConstructor(_2)
+    // Step 2: Buy the target currency using Bitcoin
     let results = await this.buy()
     if (results) {
-      // this.activeOrder = await getOrder(results.id)
-      // if (!this.activeOrder.isActive) {
-      //   results = await this._step3(_3)
-      //   return results
-      // }
-      let topic = `/spotMarket/tradeOrders`
-      let cbid = this.datafeed.subscribe(topic, async data => {
-        let orderData = data.data
-        if (orderData.orderId == this.activeOrder.id && orderData.status == 'done') {
-          this.datafeed.unsubscribe(topic, cbid)
+      // If the order hasn't been filled yet, check every 0.1 seconds whether it's filled
+      let intervalId = setInterval(async () => {
+        let order = getOrderSync(this.activeOrder.id || this.activeOrder.orderId)
+        if (order && order.status == 'done' && order.type == 'filled') {
+          clearInterval(intervalId)
+          // if it's filled, start the next step
           results = await this._step3(_3)
           return results
         }
-      }, true)
-    }
+      }, 100)
+    } else return false
   }
 
   async _step3(_3) {
-    _3.order.size = getBalance(_2.pair.symbol.split('-')[0])
+    // Find how much we have in the base currency to use the whole funds to sell for USD
+    _3.order.size = await getBalance(getBase(_3.pair.symbol))
     this.updateConstructor(_3)
     let results = await this.sell({
       type: 'limit',
       price: this.order.currentPrice
     })
     if (results) {
-      let topic = `/spotMarket/tradeOrders`
-      // this.activeOrder = await getOrder(results.id)
-      // if (!this.activeOrder.isActive) {
-      //   print()
-      //   return this.activeOrder
-      // }
-      let cbid = this.datafeed.subscribe(topic, async data => {
-        let orderData = data.data
-        if (orderData.orderId == this.activeOrder.id && orderData.status == 'done') {
-          this.datafeed.unsubscribe(topic, cbid)
-          print()
+      let intervalId = setInterval(() => {
+        let order = getOrderSync(this.activeOrder.id || this.activeOrder.orderId)
+        if (order && order.status == 'done' && order.type == 'filled') {
+          clearInterval(intervalId)
+          this.print()
           return this.activeOrder
         }
-      }, true)
-    }
+      }, 100)
+    } else return false
 
-    const print = () => {
-      logStrategy({
-        strategy: this.strategy,
-        pair: this.pair,
-        data: [
-          `Started with: $${this.equity}`,
-          `Ended with: $${this.activeOrder.dealSize}`
-        ]
-      })
-    }
   }
+
+
+  print = () => {
+    logStrategy({
+      strategy: this.strategy,
+      pair: this.pair,
+      data: [
+        `Started with: $${this.equity}`,
+        `Ended with: $${this.activeOrder.dealSize / this.order.currentPrice}`
+      ]
+    })
+  }
+
 
   updateConstructor(data) {
     this.pair = data.pair
