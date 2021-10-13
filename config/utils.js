@@ -88,7 +88,7 @@ export const getBalance = async currency => {
   //   currency
   // }))
   if (currency) {
-    let results = parseFloat(currencies[currency].available)
+    let results = currencies[currency] ? parseFloat(currencies[currency].available) : 0
     if (results == 0) return parseFloat((await getCurrency(currency)).available)
     else return results
   } else return parseFloat(await getCurrency(currency).available)
