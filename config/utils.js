@@ -12,12 +12,26 @@ import settings from './settings.js'
 
 let quote = settings.quote
 let currencies = {}
+let orders = []
 
 let _datafeed = false
 
 export const calcPerc = (newValue, oldValue) => ((newValue - oldValue) / oldValue) * 100
 
+export const floor = (value, decimals) => {
+  if (typeof value === 'number') value = value.toString()
+
+  let ints = value.split('.')[0]
+  let dec = value.split('.')[1]
+  if (dec) return ints + '.' + dec.substr(0, decimals)
+  else return parseFloat(ints)
+}
+
 export const calculateTPPrice = (price, TPP) => parseFloat(price + price * TPP)
+
+export const getBase = (symbol) => symbol.split('-')[0]
+
+export const getQuote = (symbol) => symbol.split('-')[1]
 
 export const calculateSLPrice = (price, SLP) => parseFloat(price - price * SLP)
 
@@ -55,21 +69,30 @@ export const getPrice = async pair => {
   else return false
 }
 export const getOrder = async id => {
+  let match = orders.find(x => x.orderId == id)
+  if (match) return match
   let data = await asyncHandler(api.rest.Trade.Orders.getOrderByID(id))
   if (data) return data.data
   else return false
 }
+export const getOrderSync = id => orders.find(x => x.orderId == id)
+
 export const cancelOrder = async id => {
   let data = await asyncHandler(api.rest.Trade.Orders.cancelOrder(id))
   if (data) return data.data
   else return false
 }
-export const getBalance = currency => {
+export const getBalance = async currency => {
   // let results = await asyncHandler(api.rest.User.Account.getAccountsList({
   //   type: 'trade',
   //   currency
   // }))
-  return currencies[currency].available || false
+  if (currency) {
+    let results = parseFloat(currencies[currency].available)
+    if (results == 0) return parseFloat((await getCurrency(currency)).available)
+    else return results
+  } else return parseFloat(await getCurrency(currency).available)
+
 }
 export const getCurrency = async (currency = undefined) => {
   if (currency) {
@@ -82,7 +105,7 @@ export const getCurrency = async (currency = undefined) => {
     let results = await asyncHandler(api.rest.User.Account.getAccountsList({
       type: 'trade',
     }))
-    if (results.data) {
+    if (results && results.data) {
       for (const coin of results.data)
         currencies[coin.currency] = coin
       return currencies
@@ -140,27 +163,51 @@ export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
   return candle
 }
 export const equity = async currency => {
-  _datafeed = new api.websocket.Datafeed(true)
   // if no currency has been recorded, get all
   Object.keys(currencies).length == 0 && await getCurrency()
   // connect
-  _datafeed.connectSocket();
-
+  // _datafeed.connectSocket();
   let topic = `/account/balance`
-  _datafeed.subscribe(topic, data => {
-    currencies[currency] = data.data.available
+  _datafeed.subscribe(topic, payload => currencies[currency || payload.data.currency] = payload.data, true)
+}
+const initSocket = () => {
+  _datafeed = new api.websocket.Datafeed(true)
+  _datafeed.connectSocket()
+}
+setTimeout(async () => {
+  await initSocket()
+  equity()
+  updateOrders()
+}, 1000);
+
+export const updateOrders = async () => {
+  // connect
+  // _datafeed.connectSocket();
+  let topic = `/spotMarket/tradeOrders`
+  _datafeed.subscribe(topic, payload => {
+    let order = payload.data
+    if (order.status === 'done' && order.type === 'filled') {
+      console.log(`${order.symbol} filled`);
+      orders.push(order)
+    }
   }, true)
 }
-setTimeout(() => equity(), 1000);
 
+export const postOrder = async (baseParams, orderParams) => {
+  let results = await asyncHandler(api.rest.Trade.Orders.postOrder(baseParams, orderParams))
+  if (results) {
+    let order = await getOrder(results.data.orderId)
+    return order
+  }
+  return false
+}
 export const asyncHandler = async fn => {
   try {
     let results = await fn
     if (results.msg) {
       console.log(results.msg);
       return false
-    }
-    return results
+    } else return results
   } catch (error) {
     err(`asyncHandler error: ${JSON.stringify(error)}`);
     return false

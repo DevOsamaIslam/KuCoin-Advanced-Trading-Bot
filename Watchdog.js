@@ -27,7 +27,7 @@ export default class Watchdog {
   constructor(options) {
     this.watchlist = settings.watchlist
     this.tf = settings.tf
-    this.equity = getBalance(settings.quote)
+    this.equity = getBalance(settings.quote).then(data => data)
     this.strategy = options.strategy
     this.excluded = []
     this.history = []
