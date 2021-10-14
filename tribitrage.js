@@ -3,7 +3,10 @@ import {
   getAllPairs,
   getTickerInfo,
   getBalance,
-  floor
+  floor,
+  exclude,
+  isExcluded,
+  getBase
 } from './config/utils.js'
 
 import Trader from './Trader.js';
@@ -33,13 +36,13 @@ const arbitrage = async options => {
 
   let topic = `/market/ticker:${symbols.AB},${symbols.BC},${symbols.CD}`
   let cbid = datafeed.subscribe(topic, async data => {
-    if (x) return
     let currentTicker = data.topic.split(':')[1]
     if (currentTicker == symbols.AB) AB = data.data.bestAsk
     if (currentTicker == symbols.BC) BC = data.data.bestAsk
     if (currentTicker == symbols.CD) CD = data.data.bestBid
     // Housekeeping
     if (!AB || !BC || !CD) return
+    if (isExcluded(getBase(symbols.BC))) return
     // simulate Arbitragelet 
     let risked = await getBalance('USDT') * settings.strategies.TRIBITRAGE.risk
     let ownBTC = (risked / AB) * fee
@@ -47,10 +50,8 @@ const arbitrage = async options => {
     let ownUSDT = (target * CD) * fee
     ownUSDT = floor(ownUSDT, 2)
     risked = Number(floor(risked, 2)) + 0.03
-    if (ownUSDT > risked) {
-      x = true
-      // datafeed.unsubscribe(topic, cbid)
-
+    if (ownUSDT > risked || true) {
+      exclude(getBase(symbols.BC))
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
       log(`${symbols.AB}: ${AB} => ${ownBTC}`);
@@ -100,7 +101,7 @@ const arbitrage = async options => {
           tickerInfo: symbols.CDI,
           strategy: 'Tribitrage'
         }
-      ]).then(() => x = false)
+      ])
     }
   })
 }

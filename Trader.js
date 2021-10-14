@@ -8,7 +8,8 @@ import {
   floor,
   postOrder,
   getBase,
-  getQuote
+  getQuote,
+  includeIt
 } from './config/utils.js'
 import log, {
   logStrategy
@@ -350,6 +351,7 @@ export default class Trader {
         if (order && order.status == 'done' && order.type == 'filled') {
           clearInterval(intervalId)
           this.print()
+          includeIt(getBase(_3.pair.symbol))
           return this.activeOrder
         }
       }, 100)

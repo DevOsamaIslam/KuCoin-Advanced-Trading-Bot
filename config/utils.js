@@ -13,8 +13,15 @@ import settings from './settings.js'
 let quote = settings.quote
 let currencies = {}
 let orders = []
+let excluded = []
 
 let _datafeed = false
+
+export const exclude = coin => excluded.push(coin)
+
+export const isExcluded = coin => excluded.find(x => x == coin)
+
+export const includeIt = coin => excluded.splice(excluded.indexOf(coin), 1)
 
 export const calcPerc = (newValue, oldValue) => ((newValue - oldValue) / oldValue) * 100
 
@@ -181,8 +188,6 @@ setTimeout(async () => {
 }, 1000);
 
 export const updateOrders = async () => {
-  // connect
-  // _datafeed.connectSocket();
   let topic = `/spotMarket/tradeOrders`
   _datafeed.subscribe(topic, payload => {
     let order = payload.data
@@ -213,6 +218,7 @@ export const asyncHandler = async fn => {
     return false
   }
 }
+
 
 
 export default {
