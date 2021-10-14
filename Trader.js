@@ -54,7 +54,7 @@ export default class Trader {
 
     let params = {
       baseParams: {
-        clientOid: `Buy_${thos.pair.symbol}_${Date.now()}`,
+        clientOid: `Buy_${this.pair.symbol}_${Date.now()}`,
         side: 'buy',
         symbol: this.pair.symbol,
         type: this.order.type || 'market',
