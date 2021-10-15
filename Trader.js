@@ -133,7 +133,7 @@ export default class Trader {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`Sold ${this.activeOrder ? this.activeOrder.dealSize : this.order.size} (${order.id})`]
+        data: [`Sold ${this.order.size} (${order.orderId})`]
       });
       return order
     } else {
@@ -366,7 +366,7 @@ export default class Trader {
       pair: this.pair,
       data: [
         `Started with: $${this.equity}`,
-        `Ended with: $${this.order.size / this.order.currentPrice}`
+        `Ended with: $${this.order.size * this.order.currentPrice}`
       ]
     })
   }
