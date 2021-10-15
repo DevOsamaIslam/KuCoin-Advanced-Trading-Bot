@@ -62,7 +62,9 @@ const arbitrage = async options => {
         size: ownBTC,
         currentPrice: AB,
         type: 'limit',
-        side: 'buy'
+        side: 'buy',
+        timeInForce: 'GTT',
+        cancelAfter: 60 * 15
       }
       new Trader({
         pair: {
@@ -82,7 +84,9 @@ const arbitrage = async options => {
             size: target,
             currentPrice: BC,
             type: 'limit',
-            side: 'buy'
+            side: 'buy',
+            timeInForce: 'GTT',
+            cancelAfter: 60 * 15
           },
           tickerInfo: symbols.BCI,
           strategy: 'Tribitrage'
