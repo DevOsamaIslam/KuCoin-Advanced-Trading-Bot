@@ -60,7 +60,9 @@ export default class Trader {
         symbol: this.pair.symbol,
         type: this.order.type || 'market',
         stp: 'CO',
-        remark: `Strategy: ${this.strategy}`
+        remark: `Strategy: ${this.strategy}`,
+        timeInForce: this.order.timeInForce || 'GTC',
+        cancelAfter: this.order.cancelAfter
       },
       orderParams: {
         price: this.order.currentPrice,
