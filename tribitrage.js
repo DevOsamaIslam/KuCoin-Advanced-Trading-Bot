@@ -48,9 +48,9 @@ const arbitrage = async options => {
     let ownBTC = (risked / AB) * fee
     let target = (ownBTC / BC) * fee
     let ownUSDT = (target * CD) * fee
-    ownUSDT = floor(ownUSDT, 2)
-    risked = Number(floor(risked, 2)) + 0.03
-    if (ownUSDT > risked) {
+    ownUSDT = Number(floor(ownUSDT, 2))
+    risked = Number(floor(risked, 2))
+    if (ownUSDT - 0.03 > risked) {
       exclude(getBase(symbols.BC))
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
