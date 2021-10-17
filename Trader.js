@@ -299,6 +299,8 @@ export default class Trader {
   }
 
   async tribitrage(steps) {
+    let results = await this._step2(steps[0], steps[1])
+    if (results) return results
     // Step 1: Buy Bitcoin using USD
     let order = await this.buy()
     // check if the order has gone through
