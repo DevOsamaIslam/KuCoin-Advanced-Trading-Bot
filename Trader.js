@@ -307,7 +307,8 @@ export default class Trader {
     // check if the order has gone through
     if (order && !skip) {
       // check if the order is filled
-      if (this.orderFilled()) {
+      let filled = await this.orderFilled()
+      if (filled) {
         // if it's filled, start the next step
         let results = await this._step2(steps[0], steps[1])
         return results
@@ -318,13 +319,15 @@ export default class Trader {
 
   async _step2(_2, _3) {
     // Find how much we have in the quote currency to use the whole funds to buy the target currency
-    _2.order.size = (await getBalance(getQuote(_2.pair.symbol)) / _2.order.currentPrice) * 0.999
+    let balance = await getBalance(getQuote(_2.pair.symbol))
+    _2.order.size = (balance / _2.order.currentPrice) * 0.999
+    if (_2.order.size === 0) return false
     // update the main order information with the 2nd buy parameters
     this.updateConstructor(_2)
     // Step 2: Buy the target currency using Bitcoin
     let results = await this.buy()
     if (results) {
-      let filled = this.orderFilled()
+      let filled = await this.orderFilled()
       if (filled) {
         // if it's filled, start the next step
         results = await this._step3(_3)
@@ -342,7 +345,7 @@ export default class Trader {
       price: this.order.currentPrice
     })
     if (results) {
-      let filled = this.orderFilled()
+      let filled = await this.orderFilled()
       if (filled) {
         this.print()
         includeIt(getBase(_3.pair.symbol))
@@ -352,10 +355,10 @@ export default class Trader {
 
   }
 
-  orderFilled() {
-    let order = getOrderSync(this.activeOrder.id || this.activeOrder.orderId)
+  async orderFilled() {
+    let order = await getOrder(this.activeOrder.id || this.activeOrder.orderId)
     if (order && order.status == 'done' && order.type == 'filled') return order
-    else if (order.type == 'cancelled') return false
+    else if (order && order.type == 'cancelled') return false
     else this.orderFilled()
   }
 
