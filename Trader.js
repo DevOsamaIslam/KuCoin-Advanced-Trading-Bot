@@ -306,17 +306,12 @@ export default class Trader {
     let order = await this.buy()
     // check if the order has gone through
     if (order && !skip) {
-      // If the order hasn't been filled yet, check every 0.1 seconds whether it's filled
-      let intervalId = setInterval(async () => {
-        this.activeOrder = getOrderSync(order.id)
-        // check if the order is filled
-        if (this.activeOrder && (!this.activeOrder.isActive === false || (this.activeOrder.status === 'done' && this.activeOrder.type === 'filled'))) {
-          clearInterval(intervalId)
-          // if it's filled, start the next step
-          let results = await this._step2(steps[0], steps[1])
-          return results
-        }
-      }, 100)
+      // check if the order is filled
+      if (this.orderFilled()) {
+        // if it's filled, start the next step
+        let results = await this._step2(steps[0], steps[1])
+        return results
+      }
     } else return false
 
   }
@@ -329,16 +324,12 @@ export default class Trader {
     // Step 2: Buy the target currency using Bitcoin
     let results = await this.buy()
     if (results) {
-      // If the order hasn't been filled yet, check every 0.1 seconds whether it's filled
-      let intervalId = setInterval(async () => {
-        let order = getOrderSync(this.activeOrder.id || this.activeOrder.orderId)
-        if (order && order.status == 'done' && order.type == 'filled') {
-          clearInterval(intervalId)
-          // if it's filled, start the next step
-          results = await this._step3(_3)
-          return results
-        }
-      }, 100)
+      let filled = this.orderFilled()
+      if (filled) {
+        // if it's filled, start the next step
+        results = await this._step3(_3)
+        return results
+      }
     } else return false
   }
 
@@ -351,17 +342,21 @@ export default class Trader {
       price: this.order.currentPrice
     })
     if (results) {
-      let intervalId = setInterval(() => {
-        let order = getOrderSync(this.activeOrder.id || this.activeOrder.orderId)
-        if (order && order.status == 'done' && order.type == 'filled') {
-          clearInterval(intervalId)
-          this.print()
-          includeIt(getBase(_3.pair.symbol))
-          return this.activeOrder
-        }
-      }, 100)
+      let filled = this.orderFilled()
+      if (filled) {
+        this.print()
+        includeIt(getBase(_3.pair.symbol))
+        return this.activeOrder
+      }
     } else return false
 
+  }
+
+  orderFilled() {
+    let order = getOrderSync(this.activeOrder.id || this.activeOrder.orderId)
+    if (order && order.status == 'done' && order.type == 'filled') return order
+    else if (order.type == 'cancelled') return false
+    else this.orderFilled()
   }
 
 
