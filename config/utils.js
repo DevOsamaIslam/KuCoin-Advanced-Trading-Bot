@@ -4,7 +4,7 @@ import {
 
 import api from '../main.js'
 
-import {
+import log, {
   err
 } from '../log.js'
 
@@ -150,7 +150,6 @@ export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
     startAt: Math.floor((Date.now() - (tf.value * lookbackPeriods)) / 1000),
     endAt: Math.floor(Date.now() / 1000)
   }
-  // console.log('getting history...');
   let data = await asyncHandler(api.rest.Market.Histories.getMarketCandles(pair.symbol, tf.text, span))
   if (!data.data) {
     return false
@@ -192,7 +191,7 @@ export const updateOrders = async () => {
   _datafeed.subscribe(topic, payload => {
     let order = payload.data
     if (order.status === 'done' && order.type === 'filled') {
-      console.log(`${order.symbol} filled`);
+      log(`${order.symbol} filled`);
       orders.push(order)
     }
   }, true)
@@ -210,7 +209,7 @@ export const asyncHandler = async fn => {
   try {
     let results = await fn
     if (results.msg) {
-      console.log(results.msg);
+      log(results.msg);
       return false
     } else return results
   } catch (error) {
