@@ -299,12 +299,13 @@ export default class Trader {
   }
 
   async tribitrage(steps) {
+    let skip = false
     let results = await this._step2(steps[0], steps[1])
-    if (results) return results
+    if (results) skip = true
     // Step 1: Buy Bitcoin using USD
     let order = await this.buy()
     // check if the order has gone through
-    if (order) {
+    if (order && !skip) {
       // If the order hasn't been filled yet, check every 0.1 seconds whether it's filled
       let intervalId = setInterval(async () => {
         this.activeOrder = getOrderSync(order.id)
