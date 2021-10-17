@@ -298,59 +298,20 @@ export default class Trader {
     })
   }
 
-  async tribitrage(steps) {
-    let skip = false
-    let results = await this._step2(steps[0], steps[1])
-    if (results) skip = true
+  async tribitrage() {
+    if (!this.order.size) {
+      let balance = await getBalance(getQuote(this.pair.symbol))
+      this.order.size = (balance / this.order.currentPrice) * 0.999
+    }
     // Step 1: Buy Bitcoin using USD
     let order = await this.buy()
     // check if the order has gone through
-    if (order && !skip) {
+    if (order) {
       // check if the order is filled
       let filled = await this.orderFilled()
-      if (filled) {
-        // if it's filled, start the next step
-        let results = await this._step2(steps[0], steps[1])
-        return results
-      }
-    } else return false
+      if (filled)
+        return filled
 
-  }
-
-  async _step2(_2, _3) {
-    // Find how much we have in the quote currency to use the whole funds to buy the target currency
-    let balance = await getBalance(getQuote(_2.pair.symbol))
-    _2.order.size = (balance / _2.order.currentPrice) * 0.999
-    if (_2.order.size === 0) return false
-    // update the main order information with the 2nd buy parameters
-    this.updateConstructor(_2)
-    // Step 2: Buy the target currency using Bitcoin
-    let results = await this.buy()
-    if (results) {
-      let filled = await this.orderFilled()
-      if (filled) {
-        // if it's filled, start the next step
-        results = await this._step3(_3)
-        return results
-      }
-    } else return false
-  }
-
-  async _step3(_3) {
-    // Find how much we have in the base currency to use the whole funds to sell for USD
-    _3.order.size = await getBalance(getBase(_3.pair.symbol))
-    this.updateConstructor(_3)
-    let results = await this.sell({
-      type: 'limit',
-      price: this.order.currentPrice
-    })
-    if (results) {
-      let filled = await this.orderFilled()
-      if (filled) {
-        this.print()
-        includeIt(getBase(_3.pair.symbol))
-        return this.activeOrder
-      }
     } else return false
 
   }

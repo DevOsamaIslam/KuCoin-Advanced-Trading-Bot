@@ -57,7 +57,7 @@ const arbitrage = async options => {
       log(`${symbols.AB}: ${AB} => ${ownBTC}`);
       log(`${symbols.BC}: ${BC} => ${target}`);
       log(`${symbols.CD}: ${CD} => ${ownUSDT}`);
-      // Buy Bitcoin ------------------------------------------------------
+      // Step 1 ------------------------------------------------------
       order = {
         size: ownBTC,
         currentPrice: AB,
@@ -66,22 +66,21 @@ const arbitrage = async options => {
         timeInForce: 'GTT',
         cancelAfter: 60 * 15
       }
-      new Trader({
-        pair: {
-          symbol: symbols.AB
-        },
-        order,
-        tickerInfo: symbols.ABI,
-        strategy: 'Tribitrage',
-        equity: risked
-      }).tribitrage([
-        // step 2
-        {
+      await new Trader({
+          pair: {
+            symbol: symbols.AB
+          },
+          order,
+          tickerInfo: symbols.ABI,
+          strategy: 'Tribitrage',
+          equity: risked
+        }).tribitrage() &&
+        // step 2 ------------------------------------------------------
+        await new Trader({
           pair: {
             symbol: symbols.BC
           },
           order: {
-            size: target,
             currentPrice: BC,
             type: 'limit',
             side: 'buy',
@@ -90,22 +89,20 @@ const arbitrage = async options => {
           },
           tickerInfo: symbols.BCI,
           strategy: 'Tribitrage'
-        },
-        // step 3
-        {
+        }).tribitrage() &&
+        // step 3 ------------------------------------------------------
+        await new Trader({
           pair: {
             symbol: symbols.CD
           },
           order: {
-            size: target,
             currentPrice: CD,
             type: 'limit',
             side: 'sell'
           },
           tickerInfo: symbols.CDI,
           strategy: 'Tribitrage'
-        }
-      ])
+        }).tribitrage()
     }
   })
 }
