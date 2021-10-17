@@ -357,7 +357,7 @@ export default class Trader {
 
   async orderFilled() {
     let order = await getOrder(this.activeOrder.id || this.activeOrder.orderId)
-    if (order && order.status == 'done' && order.type == 'filled') return order
+    if (order && (!order.isActive && !order.cancelExist || order.status == 'done' && order.type == 'filled')) return order
     else if (order && order.type == 'cancelled') return false
     else this.orderFilled()
   }
