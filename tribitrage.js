@@ -93,7 +93,7 @@ const start = async options => {
       type: 'limit',
       side: 'buy',
       timeInForce: 'GTT',
-      cancelAfter: 60 * 15
+      cancelAfter: 60
     },
     tickerInfo: symbols.ABI,
     strategy: 'Tribitrage',
@@ -111,7 +111,7 @@ const start = async options => {
         type: 'limit',
         side: 'buy',
         timeInForce: 'GTT',
-        cancelAfter: 60 * 15
+        cancelAfter: 60
       },
       tickerInfo: symbols.BCI,
       strategy: 'Tribitrage'
