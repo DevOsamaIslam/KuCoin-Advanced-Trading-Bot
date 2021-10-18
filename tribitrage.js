@@ -81,6 +81,7 @@ const arbitrage = async options => {
             symbol: symbols.BC
           },
           order: {
+            size: target,
             currentPrice: BC,
             type: 'limit',
             side: 'buy',
