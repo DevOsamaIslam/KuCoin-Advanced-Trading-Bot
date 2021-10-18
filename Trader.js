@@ -135,7 +135,7 @@ export default class Trader {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`Sold ${this.order.size} (${order.orderId})`]
+        data: [`Sold ${this.pair.symbol} @${this.order.currentPrice}`]
       });
       return order
     } else {
