@@ -304,7 +304,10 @@ export default class Trader {
       this.order.size = (balance / this.order.currentPrice) * 0.999
     }
     // Step 1: Buy Bitcoin using USD
-    let order = await this.buy()
+    let order = this.order.side === 'buy' ? await this.buy() : await this.sell({
+      price: this.order.currentPrice,
+      size: this.order.size
+    })
     // check if the order has gone through
     if (order) {
       // check if the order is filled
