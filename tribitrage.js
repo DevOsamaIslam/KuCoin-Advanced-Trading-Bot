@@ -45,7 +45,7 @@ const arbitrage = async options => {
     if (!AB || !BC || !CD) return
     if (isExcluded(getBase(symbols.BC))) return
     // simulate Arbitragelet 
-    let risked = await getBalance('USDT') // * settings.strategies.TRIBITRAGE.risk
+    let risked = await getBalance('USDT') * settings.strategies.TRIBITRAGE.risk
     let ownMedian = (risked / AB) * fee
     let target = (ownMedian / BC) * fee
     let ownUSDT = (target * CD) * fee
