@@ -316,7 +316,7 @@ export default class Trader {
     // check if the order has gone through
     if (order) {
       // check if the order is filled
-      let filled = await this.orderFilled()
+      let filled = await this.orderFilled(order)
       if (filled)
         return filled
 
@@ -324,11 +324,11 @@ export default class Trader {
 
   }
 
-  async orderFilled() {
-    let order = await getOrder(this.activeOrder.id || this.activeOrder.orderId)
+  async orderFilled(order) {
+    order = getOrderSync(order.id || order.orderId) || order
     if (order && (!order.isActive && !order.cancelExist || order.status == 'done' && order.type == 'filled')) return order
     else if (order && order.type == 'cancelled') return false
-    else this.orderFilled()
+    else this.orderFilled(order)
   }
 
 
