@@ -58,55 +58,77 @@ const arbitrage = async options => {
       log(`${symbols.AB}: ${AB} => ${ownMedian}`);
       log(`${symbols.BC}: ${BC} => ${target}`);
       log(`${symbols.CD}: ${CD} => ${ownUSDT}`);
-      // Step 1 ------------------------------------------------------
-      order = {
-        size: ownMedian,
-        currentPrice: AB,
+      start({
+        AB,
+        BC,
+        CD,
+        symbols,
+        ownMedian,
+        risked,
+        target
+      })
+    }
+  })
+}
+
+const start = async options => {
+  let {
+    AB,
+    BC,
+    CD,
+    symbols,
+    ownMedian,
+    risked,
+    target
+  } = options
+  // Step 1 ------------------------------------------------------
+  let step1 = await new Trader({
+    pair: {
+      symbol: symbols.AB
+    },
+    order: {
+      size: ownMedian,
+      currentPrice: AB,
+      type: 'limit',
+      side: 'buy',
+      timeInForce: 'GTT',
+      cancelAfter: 60 * 15
+    },
+    tickerInfo: symbols.ABI,
+    strategy: 'Tribitrage',
+    equity: risked
+  }).tribitrage()
+  if (step1)
+    // step 2 ------------------------------------------------------
+    let step2 = await new Trader({
+      pair: {
+        symbol: symbols.BC
+      },
+      order: {
+        size: target,
+        currentPrice: BC,
         type: 'limit',
         side: 'buy',
         timeInForce: 'GTT',
         cancelAfter: 60 * 15
-      }
-      await new Trader({
-          pair: {
-            symbol: symbols.AB
-          },
-          order,
-          tickerInfo: symbols.ABI,
-          strategy: 'Tribitrage',
-          equity: risked
-        }).tribitrage() &&
-        // step 2 ------------------------------------------------------
-        await new Trader({
-          pair: {
-            symbol: symbols.BC
-          },
-          order: {
-            size: target,
-            currentPrice: BC,
-            type: 'limit',
-            side: 'buy',
-            timeInForce: 'GTT',
-            cancelAfter: 60 * 15
-          },
-          tickerInfo: symbols.BCI,
-          strategy: 'Tribitrage'
-        }).tribitrage() &&
-        // step 3 ------------------------------------------------------
-        await new Trader({
-          pair: {
-            symbol: symbols.CD
-          },
-          order: {
-            currentPrice: CD,
-            type: 'limit',
-            side: 'sell'
-          },
-          tickerInfo: symbols.CDI,
-          strategy: 'Tribitrage'
-        }).tribitrage()
-    }
-  })
+      },
+      tickerInfo: symbols.BCI,
+      strategy: 'Tribitrage'
+    }).tribitrage()
+  if (step2)
+    // step 3 ------------------------------------------------------
+    await new Trader({
+      pair: {
+        symbol: symbols.CD
+      },
+      order: {
+        currentPrice: CD,
+        type: 'limit',
+        side: 'sell'
+      },
+      tickerInfo: symbols.CDI,
+      strategy: 'Tribitrage'
+    }).tribitrage()
 }
 
 const dynamicArb = async () => {
