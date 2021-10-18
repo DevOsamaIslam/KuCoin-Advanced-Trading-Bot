@@ -81,8 +81,9 @@ const start = async options => {
     risked,
     target
   } = options
+  let step1, step2, step3
   // step 1 ------------------------------------------------------
-  let step1 = await new Trader({
+  step1 = await new Trader({
     pair: {
       symbol: symbols.AB
     },
@@ -100,7 +101,7 @@ const start = async options => {
   }).tribitrage()
   if (step1)
     // step 2 ------------------------------------------------------
-    let step2 = await new Trader({
+    step2 = await new Trader({
       pair: {
         symbol: symbols.BC
       },
@@ -117,7 +118,7 @@ const start = async options => {
     }).tribitrage()
   if (step2)
     // step 3 ------------------------------------------------------
-    await new Trader({
+    step3 = await new Trader({
       pair: {
         symbol: symbols.CD
       },
