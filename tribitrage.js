@@ -19,6 +19,7 @@ import log from './log.js'
 
 let fee = 0.999
 let x = false
+let median = 'USDC'
 
 
 const arbitrage = async options => {
@@ -45,8 +46,8 @@ const arbitrage = async options => {
     if (isExcluded(getBase(symbols.BC))) return
     // simulate Arbitragelet 
     let risked = await getBalance('USDT') * settings.strategies.TRIBITRAGE.risk
-    let ownBTC = (risked / AB) * fee
-    let target = (ownBTC / BC) * fee
+    let ownMedian = (risked / AB) * fee
+    let target = (ownMedian / BC) * fee
     let ownUSDT = (target * CD) * fee
     ownUSDT = Number(floor(ownUSDT, 2))
     risked = Number(floor(risked, 2))
@@ -54,12 +55,12 @@ const arbitrage = async options => {
       exclude(getBase(symbols.BC))
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
-      log(`${symbols.AB}: ${AB} => ${ownBTC}`);
+      log(`${symbols.AB}: ${AB} => ${ownMedian}`);
       log(`${symbols.BC}: ${BC} => ${target}`);
       log(`${symbols.CD}: ${CD} => ${ownUSDT}`);
       // Step 1 ------------------------------------------------------
       order = {
-        size: ownBTC,
+        size: ownMedian,
         currentPrice: AB,
         type: 'limit',
         side: 'buy',
@@ -110,32 +111,32 @@ const arbitrage = async options => {
 
 const dynamicArb = async () => {
   let common = []
-  let btcPairs = await getAllPairs('BTC')
-  let btcTickers = await getAllTickers('BTC')
+  let medianPairs = await getAllPairs(median)
+  let medianTickers = await getAllTickers(median)
   let usdtPairs = await getAllPairs('USDT')
   let usdtTickers = await getAllTickers('USDT')
-  if (!btcPairs || !btcTickers || !usdtPairs || !usdtTickers) {
+  if (!medianPairs || !medianTickers || !usdtPairs || !usdtTickers) {
     dynamicArb()
     return
   }
   for (const usdtPair of usdtPairs) {
     let symbol = usdtPair.symbol.split('-')[0]
-    if (btcPairs.find(s => s.symbol.split('-')[0] == symbol))
+    if (medianPairs.find(s => s.symbol.split('-')[0] == symbol))
       common.push(symbol)
   }
 
   for (const pair of common) {
     arbitrage({
       symbols: {
-        AB: `BTC-USDT`,
-        BC: `${pair}-BTC`,
+        AB: `${median}-USDT`,
+        BC: `${pair}-${median}`,
         CD: `${pair}-USDT`,
         ABI: getTickerInfo({
-          symbol: 'BTC-USDT'
+          symbol: `${median}-USDT`
         }, usdtTickers),
         BCI: getTickerInfo({
-          symbol: `${pair}-BTC`
-        }, btcTickers),
+          symbol: `${pair}-${median}`
+        }, medianTickers),
         CDI: getTickerInfo({
           symbol: `${pair}-USDT`
         }, usdtTickers),
