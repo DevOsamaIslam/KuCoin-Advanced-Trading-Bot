@@ -59,7 +59,7 @@ export default class Trader {
         side: 'buy',
         symbol: this.pair.symbol,
         type: this.order.type || 'market',
-        stp: 'CO',
+        stp: 'CN',
         remark: `Strategy: ${this.strategy}`,
         timeInForce: this.order.timeInForce || 'GTC',
         cancelAfter: this.order.cancelAfter
