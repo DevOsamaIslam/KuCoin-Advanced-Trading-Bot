@@ -17,7 +17,7 @@ import api from './main.js'
 
 import log from './log.js'
 
-let fee = 0.999
+let fee = 0.998
 let x = false
 let median = 'BTC'
 

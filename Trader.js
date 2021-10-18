@@ -303,7 +303,7 @@ export default class Trader {
       if (this.order.side === 'buy') {
         let quote = getQuote(this.pair.symbol)
         let balance = await getBalance(quote)
-        this.order.size = balance / this.order.currentPrice
+        this.order.size = (balance / this.order.currentPrice) * 0.998
         log(`${quote} balance is ${balance}`)
         log(`${this.pair.symbol} current Price: ${this.order.currentPrice}`)
         log(`size: ${this.order.size}`)
