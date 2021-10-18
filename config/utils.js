@@ -191,7 +191,6 @@ export const updateOrders = async () => {
   _datafeed.subscribe(topic, payload => {
     let order = payload.data
     if (order.status === 'done' && order.type === 'filled') {
-      log(`${order.symbol} filled`);
       orders.push(order)
     }
   }, true)
