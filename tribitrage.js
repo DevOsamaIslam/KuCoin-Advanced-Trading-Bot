@@ -19,7 +19,7 @@ import log from './log.js'
 
 let fee = 0.999
 let x = false
-let median = 'USDC'
+let median = 'BTC'
 
 
 const arbitrage = async options => {
