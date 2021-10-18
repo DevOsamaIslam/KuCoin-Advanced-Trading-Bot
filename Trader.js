@@ -333,7 +333,7 @@ export default class Trader {
 
   async orderFilled(order) {
     order = await getOrder(order.id || order.orderId) || order
-    if (order && (!order.isActive && !order.cancelExist || order.status == 'done' && order.type == 'filled')) {
+    if (order && ((!order.isActive && !order.cancelExist) || (order.status == 'done' && order.type == 'filled'))) {
       log(`${this.pair.symbol} filled`)
       return order
     } else if (order && order.type == 'cancelled') return false
