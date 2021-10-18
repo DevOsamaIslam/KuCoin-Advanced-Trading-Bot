@@ -321,8 +321,11 @@ export default class Trader {
     if (order) {
       // check if the order is filled
       let filled = await this.orderFilled(order)
-      if (filled)
+      if (filled) {
+        log(`${this.pair.symbol} step done.`)
         return filled
+      }
+
 
     } else return false
 
