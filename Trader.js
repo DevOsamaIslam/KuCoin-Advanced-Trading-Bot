@@ -300,10 +300,15 @@ export default class Trader {
 
   async tribitrage() {
     if (!this.order.size) {
-      let balance = await getBalance(this.order.side === 'buy' ? getQuote(this.pair.symbol) : getBase(this.pair.symbol))
-      this.order.size = (balance / this.order.currentPrice) * 0.999
+      if (this.order.side === 'buy') {
+        let balance = await getBalance(getQuote(this.pair.symbol))
+        this.order.size = (balance / this.order.currentPrice) * 0.999
+      } else {
+        let balance = await getBalance(getBase(this.pair.symbol))
+        this.order.size = balance
+      }
     }
-    // Step 1: Buy Bitcoin using USD
+
     let order = this.order.side === 'buy' ? await this.buy() : await this.sell({
       price: this.order.currentPrice,
       size: this.order.size
