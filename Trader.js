@@ -337,6 +337,7 @@ export default class Trader {
       log(`${this.pair.symbol} filled`)
       return order
     } else if (order && order.type == 'cancelled') return false
+    else if (typeof order === 'undefined') return false
     else this.orderFilled(order)
   }
 

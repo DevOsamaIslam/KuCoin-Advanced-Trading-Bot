@@ -209,7 +209,7 @@ export const asyncHandler = async fn => {
     let results = await fn
     if (results.msg) {
       log(results.msg);
-      return false
+      return undefined
     } else return results
   } catch (error) {
     err(`asyncHandler error: ${JSON.stringify(error)}`);
