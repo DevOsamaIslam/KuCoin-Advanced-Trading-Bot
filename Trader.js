@@ -301,8 +301,12 @@ export default class Trader {
   async tribitrage() {
     if (!this.order.size) {
       if (this.order.side === 'buy') {
-        let balance = await getBalance(getQuote(this.pair.symbol))
+        let quote = getQuote(this.pair.symbol)
+        let balance = await getBalance(quote)
         this.order.size = (balance / this.order.currentPrice) * 0.999
+        log(`${quote} balance is ${balance}`)
+        log(`${this.pair.symbol} current Price: ${this.order.currentPrice}`)
+        log(`size: ${this.order.size}`)
       } else {
         let balance = await getBalance(getBase(this.pair.symbol))
         this.order.size = balance
