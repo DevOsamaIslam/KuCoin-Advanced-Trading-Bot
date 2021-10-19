@@ -51,8 +51,12 @@ const arbitrage = async options => {
     let ownUSDT = (target * CD) * fee
     ownUSDT = Number(floor(ownUSDT, 2))
     risked = Number(floor(risked, 2))
-    if (ownUSDT - 0.03 > risked) {
+    // check if there is an arbitrage opportunity
+    // if the output is at least 0.03 bigger than the risked amount
+    // and there's no active trade going on
+    if (ownUSDT - 0.03 > risked && !x) {
       exclude(getBase(symbols.BC))
+      x = true
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
       log(`${symbols.AB}: ${AB} => ${ownMedian}`);
@@ -99,7 +103,7 @@ const start = async options => {
     strategy: 'Tribitrage',
     equity: risked
   }).tribitrage()
-  if (step1)
+  if (step1) {
     // step 2 ------------------------------------------------------
     step2 = await new Trader({
       pair: {
@@ -116,6 +120,9 @@ const start = async options => {
       tickerInfo: symbols.BCI,
       strategy: 'Tribitrage'
     }).tribitrage()
+    x = false
+  }
+
   if (step2)
     // step 3 ------------------------------------------------------
     step3 = await new Trader({
@@ -130,6 +137,8 @@ const start = async options => {
       tickerInfo: symbols.CDI,
       strategy: 'Tribitrage'
     }).tribitrage()
+
+
 }
 
 const dynamicArb = async () => {
