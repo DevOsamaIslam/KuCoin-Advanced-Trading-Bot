@@ -58,7 +58,6 @@ const arbitrage = async options => {
     // and there's no active trade going on
     if (ownUSDT - 0.03 > risked && !x) {
       exclude(getBase(symbols.BC))
-      x = true
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
       log(`${symbols.AB}: ${AB} => ${ownMedian}`);
@@ -145,6 +144,7 @@ io.on('order-filled', order => {
     // check if the filled order is step 1, then start step 2
     if (op.step1.pair.symbol == order.symbol && op.step1.order.currentPrice == order.price)
       new Trader(op.step2).tribitrage()
+
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
     if (op.step2.pair.symbol == order.symbol && op.step2.order.currentPrice == order.price) {
       new Trader(op.step3).tribitrage()
