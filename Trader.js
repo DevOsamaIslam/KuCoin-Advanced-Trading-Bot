@@ -128,14 +128,14 @@ export default class Trader {
       type: options.type || 'market',
       remark: `Strategy: ${this.strategy} (${this.activeOrder && this.activeOrder.id})`
     }, {
-      size: this.order.size,
+      size: options.size,
       price: options.price
     })
     if (order) {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`Sold ${this.pair.symbol} @${this.order.currentPrice}`]
+        data: [`Sold ${this.pair.symbol} @${options.price}`]
       });
       return order
     } else {
@@ -315,22 +315,10 @@ export default class Trader {
 
     this.order.side === 'buy' ? this.buy() : this.sell({
       price: this.order.currentPrice,
-      size: this.order.size
-    })
-
-  }
-
-  print = () => {
-    logStrategy({
-      strategy: this.strategy,
-      pair: this.pair,
-      data: [
-        `Started with: $${this.equity}`,
-        `Ended with: $${this.order.size * this.order.currentPrice}`
-      ]
+      size: this.order.size,
+      type: this.order.type || 'market'
     })
   }
-
 
   updateConstructor(data) {
     this.pair = data.pair
