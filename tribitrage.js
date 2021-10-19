@@ -55,7 +55,7 @@ const arbitrage = async options => {
     // check if there is an arbitrage opportunity
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
-    if ( /*ownUSDT - 0.03 > risked && */ !x) {
+    if (ownUSDT - 0.03 > risked && !x) {
       exclude(getBase(symbols.BC))
       x = true
       log(`Arbitrage opportunity`);
