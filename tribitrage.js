@@ -6,6 +6,7 @@ import {
   floor,
   exclude,
   isExcluded,
+  includeIt,
   getBase,
   io
 } from './config/utils.js'
@@ -148,6 +149,7 @@ io.on('order-filled', order => {
     if (op.step2.pair.symbol == order.symbol && op.step2.order.currentPrice == order.price) {
       new Trader(op.step3).tribitrage()
       x = false
+      includeIt(getBase(order.symbol))
     }
     if (op.step3.pair.symbol == order.symbol && op.step3.order.currentPrice == order.price)
       opportinities.splice(opportinities.indexOf(op), 1)
