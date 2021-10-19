@@ -9,7 +9,7 @@ import {
   postOrder,
   getBase,
   getQuote,
-  includeIt
+  io
 } from './config/utils.js'
 import log, {
   logStrategy
@@ -313,36 +313,12 @@ export default class Trader {
       }
     }
 
-    let order = this.order.side === 'buy' ? await this.buy() : await this.sell({
+    this.order.side === 'buy' ? this.buy() : this.sell({
       price: this.order.currentPrice,
       size: this.order.size
     })
-    // check if the order has gone through
-    if (order) {
-      // check if the order is filled
-      this.orderFilled(order).then(filled => {
-        if (filled) {
-          log(`${this.pair.symbol} step done.`)
-          return filled
-        }
-      })
-
-
-
-    } else return false
 
   }
-
-  async orderFilled(order) {
-    order = await getOrder(order.id || order.orderId) || order
-    if (order && ((!order.isActive && !order.cancelExist) || (order.status == 'done' && order.type == 'filled'))) {
-      log(`${this.pair.symbol} filled`)
-      return order
-    } else if (order && order.type == 'cancelled') return false
-    else if (typeof order === 'undefined') return false
-    else this.orderFilled(order)
-  }
-
 
   print = () => {
     logStrategy({

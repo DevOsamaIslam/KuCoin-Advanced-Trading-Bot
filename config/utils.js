@@ -1,4 +1,7 @@
 import {
+  EventEmitter
+} from 'events'
+import {
   ATR
 } from 'technicalindicators'
 
@@ -14,8 +17,9 @@ let quote = settings.quote
 let currencies = {}
 let orders = []
 let excluded = []
-
 let _datafeed = false
+
+export const io = new EventEmitter()
 
 export const exclude = coin => excluded.push(coin)
 
@@ -192,6 +196,7 @@ export const updateOrders = async () => {
     let order = payload.data
     if (order.status === 'done' && order.type === 'filled') {
       orders.push(order)
+      io.emit('order-filled', order)
     }
   }, true)
 }
