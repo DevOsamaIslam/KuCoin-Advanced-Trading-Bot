@@ -152,10 +152,7 @@ io.on('order-filled', order => {
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
     else if (op.step2.pair.symbol == order.symbol && op.step2.order.currentPrice == order.price) {
       // log(`Trying to buy ${op.step3.pair.symbol}`)
-      new Trader(op.step3).tribitrage().then(order => {
-        if (!order && isExcluded(getBase(op.step2.pair.symbol)))
-          includeIt(getBase(op.step2.pair.symbol))
-      })
+      new Trader(op.step3).tribitrage()
       break
     }
     // check if the filled order is step 3, then remove the coin from open opportunities
