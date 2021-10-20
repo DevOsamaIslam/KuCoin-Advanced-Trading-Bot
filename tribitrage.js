@@ -148,8 +148,8 @@ io.on('order-filled', order => {
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
     if (op.step2.pair.symbol == order.symbol && op.step2.order.currentPrice == order.price) {
+      log(`Trying to buy ${op.step3.pair.symbol}`)
       new Trader(op.step3).tribitrage()
-      x = false
       includeIt(getBase(order.symbol))
     }
     if (op.step3.pair.symbol == order.symbol && op.step3.order.currentPrice == order.price)
