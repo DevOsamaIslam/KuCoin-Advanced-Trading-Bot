@@ -45,7 +45,7 @@ const arbitrage = async options => {
     if (currentTicker == symbols.BC) BC = data.data.bestAsk
     if (currentTicker == symbols.CD) CD = data.data.bestBid
     // Housekeeping
-    if (!AB || !BC || !CD || !x || isExcluded(getBase(symbols.BC))) return
+    if (!AB || !BC || !CD || x || isExcluded(getBase(symbols.BC))) return
     // simulate Arbitragelet 
     let risked = await getBalance('USDT') * settings.strategies.TRIBITRAGE.risk
     let ownMedian = (risked / AB) * fee
