@@ -25,6 +25,8 @@ export const exclude = coin => excluded.push(coin)
 
 export const isExcluded = coin => excluded.find(x => x == coin)
 
+export const exclusionList = () => excluded
+
 export const includeIt = coin => excluded.splice(excluded.indexOf(coin), 1)
 
 export const calcPerc = (newValue, oldValue) => ((newValue - oldValue) / oldValue) * 100

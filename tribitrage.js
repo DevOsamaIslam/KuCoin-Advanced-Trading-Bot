@@ -7,8 +7,9 @@ import {
   exclude,
   isExcluded,
   includeIt,
+  exclusionList,
   getBase,
-  io
+  io,
 } from './config/utils.js'
 
 import Trader from './Trader.js';
@@ -44,8 +45,7 @@ const arbitrage = async options => {
     if (currentTicker == symbols.BC) BC = data.data.bestAsk
     if (currentTicker == symbols.CD) CD = data.data.bestBid
     // Housekeeping
-    if (!AB || !BC || !CD) return
-    if (isExcluded(getBase(symbols.BC))) return
+    if (!AB || !BC || !CD || !x || isExcluded(getBase(symbols.BC))) return
     // simulate Arbitragelet 
     let risked = await getBalance('USDT') * settings.strategies.TRIBITRAGE.risk
     let ownMedian = (risked / AB) * fee
@@ -56,7 +56,7 @@ const arbitrage = async options => {
     // check if there is an arbitrage opportunity
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
-    if (ownUSDT - 0.03 > risked && !x) {
+    if (ownUSDT - 0.03 > risked) {
       exclude(getBase(symbols.BC))
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
@@ -138,6 +138,7 @@ const start = async options => {
   })
   // step 1 ---------------------------------------------------
   new Trader(step1).tribitrage()
+  log(`Exclusion list: ${exclusionList.join(' - ')}`)
 }
 io.on('order-filled', order => {
   for (const op of opportinities) {
