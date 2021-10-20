@@ -142,9 +142,10 @@ const start = async options => {
 io.on('order-filled', order => {
   for (const op of opportinities) {
     // check if the filled order is step 1, then start step 2
-    if (op.step1.pair.symbol == order.symbol && op.step1.order.currentPrice == order.price)
+    if (op.step1.pair.symbol == order.symbol && op.step1.order.currentPrice == order.price) {
+      log(`Trying to buy ${op.step2.pair.symbol}`)
       new Trader(op.step2).tribitrage()
-
+    }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
     if (op.step2.pair.symbol == order.symbol && op.step2.order.currentPrice == order.price) {
       new Trader(op.step3).tribitrage()
