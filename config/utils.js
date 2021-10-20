@@ -31,15 +31,6 @@ export const includeIt = coin => excluded.splice(excluded.indexOf(coin), 1)
 
 export const calcPerc = (newValue, oldValue) => ((newValue - oldValue) / oldValue) * 100
 
-export const floor = (value, decimals) => {
-  if (typeof value === 'number') value = value.toString()
-
-  let ints = value.split('.')[0]
-  let dec = value.split('.')[1]
-  if (dec) return ints + '.' + dec.substr(0, decimals)
-  else return parseFloat(ints)
-}
-
 export const calculateTPPrice = (price, TPP) => parseFloat(price + price * TPP)
 
 export const getBase = (symbol) => symbol.split('-')[0]
@@ -52,6 +43,14 @@ export const isSufficient = async (currency) => await getBalance(currency) > 10
 
 export const getTickerInfo = (pair, allTickers) => allTickers.find(tick => tick.symbol === pair.symbol)
 
+export const floor = (value, decimals) => {
+  if (typeof value === 'number') value = value.toString()
+
+  let ints = value.split('.')[0]
+  let dec = value.split('.')[1]
+  if (dec) return ints + '.' + dec.substr(0, decimals)
+  else return parseFloat(ints)
+}
 export const getDecimalPlaces = value => {
   if (typeof value === 'number')
     value.toString()
@@ -200,6 +199,9 @@ export const updateOrders = async () => {
       orders.push(order)
       log(`${order.symbol} filled`)
       io.emit('order-filled', order)
+    }
+    if (order.type === 'canceled') {
+      includeIt(getBase(order.symbol))
     }
   }, true)
 }

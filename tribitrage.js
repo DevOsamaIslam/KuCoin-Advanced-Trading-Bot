@@ -24,6 +24,7 @@ let fee = 0.998
 let x = false
 let median = 'BTC'
 let opportinities = []
+let orderTimeout = 60
 
 const arbitrage = async options => {
   let {
@@ -57,7 +58,6 @@ const arbitrage = async options => {
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
     if (ownUSDT - 0.03 > risked) {
-      exclude(getBase(symbols.BC))
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
       log(`${symbols.AB}: ${AB} => ${ownMedian}`);
@@ -97,7 +97,7 @@ const start = async options => {
       type: 'limit',
       side: 'buy',
       timeInForce: 'GTT',
-      cancelAfter: 60
+      cancelAfter: orderTimeout
     },
     tickerInfo: symbols.ABI,
     strategy: 'Tribitrage',
@@ -113,7 +113,7 @@ const start = async options => {
       type: 'limit',
       side: 'buy',
       timeInForce: 'GTT',
-      cancelAfter: 60
+      cancelAfter: orderTimeout
     },
     tickerInfo: symbols.BCI,
     strategy: 'Tribitrage'
@@ -144,13 +144,14 @@ io.on('order-filled', order => {
   for (const op of opportinities) {
     // check if the filled order is step 1, then start step 2
     if (op.step1.pair.symbol == order.symbol && op.step1.order.currentPrice == order.price) {
-      log(`Trying to buy ${op.step2.pair.symbol}`)
+      // log(`Trying to buy ${op.step2.pair.symbol}`)
+      exclude(getBase(op.step2.pair.symbol))
       new Trader(op.step2).tribitrage()
       break
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
     else if (op.step2.pair.symbol == order.symbol && op.step2.order.currentPrice == order.price) {
-      log(`Trying to buy ${op.step3.pair.symbol}`)
+      // log(`Trying to buy ${op.step3.pair.symbol}`)
       new Trader(op.step3).tribitrage()
       includeIt(getBase(order.symbol))
       break
