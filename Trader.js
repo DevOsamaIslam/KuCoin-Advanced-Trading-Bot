@@ -109,7 +109,7 @@ export default class Trader {
     }
   }
 
-  async sell(options) {
+  async sell(options = {}) {
     // find the lowest quote increment decimal value
     let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
     // get the order size in the base currency (the one you want to buy)
