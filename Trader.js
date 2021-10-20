@@ -2,14 +2,12 @@ import api from './main.js'
 import {
   calcPerc,
   getOrder,
-  getOrderSync,
   getDecimalPlaces,
   getBalance,
   floor,
   postOrder,
   getBase,
   getQuote,
-  io
 } from './config/utils.js'
 import log, {
   logStrategy
@@ -125,11 +123,11 @@ export default class Trader {
       clientOid: `Sell_${Date.now()}`,
       side: 'sell',
       symbol: this.pair.symbol,
-      type: options.type || 'market',
+      type: options.type || this.order.type,
       remark: `Strategy: ${this.strategy} (${this.activeOrder && this.activeOrder.id})`
     }, {
-      size: options.size,
-      price: options.price
+      size: options.size || this.order.size,
+      price: options.price || this.order.currentPrice
     })
     if (order) {
       logStrategy({
@@ -299,33 +297,23 @@ export default class Trader {
   }
 
   async tribitrage() {
+    // check if we do not have fixed order size
     if (!this.order.size) {
+      // we do not have order size
+      // check if the order type is buy
       if (this.order.side === 'buy') {
+        // set the order size as the maximun available amount in the target coin, minus the fees
         let quote = getQuote(this.pair.symbol)
         let balance = await getBalance(quote)
         this.order.size = (balance / this.order.currentPrice) * 0.998
-        log(`${quote} balance is ${balance}`)
-        log(`${this.pair.symbol} current Price: ${this.order.currentPrice}`)
-        log(`size: ${this.order.size}`)
       } else {
+        // if the order is sell, use the entire amount for order size
         let balance = await getBalance(getBase(this.pair.symbol))
         this.order.size = balance
       }
     }
 
-    this.order.side === 'buy' ? this.buy() : this.sell({
-      price: this.order.currentPrice,
-      size: this.order.size,
-      type: this.order.type || 'market'
-    })
+    this.order.side === 'buy' ? this.buy() : this.sell()
   }
-
-  updateConstructor(data) {
-    this.pair = data.pair
-    this.order = data.order
-    this.tickerInfo = data.tickerInfo
-    this.strategy = data.strategy
-  }
-
 
 }
