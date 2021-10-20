@@ -196,6 +196,7 @@ export const updateOrders = async () => {
     let order = payload.data
     if (order.status === 'done' && order.type === 'filled') {
       orders.push(order)
+      log(`${order.symbol} filled`)
       io.emit('order-filled', order)
     }
   }, true)
