@@ -138,7 +138,7 @@ const start = async options => {
   })
   // step 1 ---------------------------------------------------
   new Trader(step1).tribitrage()
-  log(`Exclusion list: ${exclusionList.join(' - ')}`)
+  log(`Exclusion list: ${exclusionList().join(' - ')}`)
 }
 io.on('order-filled', order => {
   for (const op of opportinities) {
@@ -146,16 +146,21 @@ io.on('order-filled', order => {
     if (op.step1.pair.symbol == order.symbol && op.step1.order.currentPrice == order.price) {
       log(`Trying to buy ${op.step2.pair.symbol}`)
       new Trader(op.step2).tribitrage()
+      break
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
     else if (op.step2.pair.symbol == order.symbol && op.step2.order.currentPrice == order.price) {
       log(`Trying to buy ${op.step3.pair.symbol}`)
       new Trader(op.step3).tribitrage()
       includeIt(getBase(order.symbol))
+      break
     }
     // check if the filled order is step 3, then remove the coin from open opportunities
-    else if (op.step3.pair.symbol == order.symbol && op.step3.order.currentPrice == order.price)
+    else if (op.step3.pair.symbol == order.symbol && op.step3.order.currentPrice == order.price) {
       opportinities.splice(opportinities.indexOf(op), 1)
+      break
+    }
+
 
   }
 })
