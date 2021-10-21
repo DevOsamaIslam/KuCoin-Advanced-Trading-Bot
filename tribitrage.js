@@ -155,7 +155,7 @@ const start = async options => {
 }
 io.on('order-filled', order => {
   for (const op of opportinities) {
-    steps = op.steps
+    let steps = op.steps
     // check if the filled order is step 1, then start step 2
     if (steps[0].pair.symbol == order.symbol && steps[0].order.currentPrice == order.price) {
       new Trader(steps[1]).tribitrage()
