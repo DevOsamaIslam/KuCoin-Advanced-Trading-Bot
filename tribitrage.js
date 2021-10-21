@@ -24,7 +24,7 @@ let fee = 0.998
 let x = false
 let median = 'BTC'
 let opportinities = []
-let orderTimeout = 60
+let orderTimeout = 60 * 5
 
 const arbitrage = async options => {
   let {
@@ -35,7 +35,6 @@ const arbitrage = async options => {
   let CD = undefined
 
   const datafeed = new api.websocket.Datafeed();
-  let order = {}
   // connect
   datafeed.connectSocket();
 
