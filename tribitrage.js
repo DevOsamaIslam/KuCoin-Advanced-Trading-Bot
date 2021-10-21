@@ -88,6 +88,9 @@ const start = async options => {
     target
   } = options
   let id = Date.now()
+  let medianAmount = await getBalance(median)
+  let isMedianAvailable = medianAmount >= ownMedian
+  let steps = []
   let step1 = {
     pair: {
       symbol: symbols.AB
@@ -131,30 +134,40 @@ const start = async options => {
     tickerInfo: symbols.CDI,
     strategy: 'Tribitrage'
   }
+  if (isMedianAvailable) {
+    // if the median currency is enough, start with the second step
+    steps.push(step2)
+    steps.push(step3)
+    steps.push(step1)
+  } else {
+    // if the median currency is not enough, start with the first step
+    steps.push(step1)
+    steps.push(step2)
+    steps.push(step3)
+  }
   opportinities.push({
     id,
-    step1,
-    step2,
-    step3
+    steps,
   })
   // step 1 ---------------------------------------------------
-  new Trader(step1).tribitrage()
+  new Trader(steps[0]).tribitrage()
   log(`Exclusion list: ${exclusionList().join(' - ')}`)
 }
 io.on('order-filled', order => {
   for (const op of opportinities) {
+    steps = op.steps
     // check if the filled order is step 1, then start step 2
-    if (op.step1.pair.symbol == order.symbol && op.step1.order.currentPrice == order.price) {
-      new Trader(op.step2).tribitrage()
+    if (steps[0].pair.symbol == order.symbol && steps[0].order.currentPrice == order.price) {
+      new Trader(steps[1]).tribitrage()
       break
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
-    else if (op.step2.pair.symbol == order.symbol && op.step2.order.currentPrice == order.price) {
-      new Trader(op.step3).tribitrage()
+    else if (steps[1].pair.symbol == order.symbol && steps[1].order.currentPrice == order.price) {
+      new Trader(steps[2]).tribitrage()
       break
     }
     // check if the filled order is step 3, then remove the coin from open opportunities
-    else if (op.step3.pair.symbol == order.symbol && op.step3.order.currentPrice == order.price) {
+    else if (steps[2].pair.symbol == order.symbol && steps[2].order.currentPrice == order.price) {
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
       break
