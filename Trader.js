@@ -312,7 +312,7 @@ export default class Trader {
         this.order.size = balance
       }
     }
-    log(`trying to ${this.order.side} ${this.order.side} ${this.pair.symbol}`)
+    log(`trying to ${this.order.type} ${this.order.side} ${this.pair.symbol}`)
     this.order.side === 'buy' ? this.buy() : this.sell()
   }
 
