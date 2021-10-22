@@ -215,28 +215,32 @@ const dynamicArb = async () => {
       }
     })
   }
-
-
-
 }
+
 
 const housekeeping = async () => {
   let currencies = await getCurrency()
   if (!currencies) return
-  Object.keys(currencies).forEach(coin => {
+  let initialTickers = await getAllTickers(initial)
+  Object.keys(currencies).forEach(async coin => {
     coin = currencies[coin]
     if (coin.currency !== initial && coin.currency !== median) {
       if (coin.available > 0) {
+        let pair = `${coin.currency}-${initial}`
+        let tickerInfo = await getTickerInfo({
+          symbol: pair
+        }, initialTickers)
         new Trader({
           pair: {
-            symbol: `${coin.currency}-${initial}`
+            symbol: pair
           },
-          strategy: strategyName
+          strategy: strategyName,
+          tickerInfo
         }).sell({
           type: 'market',
           size: coin.available,
-          quicksell: true
         })
+        isExcluded(coin.currency) && includeIt(coin.currency)
       }
     }
 
@@ -246,6 +250,10 @@ const housekeeping = async () => {
 setInterval(() => {
   housekeeping()
 }, 1000 * 60 * 60);
+
+// setTimeout(() => {
+//   housekeeping()
+// }, 100);
 
 
 export default dynamicArb

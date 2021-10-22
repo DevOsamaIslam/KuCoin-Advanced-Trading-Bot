@@ -82,7 +82,7 @@ export default class Trader {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`${this.order.type === 'limit' ? 'Ordered to buy' : 'Bought'} ${this.order.size} at $${(this.activeOrder.price) || this.order.currentPrice}`]
+        data: [`${this.order.type === 'limit' ? 'Ordered to buy' : 'Bought'} ${this.order.size} at $${this.activeOrder.price || this.order.currentPrice}`]
       });
       return this.activeOrder
     } else {
@@ -118,26 +118,24 @@ export default class Trader {
     }
   }
 
-  async sell({
-    type,
-    price,
-    size,
-    quicksell
-  }) {
-    if (!quicksell) {
-      if (this.order) {
-        if (!size) size = this.order.size
-        if (!price) price = this.order.currentPrice
-        if (!type) type = this.order.type
-      }
-
-      // find the lowest quote increment decimal value
-      let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
-      // get the order size in the base currency (the one you want to buy)
-      size = floor(size, decimals)
-      // check if the order size is less-than/equal-to the minimum
-      if (size <= this.tickerInfo.baseMinSize) return false
+  async sell(options = {}) {
+    let {
+      type,
+      price,
+      size
+    } = options
+    if (this.order) {
+      if (!size) size = this.order.size
+      if (!price) price = this.order.currentPrice
+      if (!type) type = this.order.type
     }
+
+    // find the lowest quote increment decimal value
+    let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
+    // get the order size in the base currency (the one you want to buy)
+    size = floor(size, decimals)
+    // check if the order size is less-than/equal-to the minimum
+    if (size <= this.tickerInfo.baseMinSize) return false
 
 
     let order = await postOrder({
@@ -158,12 +156,11 @@ export default class Trader {
       });
       return order
     } else {
-      if (!quicksell)
-        logStrategy({
-          strategy: this.strategy,
-          pair: this.pair,
-          data: [`Something went wrong while selling`]
-        })
+      logStrategy({
+        strategy: this.strategy,
+        pair: this.pair,
+        data: [`Something went wrong while selling`]
+      })
       return false
     }
   }
