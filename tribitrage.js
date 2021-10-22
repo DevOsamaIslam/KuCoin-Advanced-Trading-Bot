@@ -3,6 +3,7 @@ import {
   getAllPairs,
   getTickerInfo,
   getBalance,
+  getCurrency,
   floor,
   exclude,
   isExcluded,
@@ -22,9 +23,12 @@ import log from './log.js'
 
 let fee = 0.998
 let x = false
+let initial = 'USDT'
 let median = 'BTC'
 let opportinities = []
 let orderTimeout = 60 * 5
+let strategyName = 'Tribitrage'
+
 
 const arbitrage = async options => {
   let {
@@ -47,23 +51,23 @@ const arbitrage = async options => {
     // Housekeeping
     if (!AB || !BC || !CD || x || isExcluded(getBase(symbols.BC))) return
     // simulate Arbitragelet 
-    let risked = await getBalance('USDT') * settings.strategies.TRIBITRAGE.risk
+    let risked = await getBalance(initial) * settings.strategies.TRIBITRAGE.risk
     let ownMedian = (risked / AB) * fee
     let target = (ownMedian / BC) * fee
-    let ownUSDT = (target * CD) * fee
-    ownUSDT = Number(floor(ownUSDT, 2))
+    let ownInitial = (target * CD) * fee
+    ownInitial = Number(floor(ownInitial, 2))
     risked = Number(floor(risked, 2))
     // check if there is an arbitrage opportunity
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
-    if (ownUSDT - 0.03 > risked) {
+    if (ownInitial - 0.03 > risked) {
       let coin = getBase(symbols.BC)
       if (!isExcluded(coin)) exclude(coin)
       log(`Arbitrage opportunity`);
       log(`Equity: ${risked}`);
       log(`${symbols.AB}: ${AB} => ${ownMedian}`);
       log(`${symbols.BC}: ${BC} => ${target}`);
-      log(`${symbols.CD}: ${CD} => ${ownUSDT}`);
+      log(`${symbols.CD}: ${CD} => ${ownInitial}`);
       start({
         AB,
         BC,
@@ -104,7 +108,7 @@ const start = async options => {
       cancelAfter: orderTimeout
     },
     tickerInfo: symbols.ABI,
-    strategy: 'Tribitrage',
+    strategy: strategyName,
     equity: risked
   }
   let step2 = {
@@ -120,7 +124,7 @@ const start = async options => {
       cancelAfter: orderTimeout
     },
     tickerInfo: symbols.BCI,
-    strategy: 'Tribitrage'
+    strategy: strategyName
   }
   let step3 = {
     pair: {
@@ -132,7 +136,7 @@ const start = async options => {
       side: 'sell'
     },
     tickerInfo: symbols.CDI,
-    strategy: 'Tribitrage'
+    strategy: strategyName
   }
   if (isMedianAvailable) {
     // if the median currency is enough, start with the second step
@@ -181,14 +185,14 @@ const dynamicArb = async () => {
   let common = []
   let medianPairs = await getAllPairs(median)
   let medianTickers = await getAllTickers(median)
-  let usdtPairs = await getAllPairs('USDT')
-  let usdtTickers = await getAllTickers('USDT')
-  if (!medianPairs || !medianTickers || !usdtPairs || !usdtTickers) {
+  let initialPairs = await getAllPairs(initial)
+  let initialTickers = await getAllTickers(initial)
+  if (!medianPairs || !medianTickers || !initialPairs || !initialTickers) {
     dynamicArb()
     return
   }
-  for (const usdtPair of usdtPairs) {
-    let symbol = usdtPair.symbol.split('-')[0]
+  for (const pair of initialPairs) {
+    let symbol = pair.symbol.split('-')[0]
     if (medianPairs.find(s => s.symbol.split('-')[0] == symbol))
       common.push(symbol)
   }
@@ -196,18 +200,18 @@ const dynamicArb = async () => {
   for (const pair of common) {
     arbitrage({
       symbols: {
-        AB: `${median}-USDT`,
+        AB: `${median}-${initial}`,
         BC: `${pair}-${median}`,
-        CD: `${pair}-USDT`,
+        CD: `${pair}-${initial}`,
         ABI: getTickerInfo({
-          symbol: `${median}-USDT`
-        }, usdtTickers),
+          symbol: `${median}-${initial}`
+        }, initialTickers),
         BCI: getTickerInfo({
           symbol: `${pair}-${median}`
         }, medianTickers),
         CDI: getTickerInfo({
-          symbol: `${pair}-USDT`
-        }, usdtTickers),
+          symbol: `${pair}-${initial}`
+        }, initialTickers),
       }
     })
   }
@@ -215,6 +219,33 @@ const dynamicArb = async () => {
 
 
 }
+
+const housekeeping = async () => {
+  let currencies = await getCurrency()
+  if (!currencies) return
+  Object.keys(currencies).forEach(coin => {
+    coin = currencies[coin]
+    if (coin.currency !== initial && coin.currency !== median) {
+      if (coin.available > 0) {
+        new Trader({
+          pair: {
+            symbol: `${coin.currency}-${initial}`
+          },
+          strategy: strategyName
+        }).sell({
+          type: 'market',
+          size: coin.available,
+          quicksell: true
+        })
+      }
+    }
+
+  });
+}
+
+setInterval(() => {
+  housekeeping()
+}, 1000 * 60 * 60);
 
 
 export default dynamicArb

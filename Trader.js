@@ -16,19 +16,28 @@ import Orders from './records/model.js'
 
 export default class Trader {
 
-  constructor(options) {
+  constructor({
+    equity,
+    pair,
+    order,
+    tf,
+    tickerInfo,
+    isNewPair,
+    dynamicTPSL,
+    strategy
+  }) {
     this.datafeed = new api.websocket.Datafeed(true);
     // connect
     this.datafeed.connectSocket();
 
-    this.equity = options.equity
-    this.pair = options.pair
-    this.order = options.order
-    this.tf = options.tf
-    this.tickerInfo = options.tickerInfo
-    this.isNewPair = options.isNewPair
-    this.dynamicTPSL = options.dynamicTPSL
-    this.strategy = options.strategy
+    this.equity = equity
+    this.pair = pair
+    this.order = order
+    this.tf = tf
+    this.tickerInfo = tickerInfo
+    this.isNewPair = isNewPair
+    this.dynamicTPSL = dynamicTPSL
+    this.strategy = strategy
   }
 
   async execute() {
@@ -56,7 +65,7 @@ export default class Trader {
         clientOid: `Buy_${this.pair.symbol}_${Date.now()}`,
         side: 'buy',
         symbol: this.pair.symbol,
-        type: this.order.type || 'market',
+        type: this.order.type,
         stp: 'CN',
         remark: `Strategy: ${this.strategy}`,
         timeInForce: this.order.timeInForce || 'GTC',
@@ -73,7 +82,7 @@ export default class Trader {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`${this.order.type === 'market' ? 'Bought' : 'Ordered to buy'} ${this.order.size} at $${(this.activeOrder.dealFunds / this.activeOrder.dealSize) || this.order.currentPrice}`]
+        data: [`${this.order.type === 'limit' ? 'Ordered to buy' : 'Bought'} ${this.order.size} at $${(this.activeOrder.price) || this.order.currentPrice}`]
       });
       return this.activeOrder
     } else {
@@ -109,39 +118,52 @@ export default class Trader {
     }
   }
 
-  async sell(options = {}) {
-    // find the lowest quote increment decimal value
-    let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
-    // get the order size in the base currency (the one you want to buy)
-    let size = this.order.type == 'limit' ?
-      floor(this.order.size, decimals) :
-      floor(this.order.size / (this.pair.bestAsk || this.order.currentPrice), decimals)
-    // check if the order size is less-than/equal-to the minimum
-    if (size <= this.tickerInfo.baseMinSize) return false
+  async sell({
+    type,
+    price,
+    size,
+    quicksell
+  }) {
+    if (!quicksell) {
+      if (this.order) {
+        if (!size) size = this.order.size
+        if (!price) price = this.order.currentPrice
+        if (!type) type = this.order.type
+      }
+
+      // find the lowest quote increment decimal value
+      let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
+      // get the order size in the base currency (the one you want to buy)
+      size = floor(size, decimals)
+      // check if the order size is less-than/equal-to the minimum
+      if (size <= this.tickerInfo.baseMinSize) return false
+    }
+
 
     let order = await postOrder({
       clientOid: `Sell_${Date.now()}`,
       side: 'sell',
       symbol: this.pair.symbol,
-      type: options.type || this.order.type,
+      type: type,
       remark: `Strategy: ${this.strategy} (${this.activeOrder && this.activeOrder.id})`
     }, {
-      size: options.size || this.order.size,
-      price: options.price || this.order.currentPrice
+      size: size || this.order.size,
+      price: type === 'limit' ? price || this.order.currentPrice : ''
     })
     if (order) {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`Sold ${this.pair.symbol} @${options.price}`]
+        data: [`${type === 'limit' ? 'Ordered to sell' : 'Sold'} @${type === 'limit' ? price : order.dealFunds / order.dealSize}`]
       });
       return order
     } else {
-      logStrategy({
-        strategy: this.strategy,
-        pair: this.pair,
-        data: [`Something went wrong while selling`]
-      });
+      if (!quicksell)
+        logStrategy({
+          strategy: this.strategy,
+          pair: this.pair,
+          data: [`Something went wrong while selling`]
+        })
       return false
     }
   }
