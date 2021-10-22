@@ -139,7 +139,7 @@ export default class Trader {
 
 
     let order = await postOrder({
-      clientOid: `Sell_${Date.now()}`,
+      clientOid: `Sell_${this.pair.symbol}_${Date.now()}`,
       side: 'sell',
       symbol: this.pair.symbol,
       type: type,
