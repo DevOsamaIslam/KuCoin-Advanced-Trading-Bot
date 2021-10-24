@@ -202,8 +202,7 @@ export const updateOrders = async () => {
     }
     if (order.status == 'done' && order.type === 'canceled') {
       log(`${order.symbol} order canceled`)
-      let coin = getBase(order.symbol)
-      isExcluded(coin) && includeIt(coin)
+      io.emit('order-canceled', order)
     }
   }, true)
 }

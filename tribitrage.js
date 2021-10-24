@@ -1,4 +1,8 @@
 import {
+  v4 as uuid
+} from 'uuid'
+
+import {
   getAllTickers,
   getAllPairs,
   getTickerInfo,
@@ -91,10 +95,10 @@ const start = async options => {
     risked,
     target
   } = options
-  let id = Date.now()
   let medianAmount = await getBalance(median)
   let isMedianAvailable = medianAmount >= ownMedian
   let steps = []
+  let id = uuid()
   let step1 = {
     pair: {
       symbol: symbols.AB
@@ -109,7 +113,8 @@ const start = async options => {
     },
     tickerInfo: symbols.ABI,
     strategy: strategyName,
-    equity: risked
+    equity: risked,
+    id
   }
   let step2 = {
     pair: {
@@ -124,7 +129,8 @@ const start = async options => {
       cancelAfter: orderTimeout
     },
     tickerInfo: symbols.BCI,
-    strategy: strategyName
+    strategy: strategyName,
+    id
   }
   let step3 = {
     pair: {
@@ -136,7 +142,8 @@ const start = async options => {
       side: 'sell'
     },
     tickerInfo: symbols.CDI,
-    strategy: strategyName
+    strategy: strategyName,
+    id
   }
   if (isMedianAvailable) {
     // if the median currency is enough, start with the second step
@@ -151,6 +158,7 @@ const start = async options => {
   }
   opportinities.push({
     id,
+    coin: getBase(symbols.BC),
     steps,
   })
   // step 1 ---------------------------------------------------
@@ -161,24 +169,30 @@ io.on('order-filled', order => {
   for (const op of opportinities) {
     let steps = op.steps
     // check if the filled order is step 1, then start step 2
-    if (steps[0].pair.symbol == order.symbol && steps[0].order.currentPrice == order.price) {
+    if (steps[0].pair.symbol == order.symbol && order.remark.includes(op.id)) {
       new Trader(steps[1]).tribitrage()
       break
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
-    else if (steps[1].pair.symbol == order.symbol && steps[1].order.currentPrice == order.price) {
+    else if (steps[1].pair.symbol == order.symbol && order.remark.includes(op.id)) {
       new Trader(steps[2]).tribitrage()
       break
     }
     // check if the filled order is step 3, then remove the coin from open opportunities
-    else if (steps[2].pair.symbol == order.symbol && steps[2].order.currentPrice == order.price) {
+    else if (steps[2].pair.symbol == order.symbol && order.remark.includes(op.id)) {
       log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}`)
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
       break
     }
+  }
+})
 
-
+io.on('order-canceled', order => {
+  let oppo = opportinities.find(oppo => order.remark.includes(oppo.id))
+  if (oppo) {
+    includeIt(getBase(oppo.coin))
+    opportinities.splice(opportinities.indexOf(oppo, 1))
   }
 })
 

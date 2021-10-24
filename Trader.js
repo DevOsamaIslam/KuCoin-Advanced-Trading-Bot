@@ -24,7 +24,8 @@ export default class Trader {
     tickerInfo,
     isNewPair,
     dynamicTPSL,
-    strategy
+    strategy,
+    id
   }) {
     this.datafeed = new api.websocket.Datafeed(true);
     // connect
@@ -38,6 +39,7 @@ export default class Trader {
     this.isNewPair = isNewPair
     this.dynamicTPSL = dynamicTPSL
     this.strategy = strategy
+    this.id = id
   }
 
   async execute() {
@@ -67,7 +69,7 @@ export default class Trader {
         symbol: this.pair.symbol,
         type: this.order.type,
         stp: 'CN',
-        remark: `Strategy: ${this.strategy}`,
+        remark: `Strategy: ${this.strategy}${this.id && ' (' + this.id + ')'}`,
         timeInForce: this.order.timeInForce || 'GTC',
         cancelAfter: this.order.cancelAfter
       },
@@ -143,7 +145,7 @@ export default class Trader {
       side: 'sell',
       symbol: this.pair.symbol,
       type: type,
-      remark: `Strategy: ${this.strategy} (${this.activeOrder && this.activeOrder.id})`
+      remark: `Strategy: ${this.strategy}${this.id && ' (' + this.id + ')'}`
     }, {
       size: size || this.order.size,
       price: type === 'limit' ? price || this.order.currentPrice : ''
