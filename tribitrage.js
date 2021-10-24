@@ -144,9 +144,9 @@ const start = async options => {
     id
   }
   // if the median currency is enough, start with the second step
+  steps.push(step1)
   steps.push(step2)
   steps.push(step3)
-  steps.push(step1)
   opportinities.push({
     id,
     coin: getBase(symbols.BC),
