@@ -64,12 +64,12 @@ export default class Trader {
 
     let params = {
       baseParams: {
-        clientOid: `Buy_${this.pair.symbol}_${Date.now()}`,
+        clientOid: `${this.pair.symbol}_${this.id || Date.now()}`,
         side: 'buy',
         symbol: this.pair.symbol,
         type: this.order.type,
         stp: 'CN',
-        remark: `Strategy: ${this.strategy}${this.id && ' (' + this.id + ')'}`,
+        remark: `Strategy: ${this.strategy}`,
         timeInForce: this.order.timeInForce || 'GTC',
         cancelAfter: this.order.cancelAfter
       },
@@ -141,11 +141,11 @@ export default class Trader {
 
 
     let order = await postOrder({
-      clientOid: `Sell_${this.pair.symbol}_${Date.now()}`,
+      clientOid: `${this.pair.symbol}_${this.id || Date.now()}`,
       side: 'sell',
       symbol: this.pair.symbol,
       type: type,
-      remark: `Strategy: ${this.strategy}${this.id && ' (' + this.id + ')'}`
+      remark: `Strategy: ${this.strategy}`
     }, {
       size: size || this.order.size,
       price: type === 'limit' ? price || this.order.currentPrice : ''
