@@ -1,8 +1,4 @@
 import {
-  v4 as uuid
-} from 'uuid'
-
-import {
   getAllTickers,
   getAllPairs,
   getTickerInfo,
@@ -96,7 +92,7 @@ const start = async options => {
     target
   } = options
   let steps = []
-  let id = uuid()
+  let id = Date.now()
   let step1 = {
     pair: {
       symbol: symbols.AB
