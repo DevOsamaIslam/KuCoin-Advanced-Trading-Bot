@@ -95,8 +95,6 @@ const start = async options => {
     risked,
     target
   } = options
-  let medianAmount = await getBalance(median)
-  let isMedianAvailable = medianAmount >= ownMedian
   let steps = []
   let id = uuid()
   let step1 = {
@@ -145,17 +143,10 @@ const start = async options => {
     strategy: strategyName,
     id
   }
-  if (isMedianAvailable) {
-    // if the median currency is enough, start with the second step
-    steps.push(step2)
-    steps.push(step3)
-    steps.push(step1)
-  } else {
-    // if the median currency is not enough, start with the first step
-    steps.push(step1)
-    steps.push(step2)
-    steps.push(step3)
-  }
+  // if the median currency is enough, start with the second step
+  steps.push(step2)
+  steps.push(step3)
+  steps.push(step1)
   opportinities.push({
     id,
     coin: getBase(symbols.BC),
