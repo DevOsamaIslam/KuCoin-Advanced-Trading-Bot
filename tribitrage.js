@@ -133,7 +133,9 @@ const start = async options => {
     order: {
       currentPrice: CD,
       type: 'limit',
-      side: 'sell'
+      side: 'sell',
+      timeInForce: 'GTT',
+      cancelAfter: orderTimeout * 10
     },
     tickerInfo: symbols.CDI,
     strategy: strategyName,
