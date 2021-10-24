@@ -172,6 +172,7 @@ io.on('order-filled', order => {
     }
     // check if the filled order is step 3, then remove the coin from open opportunities
     else if (steps[2].pair.symbol == order.symbol && steps[2].order.currentPrice == order.price) {
+      log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}`)
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
       break
