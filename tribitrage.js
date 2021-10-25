@@ -159,19 +159,19 @@ io.on('order-filled', order => {
   for (const op of opportinities) {
     let steps = op.steps
     // check if the filled order is step 1, then start step 2
-    if (steps[0].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
+    if (steps[0].pair.symbol == order.symbol && order.clientOid && order.clientOid.includes(op.id)) {
       steps[0].order = order
       new Trader(steps[1]).tribitrage()
       break
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
-    else if (steps[1].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
+    else if (steps[1].pair.symbol == order.symbol && order.clientOid && order.clientOid.includes(op.id)) {
       steps[1].order = order
       new Trader(steps[2]).tribitrage()
       break
     }
     // check if the filled order is step 3, then remove the coin from open opportunities
-    else if (steps[2].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
+    else if (steps[2].pair.symbol == order.symbol && order.clientOid && order.clientOid.includes(op.id)) {
       steps[2].order = order
       let diff = steps[0].risked - (order.dealSize * order.price)
       log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}: $${diff * fee}`)
