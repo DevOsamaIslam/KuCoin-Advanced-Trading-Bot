@@ -178,7 +178,7 @@ io.on('order-filled', order => {
 })
 
 io.on('order-canceled', order => {
-  let oppo = opportinities.find(oppo => order.remark.includes(oppo.id))
+  let oppo = opportinities.find(oppo => order.clientOid.includes(oppo.id))
   if (oppo) {
     includeIt(getBase(oppo.coin))
     opportinities.splice(opportinities.indexOf(oppo, 1))
