@@ -159,20 +159,22 @@ io.on('order-filled', order => {
     let steps = op.steps
     // check if the filled order is step 1, then start step 2
     if (steps[0].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
+      steps[0].order = order
       new Trader(steps[1]).tribitrage()
       break
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
     else if (steps[1].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
+      steps[1].order = order
       new Trader(steps[2]).tribitrage()
       break
     }
     // check if the filled order is step 3, then remove the coin from open opportunities
     else if (steps[2].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
+      steps[2].order = order
       log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}`)
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
-      break
     }
   }
 })
@@ -225,13 +227,28 @@ const dynamicArb = async () => {
 const housekeeping = async () => {
   let currencies = await getCurrency()
   if (!currencies) return
+
   let initialTickers = await getAllTickers(initial)
+  let pair = `${median}-${initial}`
+  let tickerInfo = getTickerInfo({
+    symbol: pair
+  }, initialTickers)
+  new Trader({
+    pair: {
+      symbol: pair
+    },
+    strategy: strategyName,
+    tickerInfo
+  }).sell({
+    type: 'market',
+    size: currencies[median].available,
+  })
   Object.keys(currencies).forEach(async coin => {
     coin = currencies[coin]
     if (coin.currency !== initial && coin.currency !== median) {
       if (coin.available > 0) {
-        let pair = `${coin.currency}-${initial}`
-        let tickerInfo = await getTickerInfo({
+        pair = `${coin.currency}-${initial}`
+        tickerInfo = getTickerInfo({
           symbol: pair
         }, initialTickers)
         new Trader({
