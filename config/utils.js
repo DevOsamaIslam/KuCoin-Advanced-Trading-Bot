@@ -108,7 +108,7 @@ export const getBalance = async currency => {
 }
 export const getCurrency = async (currency = undefined) => {
   if (currency) {
-    if (currencies[currency]) return currencies[currency]
+    if (currencies[currency] && currencies[currency].available > 0) return currencies[currency]
     let results = await asyncHandler(api.rest.User.Account.getAccountsList({
       type: 'trade',
       currency
@@ -211,7 +211,6 @@ export const updateOrders = async () => {
 export const postOrder = async (baseParams, orderParams) => {
   log(`trying to ${baseParams.type} ${baseParams.side} ${baseParams.symbol}`)
   let results = await asyncHandler(api.rest.Trade.Orders.postOrder(baseParams, orderParams))
-  log(`Order side: ${orderParams.size}`)
   if (results && results.data) {
     let order = await getOrder(results.data.orderId)
     return order
