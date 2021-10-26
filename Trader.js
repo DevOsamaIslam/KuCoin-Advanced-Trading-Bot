@@ -144,7 +144,7 @@ export default class Trader {
       clientOid: `${this.pair.symbol}_${this.id || Date.now()}`,
       side: 'sell',
       symbol: this.pair.symbol,
-      type: type,
+      type,
       remark: `Strategy: ${this.strategy}`
     }, {
       size: size || this.order.size,
