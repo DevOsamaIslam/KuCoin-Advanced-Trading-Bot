@@ -209,8 +209,9 @@ export const updateOrders = async () => {
 }
 
 export const postOrder = async (baseParams, orderParams) => {
+  log(`trying to ${baseParams.type} ${baseParams.side} ${baseParams.symbol}`)
   let results = await asyncHandler(api.rest.Trade.Orders.postOrder(baseParams, orderParams))
-  if (results) {
+  if (results.data) {
     let order = await getOrder(results.data.orderId)
     return order
   }

@@ -79,7 +79,6 @@ export default class Trader {
       }
     }
 
-    log(`trying to ${this.order.type} buy ${this.pair.symbol}`)
     this.activeOrder = await postOrder(params.baseParams, params.orderParams)
     if (this.activeOrder) {
       logStrategy({
@@ -140,7 +139,6 @@ export default class Trader {
     // check if the order size is less-than/equal-to the minimum
 
 
-    log(`trying to ${type} sell ${this.pair.symbol}`)
     let order = await postOrder({
       clientOid: `${this.pair.symbol}_${this.id || Date.now()}`,
       side: 'sell',
