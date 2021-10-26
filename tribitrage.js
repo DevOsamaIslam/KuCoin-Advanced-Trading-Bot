@@ -187,9 +187,10 @@ io.on('order-canceled', async order => {
   if (oppo) {
     if (order.symbol == oppo.steps[1].pair.symbol) {
       let initialTickers = await getAllTickers(initial)
+      let pair = oppo.steps[1].pair
       new Trader({
         pair: {
-          symbol: oppo.steps[1].pair
+          symbol: pair
         },
         strategy: strategyName,
         tickerInfo: getTickerInfo({
