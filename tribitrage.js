@@ -183,25 +183,8 @@ io.on('order-filled', order => {
 })
 
 io.on('order-canceled', async order => {
-  let currencies = await getCurrency()
   let oppo = opportinities.find(oppo => order.clientOid.includes(oppo.id))
   if (oppo) {
-    if (order.symbol == oppo.steps[1].pair.symbol) {
-      let initialTickers = await getAllTickers(initial)
-      let pair = oppo.steps[1].pair
-      new Trader({
-        pair: {
-          symbol: pair
-        },
-        strategy: strategyName,
-        tickerInfo: getTickerInfo({
-          symbol: pair
-        }, initialTickers)
-      }).sell({
-        type: 'market',
-        size: currencies[median].available,
-      })
-    }
     includeIt(getBase(oppo.coin))
     opportinities.splice(opportinities.indexOf(oppo, 1))
   }
