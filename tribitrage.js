@@ -271,10 +271,10 @@ const housekeeping = async () => {
   });
 }
 
-setTimeout(() => {
+setInterval(() => {
   log(`Housekeeping....`)
   housekeeping()
-}, 600);
+}, 1000 * 60 * 60);
 
 // setTimeout(() => {
 //   housekeeping()
