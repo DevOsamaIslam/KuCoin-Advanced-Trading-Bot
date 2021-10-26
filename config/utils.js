@@ -108,9 +108,10 @@ export const getBalance = async currency => {
 }
 export const getCurrency = async (currency = undefined) => {
   if (currency) {
+    if (currencies[currency]) return currencies[currency]
     let results = await asyncHandler(api.rest.User.Account.getAccountsList({
       type: 'trade',
-      currency: currency
+      currency
     }))
     return results.data ? results.data[0] : false
   } else {
