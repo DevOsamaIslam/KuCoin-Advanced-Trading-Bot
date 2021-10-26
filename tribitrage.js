@@ -11,6 +11,7 @@ import {
   exclusionList,
   getBase,
   io,
+  getQuote,
 } from './config/utils.js'
 
 import Trader from './Trader.js';
@@ -152,7 +153,7 @@ const start = async options => {
     steps,
   })
   // step 1 ---------------------------------------------------
-  new Trader(steps[0]).tribitrage()
+  new Trader(steps[0]).tribitrage().then(order => order ? null : includeIt(getBase(symbols.BC)))
   log(`Exclusion list: ${exclusionList().join(' - ')}`)
 }
 io.on('order-filled', order => {
@@ -181,9 +182,24 @@ io.on('order-filled', order => {
   }
 })
 
-io.on('order-canceled', order => {
+io.on('order-canceled', async order => {
   let oppo = opportinities.find(oppo => order.clientOid.includes(oppo.id))
   if (oppo) {
+    if (order.symbol == oppo.steps[1].pair.symbol) {
+      let initialTickers = await getAllTickers(initial)
+      new Trader({
+        pair: {
+          symbol: oppo.steps[1].pair
+        },
+        strategy: strategyName,
+        tickerInfo: getTickerInfo({
+          symbol: pair
+        }, initialTickers)
+      }).sell({
+        type: 'market',
+        size: currencies[median].available,
+      })
+    }
     includeIt(getBase(oppo.coin))
     opportinities.splice(opportinities.indexOf(oppo, 1))
   }
@@ -228,29 +244,14 @@ const dynamicArb = async () => {
 
 const housekeeping = async () => {
   let currencies = await getCurrency()
-  if (!currencies) return
-
   let initialTickers = await getAllTickers(initial)
-  let pair = `${median}-${initial}`
-  let tickerInfo = getTickerInfo({
-    symbol: pair
-  }, initialTickers)
-  new Trader({
-    pair: {
-      symbol: pair
-    },
-    strategy: strategyName,
-    tickerInfo
-  }).sell({
-    type: 'market',
-    size: currencies[median].available,
-  })
+  if (!currencies) return
   Object.keys(currencies).forEach(async coin => {
     coin = currencies[coin]
-    if (coin.currency !== initial && coin.currency !== median) {
+    if (coin.currency !== initial) {
       if (coin.available > 0) {
-        pair = `${coin.currency}-${initial}`
-        tickerInfo = getTickerInfo({
+        let pair = `${coin.currency}-${initial}`
+        let tickerInfo = getTickerInfo({
           symbol: pair
         }, initialTickers)
         new Trader({
@@ -270,10 +271,10 @@ const housekeeping = async () => {
   });
 }
 
-setInterval(() => {
+setTimeout(() => {
   log(`Housekeeping....`)
   housekeeping()
-}, 1000 * 60 * 60);
+}, 600);
 
 // setTimeout(() => {
 //   housekeeping()
