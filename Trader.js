@@ -60,7 +60,7 @@ export default class Trader {
       floor(this.order.size, decimals) :
       floor(this.order.size / (this.pair.bestAsk || this.order.currentPrice), decimals)
     // check if the order size is less-than/equal-to the minimum
-    if (size <= this.tickerInfo.baseMinSize) return false
+    // if (size <= this.tickerInfo.baseMinSize) return false
 
     let params = {
       baseParams: {
@@ -79,6 +79,7 @@ export default class Trader {
       }
     }
 
+    log(`trying to ${this.order.type} buy ${this.pair.symbol}`)
     this.activeOrder = await postOrder(params.baseParams, params.orderParams)
     if (this.activeOrder) {
       logStrategy({
@@ -137,9 +138,9 @@ export default class Trader {
     // get the order size in the base currency (the one you want to buy)
     size = floor(size, decimals)
     // check if the order size is less-than/equal-to the minimum
-    if (size <= this.tickerInfo.baseMinSize) return false
 
 
+    log(`trying to ${type} sell ${this.pair.symbol}`)
     let order = await postOrder({
       clientOid: `${this.pair.symbol}_${this.id || Date.now()}`,
       side: 'sell',
@@ -333,7 +334,6 @@ export default class Trader {
         this.order.size = balance
       }
     }
-    log(`trying to ${this.order.type} ${this.order.side} ${this.pair.symbol}`)
     return this.order.side === 'buy' ? this.buy() : this.sell()
   }
 
