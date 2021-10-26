@@ -334,7 +334,7 @@ export default class Trader {
       }
     }
     log(`trying to ${this.order.type} ${this.order.side} ${this.pair.symbol}`)
-    this.order.side === 'buy' ? this.buy() : this.sell()
+    return this.order.side === 'buy' ? this.buy() : this.sell()
   }
 
 }
