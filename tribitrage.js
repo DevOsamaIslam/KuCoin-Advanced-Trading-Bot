@@ -183,6 +183,7 @@ io.on('order-filled', order => {
 })
 
 io.on('order-canceled', async order => {
+  let currencies = await getCurrency()
   let oppo = opportinities.find(oppo => order.clientOid.includes(oppo.id))
   if (oppo) {
     if (order.symbol == oppo.steps[1].pair.symbol) {
