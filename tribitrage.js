@@ -22,7 +22,7 @@ import api from './main.js'
 
 import log from './log.js'
 
-let fee = 0.998
+let fee = 0.997
 let x = false
 let initial = 'USDT'
 let median = 'BTC'
@@ -189,8 +189,8 @@ io.on('order-filled', order => {
     // check if the filled order is step 3, then remove the coin from open opportunities
     else if (steps[2].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[2].order = order
-      let diff = (order.size * order.price) - op.risked
-      log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}: $${diff * fee}`)
+      let diff = ((order.size * order.price) - op.risked) * fee
+      log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}: $${floor(diff, 2)}`)
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
     }
@@ -259,7 +259,7 @@ const housekeeping = async () => {
           pair: {
             symbol: pair
           },
-          strategy: strategyName,
+          strategy: 'Housekeeping',
           tickerInfo
         }).sell({
           type: 'market',
