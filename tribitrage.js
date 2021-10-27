@@ -146,15 +146,15 @@ const start = async options => {
   steps.push(step1)
   steps.push(step2)
   steps.push(step3)
-
+  opportinities.push({
+    id,
+    risked,
+    coin: getBase(symbols.BC),
+    steps,
+  })
   // step 1 ---------------------------------------------------
   new Trader(steps[0]).tribitrage()
-    .then(order => order ? opportinities.push({
-      id,
-      risked,
-      coin: getBase(symbols.BC),
-      steps,
-    }) : includeIt(getBase(symbols.BC)))
+    .then(order => order ? null : includeIt(getBase(symbols.BC)))
   log(`Exclusion list: ${exclusionList().join(' - ')}`)
 }
 io.on('order-filled', order => {
