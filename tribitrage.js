@@ -167,7 +167,7 @@ io.on('order-filled', order => {
       steps[0].order = order
       new Trader(steps[1]).tribitrage().then(order => {
         if (!order) {
-          includeIt(getBase(symbols.BC))
+          includeIt(getBase(steps[1].pair.symbol))
           opportinities.splice(opportinities.indexOf(op), 1)
         }
       })
