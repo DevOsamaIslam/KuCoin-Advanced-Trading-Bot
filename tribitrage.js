@@ -146,35 +146,37 @@ const start = async options => {
   steps.push(step1)
   steps.push(step2)
   steps.push(step3)
-  opportinities.push({
-    id,
-    risked,
-    coin: getBase(symbols.BC),
-    steps,
-  })
+
   // step 1 ---------------------------------------------------
-  new Trader(steps[0]).tribitrage().then(order => order ? null : includeIt(getBase(symbols.BC)))
+  new Trader(steps[0]).tribitrage()
+    .then(order => order ? opportinities.push({
+      id,
+      risked,
+      coin: getBase(symbols.BC),
+      steps,
+    }) : includeIt(getBase(symbols.BC)))
   log(`Exclusion list: ${exclusionList().join(' - ')}`)
 }
 io.on('order-filled', order => {
+  if (!order.clientOid) return
   for (const op of opportinities) {
     let steps = op.steps
     // check if the filled order is step 1, then start step 2
-    if (steps[0].pair.symbol == order.symbol && order.clientOid && order.clientOid.includes(op.id)) {
+    if (steps[0].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[0].order = order
-      new Trader(steps[1]).tribitrage()
+      new Trader(steps[1]).tribitrage().then(order => order ? null : includeIt(getBase(symbols.BC)))
       break
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
-    else if (steps[1].pair.symbol == order.symbol && order.clientOid && order.clientOid.includes(op.id)) {
+    else if (steps[1].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[1].order = order
-      new Trader(steps[2]).tribitrage()
+      new Trader(steps[2]).tribitrage().then(order => order ? null : includeIt(getBase(symbols.BC)))
       break
     }
     // check if the filled order is step 3, then remove the coin from open opportunities
-    else if (steps[2].pair.symbol == order.symbol && order.clientOid && order.clientOid.includes(op.id)) {
+    else if (steps[2].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[2].order = order
-      let diff = op.risked - (order.size * order.price)
+      let diff = (order.size * order.price) - op.risked
       log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}: $${diff * fee}`)
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
@@ -183,6 +185,7 @@ io.on('order-filled', order => {
 })
 
 io.on('order-canceled', async order => {
+  if (!order.clientOid) return
   let oppo = opportinities.find(oppo => order.clientOid.includes(oppo.id))
   if (oppo) {
     includeIt(getBase(oppo.coin))
