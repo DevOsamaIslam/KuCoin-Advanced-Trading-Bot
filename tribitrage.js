@@ -164,14 +164,24 @@ io.on('order-filled', order => {
     // check if the filled order is step 1, then start step 2
     if (steps[0].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[0].order = order
-      new Trader(steps[1]).tribitrage().then(order => order ? null : includeIt(getBase(symbols.BC)))
+      new Trader(steps[1]).tribitrage().then(order => {
+        if (!order) {
+          includeIt(getBase(symbols.BC))
+          opportinities.splice(opportinities.indexOf(op), 1)
+        }
+      })
       break
     }
     // check if the filled order is step 2, then start step 3 and re-enable looking for new arbitrage opportunities
     else if (steps[1].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[1].order = order
       setTimeout(() => {
-        new Trader(steps[2]).tribitrage().then(order => order ? null : includeIt(getBase(symbols.BC)))
+        new Trader(steps[2]).tribitrage().then(order => {
+          if (!order) {
+            includeIt(getBase(symbols.BC))
+            opportinities.splice(opportinities.indexOf(op), 1)
+          }
+        })
       }, 100);
       break
     }
