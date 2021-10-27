@@ -217,7 +217,7 @@ export const postOrder = async (baseParams, orderParams) => {
     let order = await getOrder(results.data.orderId)
     return order
   }
-  log(`Order size: ${orderParams.size}`)
+  log(`${baseParams.symbol} Order size: ${orderParams.size}`)
   return false
 }
 export const asyncHandler = async fn => {
