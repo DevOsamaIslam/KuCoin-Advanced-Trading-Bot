@@ -174,7 +174,8 @@ export default {
     },
     "TRIBITRAGE": {
       "enable": true,
-      "risk": 0.15
+      "risk": 0.15,
+      "diff": 1.02
     }
   }
 }
