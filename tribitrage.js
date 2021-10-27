@@ -27,7 +27,7 @@ let x = false
 let initial = 'USDT'
 let median = 'BTC'
 let opportinities = []
-let orderTimeout = 60 * 5
+let orderTimeout = 60
 let strategyName = 'Tribitrage'
 
 
