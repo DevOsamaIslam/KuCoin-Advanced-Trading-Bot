@@ -132,6 +132,7 @@ const start = async options => {
       symbol: symbols.CD
     },
     order: {
+      size: target,
       currentPrice: CD,
       type: 'limit',
       side: 'sell',
