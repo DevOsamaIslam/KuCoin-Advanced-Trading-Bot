@@ -153,7 +153,7 @@ export default class Trader {
       logStrategy({
         strategy: this.strategy,
         pair: this.pair,
-        data: [`${type === 'limit' ? 'Ordered to sell' : 'Sold'} @${type === 'limit' ? price : order.dealFunds / order.dealSize}`]
+        data: [`${type === 'limit' ? 'Ordered to sell ' + size || this.order.size : 'Sold'} @${type === 'limit' ? price : order.dealFunds / order.dealSize}`]
       });
       return order
     } else {
