@@ -180,7 +180,9 @@ export const equity = async currency => {
   // connect
   // _datafeed.connectSocket();
   let topic = `/account/balance`
-  _datafeed.subscribe(topic, payload => currencies[currency || payload.data.currency] = payload.data, true)
+  _datafeed.subscribe(topic, payload => {
+    currencies[currency || payload.data.currency] = payload.data
+  }, true)
 }
 const initSocket = () => {
   _datafeed = new api.websocket.Datafeed(true)
@@ -215,6 +217,7 @@ export const postOrder = async (baseParams, orderParams) => {
     let order = await getOrder(results.data.orderId)
     return order
   }
+  log(`Order size: ${orderParams.size}`)
   return false
 }
 export const asyncHandler = async fn => {
