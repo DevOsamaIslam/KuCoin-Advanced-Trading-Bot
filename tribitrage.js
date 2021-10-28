@@ -179,7 +179,7 @@ io.on('order-filled', order => {
       setTimeout(() => {
         new Trader(steps[2]).tribitrage().then(order => {
           if (!order) {
-            includeIt(getBase(symbols.BC))
+            includeIt(getBase(steps[2].pair.symbol))
             opportinities.splice(opportinities.indexOf(op), 1)
           }
         })
