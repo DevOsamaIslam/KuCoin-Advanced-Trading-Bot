@@ -177,8 +177,9 @@ export default {
       "enable": true,
       "risk": 0.15,
       "diff": 1.02,
-      "initial": "USDT",
-      "median": "BTC",
+      "initial": "BTC",
+      "floor": -1,
+      "median": "ETH",
       "orderTimeout": 60 * 5,
       "housekeepingInterval": 60 * 60 * 1000
     }
