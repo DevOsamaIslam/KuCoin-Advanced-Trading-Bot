@@ -68,6 +68,7 @@ export const database = {
 }
 
 export default {
+  fees: 0.997,
   quote: 'USDT',
   "watchlist": [
     "BTC-USDT",
@@ -175,7 +176,11 @@ export default {
     "TRIBITRAGE": {
       "enable": true,
       "risk": 0.15,
-      "diff": 1.02
+      "diff": 1.02,
+      "initial": "USDT",
+      "median": "BTC",
+      "orderTimeout": 60 * 5,
+      "housekeepingInterval": 60 * 60 * 1000
     }
   }
 }

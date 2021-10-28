@@ -11,7 +11,6 @@ import {
   exclusionList,
   getBase,
   io,
-  getQuote,
 } from './config/utils.js'
 
 import Trader from './Trader.js';
@@ -22,12 +21,12 @@ import api from './main.js'
 
 import log from './log.js'
 
-let fee = 0.997
+let fees = settings.fees
 let x = false
-let initial = 'USDT'
-let median = 'BTC'
+let initial = settings.strategies.TRIBITRAGE.initial
+let median = settings.strategies.TRIBITRAGE.median
 let opportinities = []
-let orderTimeout = 60
+let orderTimeout = settings.strategies.TRIBITRAGE.orderTimeout
 let strategyName = 'Tribitrage'
 
 
@@ -53,9 +52,9 @@ const arbitrage = async options => {
     if (!AB || !BC || !CD || x || isExcluded(getBase(symbols.BC))) return
     // simulate Arbitragelet 
     let risked = await getBalance(initial) * settings.strategies.TRIBITRAGE.risk
-    let ownMedian = (risked / AB) * fee
-    let target = (ownMedian / BC) * fee
-    let ownInitial = (target * CD) * fee
+    let ownMedian = (risked / AB) * fees
+    let target = (ownMedian / BC) * fees
+    let ownInitial = (target * CD) * fees
     ownInitial = Number(floor(ownInitial, 2))
     risked = Number(floor(risked, 2))
     // check if there is an arbitrage opportunity
@@ -189,7 +188,7 @@ io.on('order-filled', order => {
     // check if the filled order is step 3, then remove the coin from open opportunities
     else if (steps[2].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[2].order = order
-      let diff = ((order.size * order.price) - op.risked) * fee
+      let diff = ((order.size * order.price) - op.risked) * fees
       log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}: $${floor(diff, 2)}`)
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
@@ -275,7 +274,7 @@ const housekeeping = async () => {
 setInterval(() => {
   log(`Housekeeping....`)
   housekeeping()
-}, 1000 * 60 * 60);
+}, settings.strategies.TRIBITRAGE.housekeepingInterval);
 
 // setTimeout(() => {
 //   housekeeping()
