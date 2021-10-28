@@ -44,6 +44,7 @@ export const isSufficient = async (currency) => await getBalance(currency) > 10
 export const getTickerInfo = (pair, allTickers) => allTickers.find(tick => tick.symbol === pair.symbol)
 
 export const floor = (value, decimals) => {
+  if (decimals === -1) return value
   if (typeof value === 'number') value = value.toString()
 
   let ints = value.split('.')[0]

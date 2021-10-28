@@ -55,8 +55,8 @@ const arbitrage = async options => {
     let ownMedian = (risked / AB) * fees
     let target = (ownMedian / BC) * fees
     let ownInitial = (target * CD) * fees
-    ownInitial = Number(floor(ownInitial, 2))
-    risked = Number(floor(risked, 2))
+    ownInitial = Number(floor(ownInitial, settings.strategies.TRIBITRAGE.floor))
+    risked = Number(floor(risked, settings.strategies.TRIBITRAGE.floor))
     // check if there is an arbitrage opportunity
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
