@@ -93,7 +93,7 @@ const start = async options => {
     target
   } = options
   let steps = []
-  let id = Date.now()
+  let id = Date.now() / 1000
   let step1 = {
     pair: {
       symbol: symbols.AB

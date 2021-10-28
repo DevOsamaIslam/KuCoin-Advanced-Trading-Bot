@@ -64,7 +64,7 @@ export default class Trader {
 
     let params = {
       baseParams: {
-        clientOid: `${this.pair.symbol}_${this.id || Date.now()}`,
+        clientOid: `${this.pair.symbol}_${this.id || Date.now() / 1000}`,
         side: 'buy',
         symbol: this.pair.symbol,
         type: this.order.type,
