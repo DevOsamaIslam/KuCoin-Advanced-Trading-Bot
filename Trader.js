@@ -124,12 +124,16 @@ export default class Trader {
     let {
       type,
       price,
-      size
+      size,
+      timeInForce,
+      cancelAfter
     } = options
     if (this.order) {
       if (!size) size = this.order.size
       if (!price) price = this.order.currentPrice
       if (!type) type = this.order.type
+      if (!timeInForce) timeInForce = this.order.timeInForce
+      if (!cancelAfter) cancelAfter = this.order.cancelAfter
     }
 
     // find the lowest quote increment decimal value
@@ -144,7 +148,9 @@ export default class Trader {
       side: 'sell',
       symbol: this.pair.symbol,
       type,
-      remark: `Strategy: ${this.strategy}`
+      remark: `Strategy: ${this.strategy}`,
+      timeInForce: timeInForce || 'GTC',
+      cancelAfter: cancelAfter
     }, {
       size: size || this.order.size,
       price: type === 'limit' ? price || this.order.currentPrice : ''
