@@ -29,6 +29,7 @@ let median = settings.strategies.TRIBITRAGE.median
 let opportinities = []
 let orderTimeout = settings.strategies.TRIBITRAGE.orderTimeout
 let strategyName = 'Tribitrage'
+let revenue = 0
 
 
 const arbitrage = async options => {
@@ -190,7 +191,8 @@ io.on('order-filled', order => {
     else if (steps[2].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[2].order = order
       let diff = ((order.size * order.price) - op.risked) * fees
-      log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}: ${floor(diff, 2)} ${initial}`)
+      revenue += diff
+      log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}: ${floor(diff, 2)} (${revenue}) ${initial}`)
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
     }
