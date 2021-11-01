@@ -8,6 +8,7 @@ import {
   postOrder,
   getBase,
   getQuote,
+  includeIt,
 } from './config/utils.js'
 import log, {
   logStrategy
@@ -93,6 +94,7 @@ export default class Trader {
         pair: this.pair,
         data: [`Something went wrong while buying`]
       });
+      includeIt(getBase(this.pair.symbol))
       return false
     }
   }
