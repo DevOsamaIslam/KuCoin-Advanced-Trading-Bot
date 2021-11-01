@@ -251,12 +251,12 @@ const housekeeping = async () => {
   if (!currencies) return
   Object.keys(currencies).forEach(async coin => {
     coin = currencies[coin]
+    let pair = `${coin.currency}-${initial}`
+    let tickerInfo = getTickerInfo({
+      symbol: pair
+    }, initialTickers)
     if (coin.currency !== initial) {
-      if (coin.available > 0) {
-        let pair = `${coin.currency}-${initial}`
-        let tickerInfo = getTickerInfo({
-          symbol: pair
-        }, initialTickers)
+      if (coin.available > 0 && coin.available > tickerInfo.baseMinSize) {
         new Trader({
           pair: {
             symbol: pair
@@ -279,9 +279,9 @@ setInterval(() => {
   housekeeping()
 }, settings.strategies.TRIBITRAGE.housekeepingInterval);
 
-// setTimeout(() => {
-//   housekeeping()
-// }, 100);
+setTimeout(() => {
+  housekeeping()
+}, 100);
 
 
 export default dynamicArb
