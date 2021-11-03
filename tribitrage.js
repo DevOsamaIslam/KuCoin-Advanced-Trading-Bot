@@ -256,7 +256,7 @@ const housekeeping = async () => {
       symbol: pair
     }, initialTickers)
     if (coin.currency !== initial && tickerInfo) {
-      if (coin.available > 0 && coin.available > tickerInfo.baseMinSize) {
+      if (parseFloat(coin.available) > parseFloat(tickerInfo.baseMinSize)) {
         new Trader({
           pair: {
             symbol: pair
