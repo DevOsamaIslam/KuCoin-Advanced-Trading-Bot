@@ -65,11 +65,11 @@ const arbitrage = async options => {
     if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff) {
       let coin = getBase(symbols.BC)
       if (!isExcluded(coin)) exclude(coin)
-      log(`Arbitrage opportunity`);
-      log(`Equity: ${risked}`);
-      log(`${symbols.AB}: ${AB} => ${ownMedian}`);
-      log(`${symbols.BC}: ${BC} => ${target}`);
-      log(`${symbols.CD}: ${CD} => ${ownInitial}`);
+      log(`Arbitrage opportunity: ${initial}--${median}--${getBase(symbols.CD)}`);
+      // log(`Equity: ${risked}`);
+      // log(`${symbols.AB}: ${AB} => ${ownMedian}`);
+      // log(`${symbols.BC}: ${BC} => ${target}`);
+      // log(`${symbols.CD}: ${CD} => ${ownInitial}`);
       start({
         AB,
         BC,
@@ -192,7 +192,7 @@ io.on('order-filled', order => {
       steps[2].order = order
       let diff = ((order.size * order.price) - op.risked) * fees
       revenue += diff
-      log(`Arbitrage done: ${steps[0].pair.symbol} >> ${steps[1].pair.symbol} >> ${steps[2].pair.symbol}: ${floor(diff, 2)} (${revenue}) ${initial}`)
+      log(`Arbitrage done: ${initial}--${median}--${getBase(order.symbol)}--${initial}: ${floor(diff, 2)} (${revenue}) ${initial}`)
       includeIt(getBase(order.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
     }
@@ -201,9 +201,9 @@ io.on('order-filled', order => {
 
 io.on('order-canceled', async order => {
   if (!order.clientOid) return
+  includeIt(getBase(order.symbol))
   let oppo = opportinities.find(oppo => order.clientOid.includes(oppo.id))
   if (oppo) {
-    includeIt(getBase(oppo.coin))
     opportinities.splice(opportinities.indexOf(oppo, 1))
   }
 })
@@ -255,7 +255,7 @@ const housekeeping = async () => {
     let tickerInfo = getTickerInfo({
       symbol: pair
     }, initialTickers)
-    if (coin.currency !== initial) {
+    if (coin.currency !== initial && tickerInfo) {
       if (coin.available > 0 && coin.available > tickerInfo.baseMinSize) {
         new Trader({
           pair: {
