@@ -176,10 +176,10 @@ export default {
     "TRIBITRAGE": {
       "enable": true,
       "risk": 0.15,
-      "diff": 1.02,
-      "initial": "BTC",
+      "diff": 1.03,
+      "initial": "USDT",
       "floor": -1,
-      "median": "ETH",
+      "median": "BTC",
       "orderTimeout": 60 * 5,
       "housekeepingInterval": 60 * 60 * 1000
     }
