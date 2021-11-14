@@ -142,8 +142,10 @@ export default class Trader {
     let sizeDecimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
     let priceDecimals = this.tickerInfo.priceIncrement ? getDecimalPlaces(this.tickerInfo.priceIncrement) : 0.1
     // get the order size in the base currency (the one you want to buy)
+    console.log(`size: ${size}`);
     size = floor(size, sizeDecimals)
-    price = (floor(price, priceDecimals))
+    console.log(`price: ${price}`);
+    price = floor(price, priceDecimals)
     // check if the order size is less-than/equal-to the minimum
 
 
