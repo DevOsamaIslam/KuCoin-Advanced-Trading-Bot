@@ -139,9 +139,11 @@ export default class Trader {
     }
 
     // find the lowest quote increment decimal value
-    let decimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
+    let sizeDecimals = this.tickerInfo.baseIncrement ? getDecimalPlaces(this.tickerInfo.baseIncrement) : 4
+    let priceDecimals = this.tickerInfo.priceIncrement ? getDecimalPlaces(this.tickerInfo.priceIncrement) : 0.1
     // get the order size in the base currency (the one you want to buy)
-    size = floor(size, decimals)
+    size = floor(size, sizeDecimals)
+    price = (floor(price, priceDecimals))
     // check if the order size is less-than/equal-to the minimum
 
 
