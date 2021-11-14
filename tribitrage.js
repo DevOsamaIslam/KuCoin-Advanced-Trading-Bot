@@ -128,6 +128,8 @@ const start = async options => {
     strategy: strategyName,
     id
   }
+  if (!CD)
+    return
   let step3 = {
     pair: {
       symbol: symbols.CD
