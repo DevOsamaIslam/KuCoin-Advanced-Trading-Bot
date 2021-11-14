@@ -177,6 +177,7 @@ export default {
       "enable": true,
       "risk": 0.15,
       "diff": 1.03,
+      "offset": 1.01,
       "initial": "USDT",
       "floor": -1,
       "median": "BTC",
