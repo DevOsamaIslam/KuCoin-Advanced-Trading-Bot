@@ -50,7 +50,7 @@ export const floor = (value, decimals) => {
   let ints = value.split('.')[0]
   let dec = value.split('.')[1]
   if (dec) return ints + '.' + dec.substr(0, decimals)
-  else return parseFloat(ints)
+  else return ints
 }
 export const getDecimalPlaces = value => {
   if (typeof value === 'number')

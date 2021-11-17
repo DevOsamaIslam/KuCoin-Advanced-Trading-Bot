@@ -12,6 +12,7 @@ import {
   getBase,
   io,
   getQuote,
+  getDecimalPlaces,
 } from './config/utils.js'
 
 import Trader from './Trader.js';
@@ -57,12 +58,12 @@ const arbitrage = async options => {
     let ownMedian = (risked / AB) * fees
     let target = (ownMedian / BC) * fees
     let ownInitial = (target * CD) * fees
-    ownInitial = Number(floor(ownInitial, settings.strategies.TRIBITRAGE.floor))
-    risked = Number(floor(risked, settings.strategies.TRIBITRAGE.floor))
+    ownInitial = floor(ownInitial, settings.strategies.TRIBITRAGE.floor)
+    risked = floor(risked, settings.strategies.TRIBITRAGE.floor)
     // check if there is an arbitrage opportunity
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
-    if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff) {
+    if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff || true) {
       let coin = getBase(symbols.BC)
       if (!isExcluded(coin)) exclude(coin)
       log(`Arbitrage opportunity: ${initial}--${median}--${getBase(symbols.CD)}`);
@@ -72,8 +73,8 @@ const arbitrage = async options => {
       console.log(`${symbols.CD}: ${CD} => ${ownInitial}`);
       start({
         AB,
-        BC: BC * settings.strategies.TRIBITRAGE.offset,
-        CD: CD * settings.strategies.TRIBITRAGE.offset,
+        BC: floor(BC * settings.strategies.TRIBITRAGE.offset, getDecimalPlaces(BC)),
+        CD: floor(CD * settings.strategies.TRIBITRAGE.offset, getDecimalPlaces(CD)),
         symbols,
         ownMedian,
         risked,
