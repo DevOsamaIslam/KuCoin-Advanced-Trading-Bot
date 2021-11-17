@@ -63,7 +63,7 @@ const arbitrage = async options => {
     // check if there is an arbitrage opportunity
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
-    if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff || true) {
+    if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff) {
       let coin = getBase(symbols.BC)
       if (!isExcluded(coin)) exclude(coin)
       log(`Arbitrage opportunity: ${initial}--${median}--${getBase(symbols.CD)}`);
