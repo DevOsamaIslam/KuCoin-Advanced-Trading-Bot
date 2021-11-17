@@ -76,9 +76,9 @@ const arbitrage = async options => {
         BC: floor(BC * settings.strategies.TRIBITRAGE.offset, getDecimalPlaces(BC)),
         CD: floor(CD * settings.strategies.TRIBITRAGE.offset, getDecimalPlaces(CD)),
         symbols,
-        ownMedian,
+        ownMedian: floor(ownMedian * settings.strategies.TRIBITRAGE.offset, getDecimalPlaces(ownMedian)),
         risked,
-        target
+        target: floor(target * settings.strategies.TRIBITRAGE.offset, getDecimalPlaces(target))
       })
     }
   })
