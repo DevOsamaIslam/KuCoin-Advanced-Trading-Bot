@@ -48,9 +48,9 @@ const arbitrage = async options => {
   let topic = `/market/ticker:${symbols.AB},${symbols.BC},${symbols.CD}`
   let cbid = datafeed.subscribe(topic, async data => {
     let currentTicker = data.topic.split(':')[1]
-    if (currentTicker == symbols.AB) AB = data.data.bestBid
-    if (currentTicker == symbols.BC) BC = data.data.bestBid
     if (currentTicker == symbols.CD) CD = data.data.bestAsk
+    if (currentTicker == symbols.BC) BC = data.data.bestBid
+    if (currentTicker == symbols.AB) AB = data.data.bestBid
     // Housekeeping
     if (!AB || !BC || !CD || x || isExcluded(getBase(symbols.CD))) return
     // simulate Arbitragelet 
@@ -63,8 +63,7 @@ const arbitrage = async options => {
     // check if there is an arbitrage opportunity
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
-    if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff && !x) {
-      x = true
+    if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff) {
       let coin = getBase(symbols.CD)
       if (!isExcluded(coin)) exclude(coin)
       log(`Arbitrage opportunity: ${initial}--${getBase(symbols.CD)}--${median}--${initial}`);
@@ -163,7 +162,6 @@ const start = async options => {
     .then(order => {
       if (!order) {
         includeIt(getBase(symbols.BC))
-        x = false
       }
     })
   log(`Exclusion list: ${exclusionList().join(' - ')}`)
@@ -203,7 +201,6 @@ io.on('order-filled', order => {
       revenue += diff
       log(`Arbitrage done: ${initial}--${target}--${getBase(median)}--${initial}: ${floor(diff, 2)} (${revenue}) ${initial}`)
       includeIt(getBase(steps[0].pair.symbol))
-      x = false
       opportinities.splice(opportinities.indexOf(op), 1)
     }
   }
@@ -211,7 +208,6 @@ io.on('order-filled', order => {
 
 io.on('order-canceled', async order => {
   if (!order.clientOid) return
-  x = false
   includeIt(getBase(order.symbol))
   let oppo = opportinities.find(oppo => order.clientOid.includes(oppo.id))
   if (oppo) {
@@ -279,7 +275,6 @@ const housekeeping = async () => {
           size: coin.available,
         })
         isExcluded(coin.currency) && includeIt(coin.currency)
-        x = false
       }
     }
 
