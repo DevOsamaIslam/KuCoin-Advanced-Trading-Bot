@@ -181,7 +181,7 @@ export default {
       "initial": "USDT",
       "floor": -1,
       "median": "BTC",
-      "orderTimeout": 60 * 5,
+      "orderTimeout": 1,
       "housekeepingInterval": 60 * 60 * 1000
     }
   }
