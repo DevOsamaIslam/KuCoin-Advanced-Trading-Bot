@@ -54,7 +54,7 @@ export const floor = (value, decimals) => {
 }
 export const getDecimalPlaces = value => {
   if (typeof value === 'number')
-    value.toString()
+    value = value.toString()
   if (!value.split('.')[1])
     return 0
   else return value.split('.')[1].length
