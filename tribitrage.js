@@ -282,9 +282,9 @@ setInterval(() => {
   housekeeping()
 }, settings.strategies.TRIBITRAGE.housekeepingInterval);
 
-setTimeout(() => {
-  housekeeping()
-}, 100);
+// setTimeout(() => {
+//   housekeeping()
+// }, 100);
 
 
 export default dynamicArb
