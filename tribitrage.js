@@ -66,11 +66,11 @@ const arbitrage = async options => {
     if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff) {
       let coin = getBase(symbols.CD)
       if (!isExcluded(coin)) exclude(coin)
-      log(`Arbitrage opportunity: ${initial}--${median}--${getBase(symbols.CD)}`);
+      log(`Arbitrage opportunity: ${initial}--${getBase(symbols.CD)}--${median}--${initial}`);
       console.log(`Equity: ${risked}`);
-      console.log(`${symbols.AB}: ${AB} => ${ownMedian}`);
-      console.log(`${symbols.BC}: ${BC} => ${target}`);
-      console.log(`${symbols.CD}: ${CD} => ${ownInitial}`);
+      console.log(`${symbols.CD}: ${CD} => ${target}`);
+      console.log(`${symbols.BC}: ${BC} => ${ownMedian}`);
+      console.log(`${symbols.AB}: ${AB} => ${ownInitial}`);
       start({
         AB,
         BC,
@@ -105,7 +105,7 @@ const start = async options => {
       currentPrice: CD,
       type: 'limit',
       side: 'buy',
-      timeInForce: 'FOK',
+      timeInForce: 'IOC',
     },
     tickerInfo: symbols.CDI,
     strategy: strategyName,
