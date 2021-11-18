@@ -105,7 +105,7 @@ const start = async options => {
       currentPrice: CD,
       type: 'limit',
       side: 'buy',
-      timeInForce: 'IOC',
+      timeInForce: 'FOK',
     },
     tickerInfo: symbols.CDI,
     strategy: strategyName,
