@@ -49,7 +49,7 @@ const arbitrage = async options => {
   let cbid = datafeed.subscribe(topic, async data => {
     let currentTicker = data.topic.split(':')[1]
     if (currentTicker == symbols.AB) AB = data.data.bestBid
-    if (currentTicker == symbols.BC) BC = data.data.bestAsk
+    if (currentTicker == symbols.BC) BC = data.data.bestBid
     if (currentTicker == symbols.CD) CD = data.data.bestAsk
     // Housekeeping
     if (!AB || !BC || !CD || x || isExcluded(getBase(symbols.CD))) return
