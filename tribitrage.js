@@ -63,7 +63,8 @@ const arbitrage = async options => {
     // check if there is an arbitrage opportunity
     // if the output is at least 0.03 bigger than the risked amount
     // and there's no active trade going on
-    if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff) {
+    if (ownInitial > risked * settings.strategies.TRIBITRAGE.diff && !x) {
+      t = true
       let coin = getBase(symbols.CD)
       if (!isExcluded(coin)) exclude(coin)
       log(`Arbitrage opportunity: ${initial}--${getBase(symbols.CD)}--${median}--${initial}`);
@@ -159,7 +160,12 @@ const start = async options => {
   })
   // step 1 ---------------------------------------------------
   new Trader(steps[0]).tribitrage()
-    .then(order => order ? null : includeIt(getBase(symbols.BC)))
+    .then(order => {
+      if (!order) {
+        includeIt(getBase(symbols.BC))
+        x = false
+      }
+    })
   log(`Exclusion list: ${exclusionList().join(' - ')}`)
 }
 io.on('order-filled', order => {
@@ -197,6 +203,7 @@ io.on('order-filled', order => {
       revenue += diff
       log(`Arbitrage done: ${initial}--${target}--${getBase(median)}--${initial}: ${floor(diff, 2)} (${revenue}) ${initial}`)
       includeIt(getBase(steps[0].pair.symbol))
+      x = false
       opportinities.splice(opportinities.indexOf(op), 1)
     }
   }
@@ -204,6 +211,7 @@ io.on('order-filled', order => {
 
 io.on('order-canceled', async order => {
   if (!order.clientOid) return
+  x = false
   includeIt(getBase(order.symbol))
   let oppo = opportinities.find(oppo => order.clientOid.includes(oppo.id))
   if (oppo) {
@@ -271,6 +279,7 @@ const housekeeping = async () => {
           size: coin.available,
         })
         isExcluded(coin.currency) && includeIt(coin.currency)
+        x = false
       }
     }
 
