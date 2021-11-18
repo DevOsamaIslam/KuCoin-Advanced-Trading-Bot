@@ -105,7 +105,8 @@ const start = async options => {
       currentPrice: CD,
       type: 'limit',
       side: 'buy',
-      timeInForce: 'IOC',
+      timeInForce: 'GTT',
+      cancelAfter: orderTimeout
     },
     tickerInfo: symbols.CDI,
     strategy: strategyName,
@@ -281,9 +282,9 @@ setInterval(() => {
   housekeeping()
 }, settings.strategies.TRIBITRAGE.housekeepingInterval);
 
-// setTimeout(() => {
-//   housekeeping()
-// }, 100);
+setTimeout(() => {
+  housekeeping()
+}, 100);
 
 
 export default dynamicArb
