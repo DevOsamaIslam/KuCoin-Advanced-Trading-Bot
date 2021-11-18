@@ -118,10 +118,10 @@ const start = async options => {
       symbol: symbols.BC
     },
     order: {
-      size: ownMedian,
+      size: target,
       currentPrice: BC,
       type: 'limit',
-      side: 'buy',
+      side: 'sell',
       timeInForce: 'GTT',
       cancelAfter: orderTimeout
     },
