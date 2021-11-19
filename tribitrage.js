@@ -48,16 +48,16 @@ const arbitrage = async options => {
   let topic = `/market/ticker:${symbols.AB},${symbols.BC},${symbols.CD}`
   let cbid = datafeed.subscribe(topic, async data => {
     let currentTicker = data.topic.split(':')[1]
-    if (currentTicker == symbols.CD) CD = data.data.bestAsk
-    if (currentTicker == symbols.BC) BC = data.data.bestBid
-    if (currentTicker == symbols.AB) AB = data.data.bestBid
+    if (currentTicker == symbols.AB) AB = data.data.bestAsk
+    if (currentTicker == symbols.BC) BC = data.data.bestAsk
+    if (currentTicker == symbols.CD) CD = data.data.bestBid
     // Housekeeping
     if (!AB || !BC || !CD || x || isExcluded(getBase(symbols.CD))) return
     // simulate Arbitragelet 
     let risked = await getBalance(initial) * settings.strategies.TRIBITRAGE.risk
-    let target = (risked / CD) * fees
-    let ownMedian = (target * BC) * fees
-    let ownInitial = (ownMedian * AB) * fees
+    let ownMedian = (risked / AB) * fees
+    let target = (ownMedian / BC) * fees
+    let ownInitial = (target * CD) * fees
     ownInitial = floor(ownInitial, settings.strategies.TRIBITRAGE.floor)
     risked = floor(risked, settings.strategies.TRIBITRAGE.floor)
     // check if there is an arbitrage opportunity
@@ -68,9 +68,9 @@ const arbitrage = async options => {
       if (!isExcluded(coin)) exclude(coin)
       log(`Arbitrage opportunity: ${initial}--${getBase(symbols.CD)}--${median}--${initial}`);
       console.log(`Equity: ${risked}`);
-      console.log(`${symbols.CD}: ${CD} => ${target}`);
-      console.log(`${symbols.BC}: ${BC} => ${ownMedian}`);
-      console.log(`${symbols.AB}: ${AB} => ${ownInitial}`);
+      console.log(`${symbols.AB}: ${AB} => ${ownMedian}`);
+      console.log(`${symbols.BC}: ${BC} => ${target}`);
+      console.log(`${symbols.CD}: ${CD} => ${ownInitial}`);
       start({
         AB,
         BC,
@@ -98,16 +98,16 @@ const start = async options => {
   let id = Date.now() / 1000
   let step1 = {
     pair: {
-      symbol: symbols.CD
+      symbol: symbols.AB
     },
     order: {
-      size: target,
-      currentPrice: CD,
+      size: ownMedian,
+      currentPrice: AB,
       type: 'limit',
       side: 'buy',
       timeInForce: 'FOK',
     },
-    tickerInfo: symbols.CDI,
+    tickerInfo: symbols.ABI,
     strategy: strategyName,
     equity: risked,
     id
@@ -132,17 +132,17 @@ const start = async options => {
     return
   let step3 = {
     pair: {
-      symbol: symbols.AB
+      symbol: symbols.CD
     },
     order: {
-      size: ownMedian,
-      currentPrice: AB,
+      size: target,
+      currentPrice: CD,
       type: 'limit',
       side: 'sell',
       timeInForce: 'GTT',
       cancelAfter: orderTimeout * 10
     },
-    tickerInfo: symbols.ABI,
+    tickerInfo: symbols.CDI,
     strategy: strategyName,
     id
   }
@@ -153,14 +153,14 @@ const start = async options => {
   opportinities.push({
     id,
     risked,
-    coin: getBase(symbols.BC),
+    coin: getBase(symbols.CD),
     steps,
   })
   // step 1 ---------------------------------------------------
   new Trader(steps[0]).tribitrage()
     .then(order => {
       if (!order) {
-        includeIt(getBase(symbols.BC))
+        includeIt(getBase(symbols.CD))
       }
     })
   log(`Exclusion list: ${exclusionList().join(' - ')}`)
@@ -174,7 +174,7 @@ io.on('order-filled', order => {
       steps[0].order = order
       new Trader(steps[1]).tribitrage().then(order => {
         if (!order) {
-          includeIt(getBase(steps[0].pair.symbol))
+          includeIt(getBase(steps[2].pair.symbol))
           opportinities.splice(opportinities.indexOf(op), 1)
         }
       })
@@ -186,7 +186,7 @@ io.on('order-filled', order => {
       setTimeout(() => {
         new Trader(steps[2]).tribitrage().then(order => {
           if (!order) {
-            includeIt(getBase(steps[0].pair.symbol))
+            includeIt(getBase(steps[2].pair.symbol))
             opportinities.splice(opportinities.indexOf(op), 1)
           }
         })
@@ -199,7 +199,7 @@ io.on('order-filled', order => {
       let diff = ((order.size * order.price) - op.risked) * fees
       revenue += diff
       log(`Arbitrage done: ${initial}--${target}--${getBase(median)}--${initial}: ${floor(diff, 2)} (${revenue}) ${initial}`)
-      includeIt(getBase(steps[0].pair.symbol))
+      includeIt(getBase(steps[2].pair.symbol))
       opportinities.splice(opportinities.indexOf(op), 1)
     }
   }
