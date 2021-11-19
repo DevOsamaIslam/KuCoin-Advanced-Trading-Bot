@@ -169,12 +169,13 @@ io.on('order-filled', order => {
   if (!order.clientOid) return
   for (const op of opportinities) {
     let steps = op.steps
+    let target = getBase(steps[2].pair.symbol)
     // check if the filled order is step 1, then start step 2
     if (steps[0].pair.symbol == order.symbol && order.clientOid.includes(op.id)) {
       steps[0].order = order
       new Trader(steps[1]).tribitrage().then(order => {
         if (!order) {
-          includeIt(getBase(steps[2].pair.symbol))
+          includeIt(target)
           opportinities.splice(opportinities.indexOf(op), 1)
         }
       })
@@ -186,7 +187,7 @@ io.on('order-filled', order => {
       setTimeout(() => {
         new Trader(steps[2]).tribitrage().then(order => {
           if (!order) {
-            includeIt(getBase(steps[2].pair.symbol))
+            includeIt(target)
             opportinities.splice(opportinities.indexOf(op), 1)
           }
         })
@@ -199,7 +200,7 @@ io.on('order-filled', order => {
       let diff = ((order.size * order.price) - op.risked) * fees
       revenue += diff
       log(`Arbitrage done: ${initial}--${target}--${getBase(median)}--${initial}: ${floor(diff, 2)} (${revenue}) ${initial}`)
-      includeIt(getBase(steps[2].pair.symbol))
+      includeIt(target)
       opportinities.splice(opportinities.indexOf(op), 1)
     }
   }
