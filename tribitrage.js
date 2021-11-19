@@ -73,8 +73,8 @@ const arbitrage = async options => {
       console.log(`${symbols.CD}: ${CD} => ${ownInitial}`);
       start({
         AB,
-        BC,
-        CD,
+        BC: floor(BC * (2 - settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(BC)),
+        CD: floor(CD * (settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(CD)),
         symbols,
         ownMedian,
         risked,
