@@ -120,7 +120,7 @@ const start = async options => {
       size: target,
       currentPrice: BC,
       type: 'limit',
-      side: 'sell',
+      side: 'buy',
       timeInForce: 'GTT',
       cancelAfter: orderTimeout
     },
