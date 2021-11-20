@@ -68,13 +68,17 @@ const arbitrage = async options => {
       if (!isExcluded(coin)) exclude(coin)
       log(`Arbitrage opportunity: ${initial}--${getBase(symbols.CD)}--${median}--${initial}`);
       console.log(`Equity: ${risked}`);
-      console.log(`${symbols.AB}: ${AB} => ${ownMedian}`);
+
+      BC = floor(BC * (2 - settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(BC))
+      CD = floor(CD * (settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(CD))
+
       console.log(`${symbols.BC}: ${BC} => ${target}`);
       console.log(`${symbols.CD}: ${CD} => ${ownInitial}`);
+
       start({
         AB,
-        BC: floor(BC * (2 - settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(BC)),
-        CD: floor(CD * (settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(CD)),
+        BC,
+        CD,
         symbols,
         ownMedian,
         risked,
