@@ -189,27 +189,6 @@ const initSocket = () => {
   _datafeed = new api.websocket.Datafeed(true)
   _datafeed.connectSocket()
 }
-setTimeout(async () => {
-  await initSocket()
-  equity()
-  updateOrders()
-}, 1000);
-
-export const updateOrders = async () => {
-  let topic = `/spotMarket/tradeOrders`
-  _datafeed.subscribe(topic, payload => {
-    let order = payload.data
-    if (order.status === 'done' && order.type === 'filled') {
-      orders.push(order)
-      log(`${order.symbol} filled`)
-      io.emit('order-filled', order)
-    }
-    if (order.status == 'done' && order.type === 'canceled') {
-      log(`${order.symbol} order canceled`)
-      io.emit('order-canceled', order)
-    }
-  }, true)
-}
 
 export const postOrder = async (baseParams, orderParams) => {
   log(`trying to ${baseParams.type} ${baseParams.side} ${baseParams.symbol}`)
@@ -233,6 +212,29 @@ export const asyncHandler = async fn => {
     return false
   }
 }
+
+export const updateOrders = async () => {
+  let topic = `/spotMarket/tradeOrders`
+  _datafeed.subscribe(topic, payload => {
+    let order = payload.data
+    if (order.status === 'done' && order.type === 'filled') {
+      orders.push(order)
+      log(`${order.symbol} filled`)
+      io.emit('order-filled', order)
+    }
+    if (order.status == 'done' && order.type === 'canceled') {
+      log(`${order.symbol} order canceled`)
+      io.emit('order-canceled', order)
+    }
+  }, true)
+}
+
+setTimeout(async () => {
+  await initSocket()
+  equity()
+  updateOrders()
+}, 1000);
+
 
 
 
