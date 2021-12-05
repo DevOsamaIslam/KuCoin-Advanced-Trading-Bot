@@ -290,9 +290,13 @@ setInterval(() => {
   housekeeping()
 }, settings.strategies.TRIBITRAGE.housekeepingInterval);
 
-// setTimeout(() => {
-//   housekeeping()
-// }, 100);
+setTimeout(async () => {
+  housekeeping()
+  setTimeout(() => {
+    let balance = await getBalance(initial)
+    log(`Balance is: ${balance} ${initial}`)
+  }, 2000);
+}, 100);
 
 
 export default dynamicArb
