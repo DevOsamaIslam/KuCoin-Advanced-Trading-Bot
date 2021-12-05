@@ -290,9 +290,9 @@ setInterval(() => {
   housekeeping()
 }, settings.strategies.TRIBITRAGE.housekeepingInterval);
 
-setTimeout(async () => {
+setTimeout(() => {
   housekeeping()
-  setTimeout(() => {
+  setTimeout(async () => {
     let balance = await getBalance(initial)
     log(`Balance is: ${balance} ${initial}`)
   }, 2000);
