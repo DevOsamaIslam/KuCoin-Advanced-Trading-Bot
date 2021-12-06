@@ -203,7 +203,7 @@ io.on('order-filled', order => {
       steps[2].order = order
       let diff = ((order.size * order.price) - op.risked) * fees
       revenue += diff
-      log(`Arbitrage done: ${initial}--${target}--${getBase(median)}--${initial}: ${floor(diff, 2)} (${revenue}) ${initial}`)
+      log(`Arbitrage done: ${initial}--${target}--${getBase(median)}--${initial}: ${floor(diff, 2)} (${floor(revenue, 2)}) ${initial}`)
       includeIt(target)
       opportinities.splice(opportinities.indexOf(op), 1)
     }
