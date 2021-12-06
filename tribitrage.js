@@ -257,6 +257,7 @@ const dynamicArb = async () => {
 
 
 const housekeeping = async () => {
+  log(`Housekeeping....`)
   let currencies = await getCurrency()
   let initialTickers = await getAllTickers(initial)
   if (!currencies) return
@@ -286,7 +287,6 @@ const housekeeping = async () => {
 }
 
 setInterval(() => {
-  log(`Housekeeping....`)
   housekeeping()
 }, settings.strategies.TRIBITRAGE.housekeepingInterval);
 
