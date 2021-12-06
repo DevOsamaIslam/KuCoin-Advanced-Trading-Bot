@@ -295,7 +295,7 @@ setTimeout(() => {
   setTimeout(async () => {
     let balance = await getBalance(initial)
     log(`Balance is: ${balance} ${initial}`)
-  }, 2000);
+  }, 5000);
 }, 100);
 
 
