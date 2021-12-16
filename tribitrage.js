@@ -69,12 +69,6 @@ const arbitrage = async options => {
       log(`Arbitrage opportunity: ${initial}--${getBase(symbols.CD)}--${median}--${initial}`);
       console.log(`Equity: ${risked}`);
 
-      BC = floor(BC * (2 - settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(BC))
-      CD = floor(CD * (settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(CD))
-
-      console.log(`${symbols.BC}: ${BC} => ${target}`);
-      console.log(`${symbols.CD}: ${CD} => ${ownInitial}`);
-
       start({
         AB,
         BC,
@@ -84,6 +78,14 @@ const arbitrage = async options => {
         risked,
         target,
       })
+
+      BC = floor(BC * (2 - settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(BC))
+      CD = floor(CD * (settings.strategies.TRIBITRAGE.offset), getDecimalPlaces(CD))
+
+      console.log(`${symbols.BC}: ${BC} => ${target}`);
+      console.log(`${symbols.CD}: ${CD} => ${ownInitial}`);
+
+
     }
   })
 }
