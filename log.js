@@ -23,14 +23,15 @@ export const err = async data => {
 }
 
 export const logStrategy = async options => {
-  let {
-    strategy,
-    pair,
-    orderId,
-    data,
-    fileName
-  } = options
+  // let {
+  //   strategy,
+  //   pair,
+  //   orderId,
+  //   data,
+  //   fileName
+  // } = options
 
-  data.forEach(line => appendFileSync(`./records/${strategy.toUpperCase()}/${fileName || moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${pair.symbol} ${line}\n`))
+  // data.forEach(line => appendFileSync(`./records/${strategy.toUpperCase()}/${fileName || moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${pair.symbol} ${line}\n`))
+  console.log(options.data);
 
 }
