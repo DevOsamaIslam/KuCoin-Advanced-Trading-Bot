@@ -17,7 +17,10 @@ export default async data => {
 
 export const verbose = async data => appendFileSync(`./records/logs/verbose_${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
 
-export const err = async data => appendFileSync(`./records/logs/errors_${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
+export const err = async data => {
+  // appendFileSync(`./records/logs/errors_${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
+  console.log(data)
+}
 
 export const logStrategy = async options => {
   let {
