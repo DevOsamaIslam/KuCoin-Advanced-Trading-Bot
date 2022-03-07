@@ -3,7 +3,9 @@ import {
 } from 'fs'
 import moment from 'moment'
 
-export default async data => appendFileSync(`./records/logs/${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
+export default async data => {
+  // appendFileSync(`./records/logs/${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
+}
 
 export const verbose = async data => appendFileSync(`./records/logs/verbose_${moment().format('YYYY-MM-DD')}.log`, `${new Date()} ${data}\n`)
 
