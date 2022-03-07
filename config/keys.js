@@ -1,5 +1,5 @@
-import dotenv from 'dotenv'
-dotenv.config()
+// import dotenv from 'dotenv'
+// dotenv.config()
 
 export const key = process.env.BOT_API_KEY
 export const secret = process.env.BOT_SECRET
