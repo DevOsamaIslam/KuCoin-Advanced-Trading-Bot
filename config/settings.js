@@ -176,7 +176,7 @@ export default {
     "TRIBITRAGE": {
       "enable": true,
       "risk": 0.05,
-      "diff": 1.03,
+      "diff": 1.01,
       "offset": 0.99,
       "initial": "USDT",
       "floor": -1,
