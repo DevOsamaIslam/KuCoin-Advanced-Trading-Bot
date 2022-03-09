@@ -12,7 +12,8 @@ import {
   getTickerInfo,
   getTicker,
   getOrder,
-  cancelOrder
+  cancelOrder,
+  getQuote
 } from './config/utils.js'
 import Orders from './records/model.js'
 
@@ -22,19 +23,21 @@ import log, {
   err,
   verbose
 } from './log.js'
+import strategies from './strategies/index.js'
 
 export default class Watchdog {
-  constructor(options) {
+  constructor(strategy) {
     this.watchlist = settings.watchlist
     this.tf = settings.tf
-    this.equity = getBalance(settings.quote).then(data => data)
-    this.strategy = options.strategy
+    this.equity = 0
+    this.strategy = {...settings.strategies[strategy], name: strategy}
     this.excluded = []
     this.history = []
   }
 
   async execute() {
     this.allTickers = await getAllTickers()
+    this.equity = await getBalance(settings.quote)
     if (!this.allTickers) {
       getAllPairs();
       return
@@ -44,10 +47,10 @@ export default class Watchdog {
     await this.collectHistory(this.watchlist)
     for (const pair of this.history) {
       this.monitor(pair)
+      setInterval(() => {
+        this.monitor(pair)
+      }, settings.tf.value);
     }
-
-    // monitor for volume spike
-    // this.volSpike(this.watchlist)
 
     setInterval(() => this.update(), 60 * 1000);
   }
@@ -60,8 +63,8 @@ export default class Watchdog {
         err(`Pair not found: ${watchlist[count]}`)
         continue
       }
-      let history = await getHistory(pair, this.tf)
-      if (!history || history.length < 1441) {
+      let history = await getHistory(pair, this.tf, 210)
+      if (!history || history.length < 200) {
         if (!history) err(`Unable to pull history for ${pair.symbol}`)
         if (history.length < 1441) err(`Data not enough for ${pair.symbol}: ${history.length}`)
         continue
@@ -75,92 +78,16 @@ export default class Watchdog {
   }
 
   async monitor(pair) {
-    let lastread = false
-    let datafeed = new api.websocket.Datafeed();
-    // connect
-    datafeed.connectSocket();
-
-    // subscribe
-    const topic = `/market/candles:${pair.symbol}_${this.tf.text}`;
-    datafeed.subscribe(topic, message => {
-      if (message.topic === topic) {
-        let data = message.data.candles
-
-        let candle = {
-          timestamp: parseInt(data[0]),
-          open: parseFloat(data[1]),
-          close: parseFloat(data[2]),
-          high: parseFloat(data[3]),
-          low: parseFloat(data[4]),
-          volume: parseFloat(data[6]),
-        }
-        if (!lastread) lastread = candle
-
-        if (candle.timestamp !== lastread.timestamp) {
-          pair.history.unshift(lastread)
-          verbose(`checking ${pair.symbol}`);
-          if (!this.excluded.includes(pair.symbol)) {
-            let order = false
-            // check if the MACD strategy is enabled
-            if (this.strategy.MACD) {
-              // enter a trade if the MACD strategy gives the green light and exclude from the watchlist
-              order = this.strategy.MACD({
-                pair,
-                equity: this.equity
-              })
-              if (order) {
-                this.enter({
-                  pair,
-                  tickerInfo: pair.tickerInfo,
-                  strategy: 'MACD',
-                  order
-                })
-                this.excluded.push(pair.symbol)
-              }
-            }
-
-            // check if the CMF_MACD strategy is enabled
-            if (this.strategy.CMF_MACD) {
-              // enter a trade if the CMF_MACD strategy gives the green light and exclude from the watchlist
-              order = this.strategy.CMF_MACD({
-                pair,
-                equity: this.equity
-              })
-              if (order) {
-                this.enter({
-                  pair,
-                  tickerInfo: pair.tickerInfo,
-                  strategy: 'CMF+MACD',
-                  order
-                })
-                this.excluded.push(pair.symbol)
-              }
-            }
-
-            // check if the VWAP strategy is enabled
-            if (this.strategy.VWAP) {
-              // enter a trade if the VWAP strategy gives the green light and exclude from the watchlist
-              order = this.strategy.VWAP({
-                pair,
-                equity: this.equity
-              })
-              if (order) {
-                this.enter({
-                  pair,
-                  tickerInfo: pair.tickerInfo,
-                  strategy: 'VWAP',
-                  order
-                })
-                this.excluded.push(pair.symbol)
-              }
-            }
-          }
-        }
-        lastread = candle
-      }
-
-
-    });
+    console.log(pair);
+    let order = strategies[this.strategy.name]({equity: this.equity, pair})
+    if(order) {
+      this.enter({
+        pair,
+        tickerInfo: getTickerInfo(pair, this.allTickers),
+        strategy: this.strategy.name,
+        order
+      })
+    } 
   }
 
   async enter(options) {
@@ -170,7 +97,7 @@ export default class Watchdog {
       strategy,
       order
     } = options
-    let balance = await isSufficient()
+    let balance = await isSufficient(getQuote(pair.symbol))
     if (!balance) {
       err(`Insufficient balance!`)
       return false

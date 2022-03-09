@@ -13,10 +13,9 @@ import {
   RTW,
   VWAP
 } from './strategies/index.js'
-import tribitrage from './tribitrage.js'
 
 setTimeout(() => {
-  tribitrage()
+  new Watchdog('MACD').execute()
 }, 1000);
 
 import settings, {

@@ -4,55 +4,55 @@ import log, {
   err
 } from '../log.js'
 export const timeframes = [{
-    "value": 60000,
+    "value": 60 * 1000,
     "text": "1min"
   },
   {
-    "value": 180000,
+    "value": 3 * 60 * 1000,
     "text": "3min"
   },
   {
-    "value": 300000,
+    "value": 5 * 60 * 1000,
     "text": "5min"
   },
   {
-    "value": 900000,
+    "value": 15 * 60 * 1000,
     "text": "15min"
   },
   {
-    "value": 1800000,
+    "value": 30 * 60 * 1000,
     "text": "30min"
   },
   {
-    "value": 3600000,
+    "value": 60 * 60 * 1000,
     "text": "1hour"
   },
   {
-    "value": 7200000,
+    "value": 2 * 60 * 60 * 1000,
     "text": "2hour"
   },
   {
-    "value": 14400000,
+    "value": 4 * 60 * 60 * 1000,
     "text": "4hour"
   },
   {
-    "value": 21600000,
+    "value": 6 * 60 * 60 * 1000,
     "text": "6hour"
   },
   {
-    "value": 28800000,
+    "value": 8 * 60 * 60 * 1000,
     "text": "8hour"
   },
   {
-    "value": 43200000,
+    "value": 12 * 60 * 60 * 1000,
     "text": "12hour"
   },
   {
-    "value": 86400000,
+    "value": 24 * 60 * 60 * 1000,
     "text": "1day"
   },
   {
-    "value": 604800000,
+    "value": 7 * 24 * 60 * 60 * 1000,
     "text": "1week"
   }
 ]
@@ -72,47 +72,6 @@ export default {
   quote: 'USDT',
   "watchlist": [
     "BTC-USDT",
-    "ETH-USDT",
-    // "THETA-USDT",
-    "MATIC-USDT",
-    // "LINK-USDT",
-    "ADA-USDT",
-    // "KSM-USDT",
-    // "QNT-USDT",
-    // "DOT-USDT",
-    // "TRX-USDT",
-    "ONE-USDT",
-    // "REN-USDT",
-    // "AXS-USDT",
-    // "ENJ-USDT",
-    // "AAVE-USDT",
-    // "EOS-USDT",
-    // "KCS-USDT",
-    // "FIL-USDT",
-    "SOL-USDT",
-    "ATOM-USDT",
-    // "FTM-USDT",
-    "AVAX-USDT",
-    // "ALGO-USDT",
-    "LUNA-USDT",
-    "XRP-USDT",
-    // "DOGE-USDT",
-    // "ICP-USDT",
-    // "VET-USDT",
-    // "XMR-USDT",
-    // "COMP-USDT",
-    // "ZEC-USDT",
-    // "SNX-USDT",
-    // "BAT-USDT",
-    // "TEL-USDT",
-    // "ZEN-USDT",
-    // "HBAR-USDT",
-    // "FLOW-USDT",
-    "DYDX-USDT",
-    "UNI-USDT",
-    // "IOST-USDT",
-    // "NEO-USDT",
-    // "XLM-USDT"
   ],
   "tf": timeframes[3],
   "strategies": {
