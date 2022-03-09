@@ -125,10 +125,10 @@ const start = async options => {
     order: {
       size: target,
       currentPrice: BC,
-      type: 'limit',
+      type: 'market',
       side: 'buy',
-      timeInForce: 'GTT',
-      cancelAfter: orderTimeout
+      // timeInForce: 'GTT',
+      // cancelAfter: orderTimeout
     },
     tickerInfo: symbols.BCI,
     strategy: strategyName,
@@ -143,10 +143,10 @@ const start = async options => {
     order: {
       size: target,
       currentPrice: CD,
-      type: 'limit',
+      type: 'market',
       side: 'sell',
-      timeInForce: 'GTT',
-      cancelAfter: orderTimeout * 10
+      // timeInForce: 'GTT',
+      // cancelAfter: orderTimeout * 10
     },
     tickerInfo: symbols.CDI,
     strategy: strategyName,
