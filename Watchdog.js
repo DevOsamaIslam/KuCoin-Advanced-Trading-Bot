@@ -78,7 +78,6 @@ export default class Watchdog {
   }
 
   async monitor(pair) {
-    console.log(pair);
     let order = strategies[this.strategy.name](pair)
     if(order) {
       order.size = this.equity * settings.risk
