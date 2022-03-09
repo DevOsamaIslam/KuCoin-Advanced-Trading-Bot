@@ -52,7 +52,7 @@ export default class Watchdog {
       }, settings.tf.value);
     }
 
-    setInterval(() => this.update(), 60 * 1000);
+    // setInterval(() => this.update(), 60 * 1000);
   }
 
   async collectHistory(watchlist) {
@@ -79,8 +79,9 @@ export default class Watchdog {
 
   async monitor(pair) {
     console.log(pair);
-    let order = strategies[this.strategy.name]({equity: this.equity, pair})
+    let order = strategies[this.strategy.name](pair)
     if(order) {
+      order.size = this.equity * settings.risk
       this.enter({
         pair,
         tickerInfo: getTickerInfo(pair, this.allTickers),
@@ -111,8 +112,6 @@ export default class Watchdog {
       tickerInfo,
       strategy
     }).execute()
-    // exclude from watchlist
-    this.excluded.push(pair.symbol)
   }
 
   async volSpike(pairs) {
@@ -121,7 +120,6 @@ export default class Watchdog {
       pair = await getTicker(pair)
       if (!pair) continue
       let tickerInfo = getTickerInfo(pair, this.allTickers)
-      if (this.excluded.includes(pair.symbol)) continue
       let history = await getHistory(pair, this.tf, 51)
       if (!history || history.length < 50) continue
 

@@ -74,6 +74,7 @@ export default {
     "BTC-USDT",
   ],
   "tf": timeframes[3],
+  risk: 0.05,
   "strategies": {
     "MACD": {
       "enable": true,

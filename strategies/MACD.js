@@ -17,9 +17,9 @@ let {
   strategies
 } = settings
 
-export default options => {
-  let lastPrice = options.pair.bestAsk
-  let history = options.pair.history
+export default pair => {
+  let lastPrice = pair.bestAsk
+  let history = pair.history
   let lastCandle = history[0]
   history.reverse()
   let ema = new EMA(strategies.MACD.params.ma.period)
@@ -49,13 +49,11 @@ export default options => {
 
   let conditions = overEMA && cross && lastMACD
 
-  return conditions ? defineOrder(options) : false
+  return conditions ? defineOrder(pair) : false
 }
 
-const defineOrder = options => {
+const defineOrder = pair => {
   let rr = strategies.MACD.params.rr
-  let equity = options.equity
-  let pair = options.pair
   let history = pair.history
   let SL = 0
   let lbPeriod = 20
@@ -71,7 +69,6 @@ const defineOrder = options => {
   return {
     currentPrice: pair.bestAsk,
     SL,
-    size: equity * 0.05,
     rr,
     type: 'market',
     side: 'buy'
