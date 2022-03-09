@@ -288,9 +288,9 @@ const housekeeping = async () => {
   });
 }
 
-setInterval(() => {
-  housekeeping()
-}, settings.strategies.TRIBITRAGE.housekeepingInterval);
+// setInterval(() => {
+//   housekeeping()
+// }, settings.strategies.TRIBITRAGE.housekeepingInterval);
 
 setTimeout(() => {
   housekeeping()
