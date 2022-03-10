@@ -48,6 +48,7 @@ export default class Watchdog {
     for (const pair of this.history) {
       this.monitor(pair)
       setInterval(() => {
+        log('checking new candle..')
         this.monitor(pair)
       }, settings.tf.value);
     }
