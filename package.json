@@ -1,23 +1,24 @@
 {
-  "name": "kucoin-trading-bot",
-  "version": "1.0.0",
-  "type": "module",
+  "name": "kucoin-advanced-trading-bot",
+  "version": "0.0.1",
   "description": "",
-  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node build/main.js",
+    "dev": "npx tsc-watch --onSuccess \"ts-node src/main.ts\"",
+    "tsw": "tsc -w",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevOsamaIslam/KuCoin-Advanced-Trading-Bot.git"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "kucoin-node-sdk": "^1.0.4",
-    "moment": "^2.29.1",
-    "mongoose": "^6.0.7",
-    "technicalindicators": "^3.1.0",
-    "trading-signals": "^2.3.0",
-    "uuid": "^8.3.2"
+  "bugs": {
+    "url": "https://github.com/DevOsamaIslam/KuCoin-Advanced-Trading-Bot/issues"
   },
-  "devDependencies": {
-    "dotenv": "^10.0.0"
+  "homepage": "https://github.com/DevOsamaIslam/KuCoin-Advanced-Trading-Bot#readme",
+  "dependencies": {
+    "kucoin-node-sdk": "^1.0.4"
   }
 }
