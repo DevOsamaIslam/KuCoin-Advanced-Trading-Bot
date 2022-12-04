@@ -24,7 +24,6 @@ import api from "./main.js"
 import log from "./log.js"
 
 let fees = settings.fees
-let x = false
 let initial = settings.strategies.TRIBITRAGE.initial
 let median = settings.strategies.TRIBITRAGE.median
 let opportunities = []
@@ -43,16 +42,15 @@ const arbitrage = async (options) => {
   datafeed.connectSocket()
 
   let topic = `/market/ticker:${symbols.AB},${symbols.BC},${symbols.CD}`
-  let cbid = datafeed.subscribe(topic, async (data) => {
+  datafeed.subscribe(topic, async (data) => {
     let currentTicker = data.topic.split(":")[1]
     if (currentTicker == symbols.AB) AB = data.data.bestAsk
     if (currentTicker == symbols.BC) BC = data.data.bestAsk
     if (currentTicker == symbols.CD) CD = data.data.bestBid
     // Housekeeping
-    if (!AB || !BC || !CD || x || isExcluded(getBase(symbols.CD))) return
+    if (!AB || !BC || !CD || isExcluded(getBase(symbols.CD))) return
     // simulate Arbitragelet
-    let risked =
-      (await getBalance(initial)) * settings.strategies.TRIBITRAGE.risk
+    let risked = await getBalance(initial) // * settings.strategies.TRIBITRAGE.risk
     let ownMedian = (risked / AB) * fees
     let target = (ownMedian / BC) * fees
     let ownInitial = target * CD * fees
