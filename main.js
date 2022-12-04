@@ -1,32 +1,24 @@
-import api from 'kucoin-node-sdk'
+import api from "kucoin-node-sdk"
 
-import Watchdog from './Watchdog.js'
+import Watchdog from "./Watchdog.js"
 
-import {
-  config,
-} from './config/keys.js'
+import { config } from "./config/keys.js"
 api.init(config)
 
-import {
-  MACD,
-  CMF_MACD,
-  RTW,
-  VWAP
-} from './strategies/index.js'
-
 setTimeout(() => {
-  new Watchdog('MACD').execute()
-}, 1000);
+  dynamicArb()
+}, 1000)
 
-import settings, {
-  database
-} from './config/settings.js'
+import { MACD, CMF_MACD, RTW, VWAP } from "./strategies/index.js"
+import dynamicArb from "./tribitrage.js"
 
+// setTimeout(() => {
+//   new Watchdog('MACD').execute()
+// }, 1000);
 
+// import settings, { database } from "./config/settings.js"
 
-
-
-database.connect
+// database.connect
 
 // api.rest.User.Account.getAccountsList({
 //   type: 'trade',
@@ -43,6 +35,5 @@ database.connect
 //     })
 //   }
 // })
-
 
 export default api

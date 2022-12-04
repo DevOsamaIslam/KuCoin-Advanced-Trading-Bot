@@ -1,17 +1,11 @@
-import {
-  EventEmitter
-} from 'events'
-import {
-  ATR
-} from 'technicalindicators'
+import { EventEmitter } from "events"
+import { ATR } from "technicalindicators"
 
-import api from '../main.js'
+import api from "../main.js"
 
-import log, {
-  err
-} from '../log.js'
+import log, { err } from "../log.js"
 
-import settings from './settings.js'
+import settings from "./settings.js"
 
 let quote = settings.quote
 let currencies = {}
@@ -21,113 +15,131 @@ let _datafeed = false
 
 export const io = new EventEmitter()
 
-export const exclude = coin => excluded.push(coin)
+export const exclude = (coin) => excluded.push(coin)
 
-export const isExcluded = coin => excluded.find(x => x == coin)
+export const isExcluded = (coin) => excluded.find((x) => x == coin)
 
 export const exclusionList = () => excluded
 
-export const includeIt = coin => excluded.splice(excluded.indexOf(coin), 1)
+export const includeIt = (coin) => excluded.splice(excluded.indexOf(coin), 1)
 
-export const calcPerc = (newValue, oldValue) => ((newValue - oldValue) / oldValue) * 100
+export const calcPerc = (newValue, oldValue) =>
+  ((newValue - oldValue) / oldValue) * 100
 
 export const calculateTPPrice = (price, TPP) => parseFloat(price + price * TPP)
 
-export const getBase = (symbol) => symbol.split('-')[0]
+export const getBase = (symbol) => symbol.split("-")[0]
 
-export const getQuote = (symbol) => symbol.split('-')[1]
+export const getQuote = (symbol) => symbol.split("-")[1]
 
 export const calculateSLPrice = (price, SLP) => parseFloat(price - price * SLP)
 
-export const isSufficient = async (currency) => await getBalance(currency) > 10
+export const isSufficient = async (currency) =>
+  (await getBalance(currency)) > 10
 
-export const getTickerInfo = (pair, allTickers) => allTickers.find(tick => tick.symbol === pair.symbol)
+export const getTickerInfo = (pair, allTickers) =>
+  allTickers.find((tick) => tick.symbol === pair.symbol)
 
 export const floor = (value, decimals) => {
   if (decimals === -1) return value
-  if (typeof value === 'number') value = value.toString()
+  if (typeof value === "number") value = value.toString()
 
-  let ints = value.split('.')[0]
-  let dec = value.split('.')[1]
-  if (dec) return ints + '.' + dec.substr(0, decimals)
+  let ints = value.split(".")[0]
+  let dec = value.split(".")[1]
+  if (dec) return ints + "." + dec.substr(0, decimals)
   else return ints
 }
-export const getDecimalPlaces = value => {
-  if (typeof value === 'number')
-    value = value.toString()
-  if (!value.split('.')[1])
-    return 0
-  else return value.split('.')[1].length
+export const getDecimalPlaces = (value) => {
+  if (typeof value === "number") value = value.toString()
+  if (!value.split(".")[1]) return 0
+  else return value.split(".")[1].length
 }
-export const getTicker = async symbol => {
+export const getTicker = async (symbol) => {
   let ticker = await asyncHandler(api.rest.Market.Symbols.getTicker(symbol))
   if (ticker) {
     ticker.data.symbol = symbol
     return ticker.data
   } else return false
 }
-export const getAllPairs = async QUOTE => {
+export const getAllPairs = async (QUOTE) => {
   let allTickers = await asyncHandler(api.rest.Market.Symbols.getAllTickers())
-  if (allTickers) return allTickers.data.ticker.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith(QUOTE || quote))
+  if (allTickers)
+    return allTickers.data.ticker.filter(
+      (tick) =>
+        !tick.symbol.includes("3S") &&
+        !tick.symbol.includes("3L") &&
+        tick.symbol.endsWith(QUOTE || quote)
+    )
   else return false
 }
-export const getAllTickers = async QUOTE => {
+export const getAllTickers = async (QUOTE) => {
   let allTickers = await asyncHandler(api.rest.Market.Symbols.getSymbolsList())
-  if (allTickers) return allTickers.data.filter(tick => !tick.symbol.includes('3S') && !tick.symbol.includes('3L') && tick.symbol.endsWith(QUOTE || quote))
+  if (allTickers)
+    return allTickers.data.filter(
+      (tick) =>
+        !tick.symbol.includes("3S") &&
+        !tick.symbol.includes("3L") &&
+        tick.symbol.endsWith(QUOTE || quote)
+    )
   else return false
 }
-export const getPrice = async pair => {
+export const getPrice = async (pair) => {
   let data = await asyncHandler(api.rest.Market.Symbols.getTicker(pair))
   if (data) return data.price
   else return false
 }
-export const getOrder = async id => {
-  let match = orders.find(x => x.orderId == id)
+export const getOrder = async (id) => {
+  let match = orders.find((x) => x.orderId == id)
   if (match) return match
   let data = await asyncHandler(api.rest.Trade.Orders.getOrderByID(id))
   if (data) return data.data
   else return false
 }
-export const getOrderSync = id => orders.find(x => x.orderId == id)
+export const getOrderSync = (id) => orders.find((x) => x.orderId == id)
 
-export const cancelOrder = async id => {
+export const cancelOrder = async (id) => {
   let data = await asyncHandler(api.rest.Trade.Orders.cancelOrder(id))
   if (data) return data.data
   else return false
 }
-export const getBalance = async currency => {
+export const getBalance = async (currency) => {
   // let results = await asyncHandler(api.rest.User.Account.getAccountsList({
   //   type: 'trade',
   //   currency
   // }))
   if (currency) {
-    let results = currencies[currency] ? parseFloat(currencies[currency].available) : 0
+    let results = currencies[currency]
+      ? parseFloat(currencies[currency].available)
+      : 0
     if (results == 0) return parseFloat((await getCurrency(currency)).available)
     else return results
   } else return parseFloat(await getCurrency(currency).available)
-
 }
 export const getCurrency = async (currency = undefined) => {
   if (currency) {
-    if (currencies[currency] && currencies[currency].available > 0) return currencies[currency]
-    let results = await asyncHandler(api.rest.User.Account.getAccountsList({
-      type: 'trade',
-      currency
-    }))
-    return results.data ? results.data[0] : false
+    if (currencies[currency] && currencies[currency].available > 0)
+      return currencies[currency]
+    let results = await asyncHandler(
+      api.rest.User.Account.getBalanceOfSubAccount("613215d0656e3f000614605e")
+    )
+    const balance = results.data?.tradeAccounts.find(
+      (item) => item.currency === "USDT"
+    )
+
+    return balance
   } else {
-    let results = await asyncHandler(api.rest.User.Account.getAccountsList({
-      type: 'trade',
-    }))
+    let results = await asyncHandler(
+      api.rest.User.Account.getAccountsList({
+        type: "trade",
+      })
+    )
     if (results && results.data) {
-      for (const coin of results.data)
-        currencies[coin.currency] = coin
+      for (const coin of results.data) currencies[coin.currency] = coin
       return currencies
     }
   }
-
 }
-export const getLowestPriceHistory = history => {
+export const getLowestPriceHistory = (history) => {
   /*
     get the lowest close of the last 20 candles of a specified pair
 
@@ -137,31 +149,32 @@ export const getLowestPriceHistory = history => {
   let lowestPrice = 999999999999
   for (let candle of history) {
     let low = parseFloat(candle.low)
-    if (low <= lowestPrice)
-      lowestPrice = low
+    if (low <= lowestPrice) lowestPrice = low
   }
   return lowestPrice
 }
-export const getATR = history => {
+export const getATR = (history) => {
   let input = {
-    close: history.map(candle => candle.close),
-    high: history.map(candle => candle.high),
-    low: history.map(candle => candle.low),
-    period: 14
+    close: history.map((candle) => candle.close),
+    high: history.map((candle) => candle.high),
+    low: history.map((candle) => candle.low),
+    period: 14,
   }
   let atr = ATR.calculate(input)[0]
   return atr
 }
 export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
   let span = {
-    startAt: Math.floor((Date.now() - (tf.value * lookbackPeriods)) / 1000),
-    endAt: Math.floor(Date.now() / 1000)
+    startAt: Math.floor((Date.now() - tf.value * lookbackPeriods) / 1000),
+    endAt: Math.floor(Date.now() / 1000),
   }
-  let data = await asyncHandler(api.rest.Market.Histories.getMarketCandles(pair.symbol, tf.text, span))
+  let data = await asyncHandler(
+    api.rest.Market.Histories.getMarketCandles(pair.symbol, tf.text, span)
+  )
   if (!data.data) {
     return false
   }
-  let candle = data.data.map(candle => {
+  let candle = data.data.map((candle) => {
     candle = {
       timestamp: parseInt(candle[0]),
       open: parseFloat(candle[1]),
@@ -175,15 +188,19 @@ export const getHistory = async (pair, tf, lookbackPeriods = 1500) => {
   candle.shift()
   return candle
 }
-export const equity = async currency => {
+export const equity = async (currency) => {
   // if no currency has been recorded, get all
-  Object.keys(currencies).length == 0 && await getCurrency()
+  Object.keys(currencies).length == 0 && (await getCurrency())
   // connect
   // _datafeed.connectSocket();
   let topic = `/account/balance`
-  _datafeed.subscribe(topic, payload => {
-    currencies[currency || payload.data.currency] = payload.data
-  }, true)
+  _datafeed.subscribe(
+    topic,
+    (payload) => {
+      currencies[currency || payload.data.currency] = payload.data
+    },
+    true
+  )
 }
 const initSocket = () => {
   _datafeed = new api.websocket.Datafeed(true)
@@ -192,7 +209,9 @@ const initSocket = () => {
 
 export const postOrder = async (baseParams, orderParams) => {
   log(`trying to ${baseParams.type} ${baseParams.side} ${baseParams.symbol}`)
-  let results = await asyncHandler(api.rest.Trade.Orders.postOrder(baseParams, orderParams))
+  let results = await asyncHandler(
+    api.rest.Trade.Orders.postOrder(baseParams, orderParams)
+  )
   if (results && results.data) {
     let order = await getOrder(results.data.orderId)
     return order
@@ -200,43 +219,44 @@ export const postOrder = async (baseParams, orderParams) => {
   log(`${baseParams.symbol} Order size: ${orderParams.size}`)
   return false
 }
-export const asyncHandler = async fn => {
+export const asyncHandler = async (fn) => {
   try {
     let results = await fn
     if (results.msg) {
-      log(results.msg);
+      log(results.msg)
       return undefined
     } else return results
   } catch (error) {
-    err(`asyncHandler error: ${JSON.stringify(error)}`);
+    err(`asyncHandler error: ${JSON.stringify(error)}`)
     return false
   }
 }
 
 export const updateOrders = async () => {
   let topic = `/spotMarket/tradeOrders`
-  _datafeed.subscribe(topic, payload => {
-    let order = payload.data
-    if (order.status === 'done' && order.type === 'filled') {
-      orders.push(order)
-      log(`${order.symbol} filled`)
-      io.emit('order-filled', order)
-    }
-    if (order.status == 'done' && order.type === 'canceled') {
-      log(`${order.symbol} order canceled`)
-      io.emit('order-canceled', order)
-    }
-  }, true)
+  _datafeed.subscribe(
+    topic,
+    (payload) => {
+      let order = payload.data
+      if (order.status === "done" && order.type === "filled") {
+        orders.push(order)
+        log(`${order.symbol} filled`)
+        io.emit("order-filled", order)
+      }
+      if (order.status == "done" && order.type === "canceled") {
+        log(`${order.symbol} order canceled`)
+        io.emit("order-canceled", order)
+      }
+    },
+    true
+  )
 }
 
 setTimeout(async () => {
   await initSocket()
   equity()
   updateOrders()
-}, 1000);
-
-
-
+}, 1000)
 
 export default {
   calcPerc,
@@ -250,5 +270,5 @@ export default {
   getAllTickers,
   getPrice,
   getTickerInfo,
-  getOrder
+  getOrder,
 }
