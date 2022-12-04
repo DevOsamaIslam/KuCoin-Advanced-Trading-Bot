@@ -2,6 +2,8 @@
   "name": "kucoin-advanced-trading-bot",
   "version": "0.0.1",
   "description": "",
+  "type": "commonjs",
+  "main": "src/main.ts",
   "scripts": {
     "start": "node build/main.js",
     "dev": "npx tsc-watch --onSuccess \"ts-node src/main.ts\"",
@@ -19,6 +21,16 @@
   },
   "homepage": "https://github.com/DevOsamaIslam/KuCoin-Advanced-Trading-Bot#readme",
   "dependencies": {
-    "kucoin-node-sdk": "^1.0.4"
+    "ccxt": "^2.2.65",
+    "kucoin-node-sdk": "^1.0.4",
+    "tsconfig-paths": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.10",
+    "dotenv": "^16.0.3",
+    "module-alias": "^2.2.2"
+  },
+  "_moduleAliases": {
+    "app": "build/app"
   }
 }
