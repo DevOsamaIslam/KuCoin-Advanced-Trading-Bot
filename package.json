@@ -23,12 +23,15 @@
   "dependencies": {
     "ccxt": "^2.2.65",
     "kucoin-node-sdk": "^1.0.4",
+    "technicalindicators": "^3.1.0",
     "tsconfig-paths": "^4.1.1"
   },
   "devDependencies": {
+    "@types/module-alias": "^2.0.1",
     "@types/node": "^18.11.10",
     "dotenv": "^16.0.3",
-    "module-alias": "^2.2.2"
+    "module-alias": "^2.2.2",
+    "ts-node": "^10.9.1"
   },
   "_moduleAliases": {
     "app": "build/app"
