@@ -5,7 +5,6 @@ import { asyncHandler } from './async'
 export let PAIRS: { [quote: string]: ITicker[] } = {}
 
 export const refreshPairs = async () => {
-  PAIRS = {}
   let [allTickers] = await asyncHandler<ITickerPayload>(SDK.rest.Market.Symbols.getAllTickers())
   if (allTickers) {
     PAIRS = {}
