@@ -1,60 +1,57 @@
 import { initialize } from 'app/init'
+import { writeFile } from 'fs'
 
 import { refreshBalances } from 'lib/helpers/balance'
 import { getHistory } from 'lib/helpers/candles'
-import { refreshPairs } from 'lib/helpers/tickers'
-import { ITimeframe } from 'lib/types/app'
-import { Backtester } from 'modules/Backtester'
-import { vwapStrategy } from 'modules/strategies/vwap'
+import { refreshPairs, refreshTickersInfo } from 'lib/helpers/tickers'
+import { Backtester } from 'modules/backtest'
+import { macdStrategy } from 'modules/strategies/macd/strategy'
 
+console.log = (...values: any) => setImmediate(() => console.info(values))
 initialize()
 refreshBalances()
 refreshPairs()
-
-const timeframe: ITimeframe = {
+refreshTickersInfo()
+// liveEquity()
+// dynamicArb()
+const timeframe = {
   text: '15min',
   value: 15 * 60 * 1000,
 }
 
-getHistory('BTC-USDT', timeframe, 1400).then(async candles => {
-  console.log({ data: candles?.length })
-  if (candles) {
-    const results = new Backtester({
-      history: {
-        timeframe,
-        candles,
-      },
-      strategy: {
-        name: vwapStrategy.name,
-        fn: vwapStrategy,
-      },
-    }).run()
-    console.log({ results, count: results.length })
-  }
+// setTimeout(() => {
+//   new Watchdog({
+//     strategy: {
+//       name: macdStrategy.name,
+//       fn: macdStrategy,
+//     },
+//     pairs: ['BTC-USDT', 'ETH-USDT', 'ADA-USDT', 'SOL-USDT', 'DOT-USDT'],
+//     timeframe,
+//   })
+// }, 2000)
+const symbol = 'BTC-USDT'
+getHistory({
+  symbol,
+  timeframe,
+  lookbackPeriods: 1500,
+}).then(data => {
+  if (!data) return
+  const testResults = new Backtester({
+    strategy: {
+      name: macdStrategy.name,
+      fn: macdStrategy,
+    },
+    history: {
+      timeframe,
+      candles: data,
+    },
+  }).run()
+  writeFile(
+    `${process.cwd()}/src/modules/backtest/results/${macdStrategy.name}_${symbol}_${timeframe.text}.json`,
+    JSON.stringify(testResults),
+    error => {
+      if (error) console.error({ error })
+      console.log({ testResults })
+    },
+  )
 })
-
-// dynamicArb()
-
-// new Trader({
-//   equity: 5,
-//   pair: ['BTC', 'USDT'],
-//   id: 'aaassa',
-//   order: {
-//     baseParams: {
-//       clientOid: Date.now().toString(),
-//       side: TRADE_DIRECTION.buy,
-//       stp: SELF_TRADE_PREVENTION.cancelNewest,
-//       symbol: 'BTC-USDT',
-//       tradeType: TRADE_TYPE.spot,
-//       type: ORDER_TYPE.market,
-//       remark: 'test limit order',
-//     },
-//     orderParams: {
-//       price: '16500',
-//       size: '0.0001',
-//       timeInForce: TIME_IN_FORCE.goodTillCancelled,
-//     },
-//   },
-// })
-//   .transact()
-//   .then(data => console.log(data))

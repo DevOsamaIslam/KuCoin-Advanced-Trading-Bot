@@ -4,35 +4,48 @@ import { IOrderResponse } from 'lib/types/sdk/trade'
 import { ITraderParams, IOrder } from 'lib/types/Trader'
 
 export class Trader {
-  equity: ITraderParams['equity']
-  pair: ITraderParams['pair']
   order: ITraderParams['order']
-  tickerInfo: ITraderParams['tickerInfo']
-  strategy: ITraderParams['strategy']
-  id: ITraderParams['id'] | undefined
   TP: ITraderParams['TP'] | undefined
   SL: ITraderParams['SL'] | undefined
 
-  constructor({ equity, pair, order, tickerInfo, strategy, id, TP, SL }: ITraderParams) {
-    this.equity = equity
-    this.pair = pair
+  constructor({ order, TP, SL }: ITraderParams) {
     this.order = order
-    this.tickerInfo = tickerInfo
-    this.strategy = strategy
-    this.id = id
     this.TP = TP
     this.SL = SL
   }
 
   async execute() {
-    const [order, error] = await asyncHandler<IOrderResponse>(this.transact(this.order))
-    if (order) {
-      this.SL && (await asyncHandler(this.transact(this.SL)))
-      this.TP && (await asyncHandler(this.transact(this.TP)))
+    const [order, error] = await this.transact(this.order)
+    if (error) return { error }
+    if (this.SL) {
+      const SLorder: IOrder = {
+        baseParams: {
+          ...this.order.baseParams,
+          side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
+        },
+        orderParams: {
+          ...this.order.orderParams,
+          price: this.SL,
+        },
+      }
+      const [_, error] = await this.transact(SLorder)
+      if (error) return { error }
     }
-    if (error) {
-      console.error(error)
+    if (this.TP) {
+      const TPorder: IOrder = {
+        baseParams: {
+          ...this.order.baseParams,
+          side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
+        },
+        orderParams: {
+          ...this.order.orderParams,
+          price: this.TP,
+        },
+      }
+      const [_, error] = await this.transact(TPorder)
+      if (error) return { error }
     }
+    return { order }
   }
 
   async transact(order: IOrder) {

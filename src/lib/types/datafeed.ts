@@ -41,8 +41,18 @@ export interface IDFTickerPayload {
     time: number
   }
 }
+export interface IDFOrderBookPayload {
+  type: 'message'
+  topic: string
+  subject: 'level2'
+  data: {
+    asks: [price: string, size: string]
+    bids: [price: string, size: string]
+    timestamp: number
+  }
+}
 
-export interface IBalancePayload {
+export interface IDFBalancePayload {
   type: string
   topic: string
   subject: string

@@ -4,7 +4,12 @@ import { ISpan } from 'lib/types/sdk/sdk'
 import { asyncHandler } from './async'
 import { convertRawHistory } from './conversion'
 
-export const getHistory = async (symbol: string, timeframe: ITimeframe, lookbackPeriods: number = 1500) => {
+interface IProps {
+  symbol: string
+  timeframe: ITimeframe
+  lookbackPeriods?: number
+}
+export const getHistory = async ({ symbol, timeframe, lookbackPeriods = 1500 }: IProps) => {
   const span: ISpan = {
     startAt: Math.floor((Date.now() - timeframe.value * lookbackPeriods) / 1000),
     endAt: Math.floor(Date.now() / 1000),

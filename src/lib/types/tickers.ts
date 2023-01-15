@@ -21,3 +21,23 @@ export interface ITicker {
   takerCoefficient: string // Taker Fee Coefficient
   makerCoefficient: string // Maker Fee Coefficient
 }
+
+export interface ICurrency {
+  symbol: string
+  name: string
+  baseCurrency: string
+  quoteCurrency: string
+  feeCurrency: string
+  market: string
+  baseMinSize: string
+  quoteMinSize: string
+  baseMaxSize: string
+  quoteMaxSize: string
+  baseIncrement: string
+  quoteIncrement: string
+  priceIncrement: string
+  priceLimitRate: string
+  minFunds: string
+  isMarginEnabled: boolean
+  enableTrading: boolean
+}

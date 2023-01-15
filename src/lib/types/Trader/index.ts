@@ -1,15 +1,9 @@
-import { SELF_TRADE_PREVENTION, TIME_IN_FORCE, TRADE_DIRECTION, ORDER_TYPE, TRADE_TYPE } from 'lib/constants/trade'
-import { ITicker } from '../tickers'
+import { ORDER_TYPE, SELF_TRADE_PREVENTION, TIME_IN_FORCE, TRADE_DIRECTION, TRADE_TYPE } from 'lib/constants/trade'
 
 export interface ITraderParams {
-  id: string
-  equity: number
-  pair: [base: string, quote: string]
   order: IOrder
-  tickerInfo?: ITicker
-  isNewPair?: boolean
-  TP?: IOrder
-  SL?: IOrder
+  TP?: string
+  SL?: string
   strategy?: string
 }
 
@@ -34,9 +28,9 @@ export interface IBaseParams {
 type $timeInForce = keyof typeof TIME_IN_FORCE
 export interface IOrderParams {
   price: string
-  size: string
+  size?: string
   funds?: string //  - The desired amount of quote currency to use
-  timeInForce: typeof TIME_IN_FORCE[$timeInForce]
+  timeInForce?: typeof TIME_IN_FORCE[$timeInForce]
   cancelAfter?: number
   postOnly?: boolean
   hidden?: boolean

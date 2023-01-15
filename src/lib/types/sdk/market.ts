@@ -1,9 +1,10 @@
 import { IDFTickerPayload } from '../datafeed'
+import { ICurrency } from '../tickers'
 import { ISpan } from './sdk'
 
 export interface IMarket {
   Symbols: {
-    getSymbolsList: () => Promise<any>
+    getSymbolsList: () => Promise<ICurrency[]>
     getTicker: () => Promise<any>
     getAllTickers: () => IDFTickerPayload
     get24hrStats: () => Promise<any>
