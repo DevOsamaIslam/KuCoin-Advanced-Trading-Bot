@@ -23,7 +23,7 @@ export const refreshPairs = async () => {
 export const refreshTickersInfo = async () => {
   let [symbols] = await asyncHandler<ICurrency[]>(SDK.rest.Market.Symbols.getSymbolsList())
   if (symbols) {
-    symbols.forEach(symbol => CURRENCIES[symbol.baseCurrency])
+    symbols.forEach(symbol => (CURRENCIES[symbol.baseCurrency] = symbol))
   }
 }
 
