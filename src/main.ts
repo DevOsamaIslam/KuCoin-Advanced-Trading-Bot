@@ -1,57 +1,30 @@
 import { initialize } from 'app/init'
-import { writeFile } from 'fs'
 
 import { refreshBalances } from 'lib/helpers/balance'
-import { getHistory } from 'lib/helpers/candles'
+import { liveEquity } from 'lib/helpers/datafeed'
 import { refreshPairs, refreshTickersInfo } from 'lib/helpers/tickers'
-import { Backtester } from 'modules/backtest'
 import { macdStrategy } from 'modules/strategies/macd/strategy'
+import { Watchdog } from 'modules/Watchdog'
 
 console.log = (...values: any) => setImmediate(() => console.info(values))
 initialize()
 refreshBalances()
 refreshPairs()
 refreshTickersInfo()
-// liveEquity()
+liveEquity()
 // dynamicArb()
 const timeframe = {
   text: '15min',
   value: 15 * 60 * 1000,
 }
 
-// setTimeout(() => {
-//   new Watchdog({
-//     strategy: {
-//       name: macdStrategy.name,
-//       fn: macdStrategy,
-//     },
-//     pairs: ['BTC-USDT', 'ETH-USDT', 'ADA-USDT', 'SOL-USDT', 'DOT-USDT'],
-//     timeframe,
-//   })
-// }, 2000)
-const symbol = 'BTC-USDT'
-getHistory({
-  symbol,
-  timeframe,
-  lookbackPeriods: 1500,
-}).then(data => {
-  if (!data) return
-  const testResults = new Backtester({
+setTimeout(() => {
+  new Watchdog({
     strategy: {
       name: macdStrategy.name,
       fn: macdStrategy,
     },
-    history: {
-      timeframe,
-      candles: data,
-    },
-  }).run()
-  writeFile(
-    `${process.cwd()}/src/modules/backtest/results/${macdStrategy.name}_${symbol}_${timeframe.text}.json`,
-    JSON.stringify(testResults),
-    error => {
-      if (error) console.error({ error })
-      console.log({ testResults })
-    },
-  )
-})
+    pairs: ['BTC-USDT'],
+    timeframe,
+  })
+}, 2000)
