@@ -19,8 +19,8 @@ export const macdStrategy: $strategyFn = ({ history, currentPrice }) => {
     const { TP, SL } = setSLandTP({ history: history, currentPrice })
     return {
       side: 'buy',
-      TP: TP.toFixed(10),
-      SL: SL.toFixed(10),
+      TP: TP.toString(),
+      SL: SL.toString(),
     }
   }
 }
