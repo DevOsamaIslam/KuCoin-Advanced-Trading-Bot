@@ -1,13 +1,5 @@
-/.env
-/test.json
-/.vscode
-/orders.json
-/todo.md
-/test.js
-/node_modules
-/MACD_records.txt
-/RTW_records.txt
-/manualTrade.js
-/package-lock.json
-/records/
+node_modules
+*.json
 build
+.vscode
+.env*

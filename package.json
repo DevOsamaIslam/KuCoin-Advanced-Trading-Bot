@@ -1,23 +1,38 @@
 {
-  "name": "kucoin-trading-bot",
-  "version": "1.0.0",
-  "type": "module",
+  "name": "kucoin-advanced-trading-bot",
+  "version": "0.0.1",
   "description": "",
-  "main": "main.js",
+  "type": "commonjs",
+  "main": "src/main.ts",
   "scripts": {
-    "start": "nodemon"
+    "start": "node build/main.js",
+    "dev": "npx tsc-watch --onSuccess \"ts-node src/main.ts\"",
+    "tsw": "tsc -w",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevOsamaIslam/KuCoin-Advanced-Trading-Bot.git"
   },
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DevOsamaIslam/KuCoin-Advanced-Trading-Bot/issues"
+  },
+  "homepage": "https://github.com/DevOsamaIslam/KuCoin-Advanced-Trading-Bot#readme",
   "dependencies": {
     "kucoin-node-sdk": "^1.0.4",
-    "moment": "^2.29.1",
-    "mongoose": "^6.0.7",
     "technicalindicators": "^3.1.0",
-    "trading-signals": "^2.3.0",
-    "uuid": "^8.3.2"
+    "tsconfig-paths": "^4.1.1"
   },
   "devDependencies": {
-    "dotenv": "^10.0.0"
+    "@types/module-alias": "^2.0.1",
+    "@types/node": "^18.11.18",
+    "dotenv": "^16.0.3",
+    "module-alias": "^2.2.2",
+    "ts-node": "^10.9.1"
+  },
+  "_moduleAliases": {
+    "app": "build/app"
   }
 }
