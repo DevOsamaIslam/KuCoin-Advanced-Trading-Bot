@@ -21,6 +21,7 @@ export class Trader {
       const SLorder: IOrder = {
         baseParams: {
           ...this.order.baseParams,
+          clientOid: 'SL_' + this.order.baseParams.clientOid,
           side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
         },
         orderParams: {
@@ -35,6 +36,7 @@ export class Trader {
       const TPorder: IOrder = {
         baseParams: {
           ...this.order.baseParams,
+          clientOid: 'TP_' + this.order.baseParams.clientOid,
           side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
         },
         orderParams: {
