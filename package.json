@@ -21,14 +21,13 @@
   },
   "homepage": "https://github.com/DevOsamaIslam/KuCoin-Advanced-Trading-Bot#readme",
   "dependencies": {
-    "indicatorts": "^1.0.11",
     "kucoin-node-sdk": "^1.0.4",
     "technicalindicators": "^3.1.0",
     "tsconfig-paths": "^4.1.1"
   },
   "devDependencies": {
     "@types/module-alias": "^2.0.1",
-    "@types/node": "^18.11.10",
+    "@types/node": "^18.11.18",
     "dotenv": "^16.0.3",
     "module-alias": "^2.2.2",
     "ts-node": "^10.9.1"
