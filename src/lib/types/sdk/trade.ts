@@ -29,7 +29,7 @@ export interface ITrade {
   }
 }
 
-export interface IOrderResponse {
+export interface IGetOrderResponse {
   symbol: string
   type: keyof typeof ORDER_TYPE
   side: keyof typeof TRADE_DIRECTION
@@ -50,4 +50,7 @@ export interface IOrderResponse {
   status: 'success' | 'fail'
   failMsg: string | null
   clientOid: string
+}
+export interface IOrderResponse {
+  id: string
 }
