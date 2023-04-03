@@ -1,5 +1,8 @@
 import SDK from 'kucoin-node-sdk'
+import { CURRENCIES } from 'lib/constants/currencies'
 import { asyncHandler } from 'lib/helpers/async'
+import { afterFees, getPriceIncrementPrecision } from 'lib/helpers/calc'
+import { getBase } from 'lib/helpers/tickers'
 import { IOrderResponse } from 'lib/types/sdk/trade'
 import { ITraderParams, IOrder } from 'lib/types/Trader'
 
@@ -22,11 +25,14 @@ export class Trader {
         baseParams: {
           ...this.order.baseParams,
           clientOid: 'SL_' + this.order.baseParams.clientOid,
+          type: 'market',
+          stop: 'loss',
+          stopPrice: this.SL,
           side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
         },
         orderParams: {
-          ...this.order.orderParams,
-          price: this.SL,
+          size: afterFees(parseFloat(this.order.orderParams.size + '0')) + '',
+          price: getPriceIncrementPrecision(this.SL, CURRENCIES[getBase(this.order.baseParams.symbol)]) as string,
         },
       }
       const [_, error] = await this.transact(SLorder)
@@ -36,12 +42,13 @@ export class Trader {
       const TPorder: IOrder = {
         baseParams: {
           ...this.order.baseParams,
+          stop: 'entry',
           clientOid: 'TP_' + this.order.baseParams.clientOid,
           side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
         },
         orderParams: {
-          ...this.order.orderParams,
-          price: this.TP,
+          size: afterFees(parseFloat(this.order.orderParams.size + '0')) + '',
+          price: getPriceIncrementPrecision(this.TP, CURRENCIES[getBase(this.order.baseParams.symbol)]) as string,
         },
       }
       const [_, error] = await this.transact(TPorder)
