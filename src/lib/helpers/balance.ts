@@ -11,20 +11,3 @@ export const refreshBalances = async () => {
 
   error && console.error(error)
 }
-
-// export const equity = async (currency) => {
-//   // connect
-//   // _datafeed.connectSocket();
-//   let topic = `/account/balance`
-//   _datafeed.subscribe(
-//     topic,
-//     (payload) => {
-//       currencies[currency || payload.data.currency] = payload.data
-//     },
-//     true
-//   )
-// }
-// const initSocket = () => {
-//   _datafeed = new api.websocket.Datafeed(true)
-//   _datafeed.connectSocket()
-// }
