@@ -19,5 +19,5 @@ export const getUsableSize = (currency: string, originalSize: number): string =>
   if (baseIncrement) {
     return originalSize.toFixed(baseIncrement.length - 2)
   }
-  return originalSize.toFixed(4)
+  return originalSize.toString()
 }
