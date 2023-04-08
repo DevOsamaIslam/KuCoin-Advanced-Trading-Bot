@@ -1,5 +1,6 @@
 import SDK from 'kucoin-node-sdk'
 import { asyncHandler } from 'lib/helpers/async'
+import { afterFees } from 'lib/helpers/calc'
 import { IOrderResponse } from 'lib/types/sdk/trade'
 import { ITraderParams, IOrder } from 'lib/types/Trader'
 
@@ -25,7 +26,7 @@ export class Trader {
           side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
         },
         orderParams: {
-          ...this.order.orderParams,
+          size: afterFees(Number(this.order.orderParams.size)).toString(),
           price: this.SL,
         },
       }
@@ -40,7 +41,7 @@ export class Trader {
           side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
         },
         orderParams: {
-          ...this.order.orderParams,
+          size: afterFees(Number(this.order.orderParams.size)).toString(),
           price: this.TP,
         },
       }

@@ -1,11 +1,12 @@
 import { ACCOUNTS } from 'lib/constants/account'
 import { CURRENCIES } from 'lib/constants/currencies'
+import { ORDER_TYPE, TRADE_DIRECTION } from 'lib/constants/trade'
+import { afterFees, roundDown } from 'lib/helpers/calc'
 import { getHistory } from 'lib/helpers/candles'
 import { getBase, getQuote, PAIRS } from 'lib/helpers/tickers'
 import { ITicker } from 'lib/types/tickers'
 import { IWatchdogParams } from 'lib/types/watchdog'
 import { Trader } from './Trader'
-import { afterFees, roundDown } from 'lib/helpers/calc'
 
 export class Watchdog {
   strategy: IWatchdogParams['strategy']
@@ -62,11 +63,11 @@ export class Watchdog {
             // clientOid is a unique identifier for the order
             clientOid: id,
             // the side of the order (buy or sell)
-            side: order?.side || 'buy',
+            side: order?.side || TRADE_DIRECTION.buy,
             // the symbol of the ticker
             symbol: pair.symbol,
             // the type of the order (limit or market)
-            type: 'limit',
+            type: ORDER_TYPE.market,
           },
           // object containing the order parameters
           orderParams: {
