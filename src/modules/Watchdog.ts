@@ -7,6 +7,7 @@ import { getBase, getQuote, PAIRS } from 'lib/helpers/tickers'
 import { ITicker } from 'lib/types/tickers'
 import { IWatchdogParams } from 'lib/types/watchdog'
 import { Trader } from './Trader'
+import { IOrder } from 'lib/types/Trader'
 
 export class Watchdog {
   strategy: IWatchdogParams['strategy']
@@ -55,28 +56,29 @@ export class Watchdog {
       // calculate the order size by dividing the available equity by the current price
       const orderSize = roundDown(afterFees(Number(equity) / currentPrice), precision)
       const id = `${pair.symbol}_${Date.now().toString()}`
+      const tradeOrder: IOrder = {
+        baseParams: {
+          // clientOid is a unique identifier for the order
+          clientOid: id,
+          // the side of the order (buy or sell)
+          side: order?.side || TRADE_DIRECTION.buy,
+          // the symbol of the ticker
+          symbol: pair.symbol,
+          // the type of the order (limit or market)
+          type: ORDER_TYPE.limit,
+        },
+        // object containing the order parameters
+        orderParams: {
+          // the price at which the order should be executed
+          price: currentPrice.toString(),
+          // the size of the order
+          size: orderSize.toString(),
+        },
+      }
       // execute the trade using the trader class
       const result = await new Trader({
         // object containing the base parameters of the order
-        order: {
-          baseParams: {
-            // clientOid is a unique identifier for the order
-            clientOid: id,
-            // the side of the order (buy or sell)
-            side: order?.side || TRADE_DIRECTION.buy,
-            // the symbol of the ticker
-            symbol: pair.symbol,
-            // the type of the order (limit or market)
-            type: ORDER_TYPE.market,
-          },
-          // object containing the order parameters
-          orderParams: {
-            // the price at which the order should be executed
-            price: currentPrice.toString(),
-            // the size of the order
-            size: orderSize.toString(),
-          },
-        },
+        order: tradeOrder,
         // the stop loss level for the order
         SL: order.SL,
         // the take profit level for the order
@@ -84,7 +86,7 @@ export class Watchdog {
         // the name of the strategy used
         strategy: this.strategy.name,
       }).execute()
-      console.log({ result, order })
+      console.log({ result, tradeOrder })
     }, this.timeframe.value)
   }
 }

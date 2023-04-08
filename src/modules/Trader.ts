@@ -2,7 +2,7 @@ import SDK from 'kucoin-node-sdk'
 import { asyncHandler } from 'lib/helpers/async'
 import { afterFees } from 'lib/helpers/calc'
 import { IOrderResponse } from 'lib/types/sdk/trade'
-import { ITraderParams, IOrder } from 'lib/types/Trader'
+import { IOrder, ITraderParams } from 'lib/types/Trader'
 
 export class Trader {
   order: ITraderParams['order']
@@ -23,6 +23,9 @@ export class Trader {
         baseParams: {
           ...this.order.baseParams,
           clientOid: 'SL_' + this.order.baseParams.clientOid,
+          type: 'market',
+          stop: 'loss',
+          stopPrice: this.SL,
           side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
         },
         orderParams: {
@@ -37,6 +40,7 @@ export class Trader {
       const TPorder: IOrder = {
         baseParams: {
           ...this.order.baseParams,
+          stop: 'entry',
           clientOid: 'TP_' + this.order.baseParams.clientOid,
           side: this.order.baseParams.side === 'buy' ? 'sell' : 'buy',
         },
