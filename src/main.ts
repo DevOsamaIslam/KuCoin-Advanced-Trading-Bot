@@ -1,18 +1,18 @@
 import { initialize } from 'app/init'
+import { TRUSTED_CURRENCIES } from 'app/trustedCurrencies.constants'
 
 import { refreshBalances } from 'lib/helpers/balance'
-import { liveEquity } from 'lib/helpers/datafeed'
 import { refreshPairs, refreshTickersInfo } from 'lib/helpers/tickers'
+import { liveAdvancedOrders, liveOrders } from 'modules/datafeed'
 import { macdStrategy } from 'modules/strategies/macd/strategy'
 import { Watchdog } from 'modules/Watchdog'
 
-console.log = (...values: any) => setImmediate(() => console.info(values))
 initialize()
 refreshBalances()
 refreshPairs()
 refreshTickersInfo()
-liveEquity()
-// dynamicArb()
+liveOrders()
+liveAdvancedOrders()
 const timeframe = {
   text: '1min',
   value: 60 * 1000,
@@ -26,7 +26,7 @@ const strategy = {
 setTimeout(() => {
   new Watchdog({
     strategy,
-    pairs: ['BTC-USDT'],
+    pairs: [TRUSTED_CURRENCIES.ETHUSDT],
     timeframe,
   })
 }, 2000)

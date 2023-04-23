@@ -16,8 +16,8 @@ export interface ITrade {
   }
   StopOrder: {
     postStopOrder: () => Promise<void>
-    cancelOrder: () => Promise<void>
-    cancelMultiOrders: () => Promise<void>
+    cancelOrder: (symbol: string, orderId: string) => Promise<{ orderId: string }>
+    cancelMultiOrders: (orderIds: string[]) => Promise<void>
     getOrder: () => Promise<void>
     getStopOrderList: () => Promise<void>
     getOrderByClientOid: () => Promise<void>

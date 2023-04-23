@@ -1,3 +1,5 @@
+import { $orderType, $tradeDirection } from 'lib/constants/trade'
+
 export interface IDatafeedObject {
   privateBullet: boolean
   trustConnected: boolean
@@ -57,21 +59,81 @@ export interface IDFBalancePayload {
   topic: string
   subject: string
   channelType: 'private'
-  data: IBalanceData
+  data: {
+    total: string
+    available: string
+    availableChange: string
+    currency: string
+    hold: string
+    holdChange: string
+    relationEvent: string
+    relationEventId: string
+    relationContext: string
+    symbol: string
+    tradeId: string
+    orderId: string
+  }
   time: string
 }
 
-export interface IBalanceData {
-  total: string
-  available: string
-  availableChange: string
-  currency: string
-  hold: string
-  holdChange: string
-  relationEvent: string
-  relationEventId: string
-  relationContext: string
-  symbol: string
-  tradeId: string
-  orderId: string
+export interface IDFOrderPayload {
+  type: string
+  topic: string
+  subject: string
+  channelType: string
+  data: {
+    symbol: string
+    orderType: $orderType
+    side: $tradeDirection
+    orderId: string
+    type: 'filled' | 'received' | 'match'
+    orderTime: number
+    price: string
+    clientOid: string
+    status: 'open' | 'match' | 'done' | 'new'
+    originSize: string // original quantity
+    originFunds: string // The original funds of the market order
+    ts: number
+  }
+}
+
+export interface IDFAdvancedOrderPayload {
+  type: string
+  topic: string
+  subject: string
+  channelType: string
+  data: {
+    createdAt: number
+    orderId: string
+    orderPrice: string
+    orderType: $orderType
+    side: $tradeDirection
+    size: string
+    stop: 'entry' | 'loss'
+    stopPrice: string
+    symbol: string
+    tradeType: string
+    triggerSuccess: boolean
+    ts: number
+    type: 'TRIGGERED' | 'cancel' | 'open'
+  }
+}
+
+export interface IDFKLines {
+  type: string
+  topic: string
+  subject: string
+  data: {
+    symbol: string // symbol
+    candles: [
+      string, // Start time of the candle cycle
+      string, // open price
+      string, // close price
+      string, // high price
+      string, // low price
+      string, // Transaction volume
+      string, // Transaction amount
+    ]
+    time: number // now（us）
+  }
 }

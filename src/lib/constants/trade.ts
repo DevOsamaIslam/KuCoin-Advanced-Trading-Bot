@@ -3,10 +3,14 @@ export const TRADE_DIRECTION = {
   sell: 'sell',
 } as const
 
+export type $tradeDirection = 'buy' | 'sell'
+
 export const ORDER_TYPE = {
   market: 'market',
   limit: 'limit',
 } as const
+
+export type $orderType = 'market' | 'limit'
 
 export const SELF_TRADE_PREVENTION = {
   cancelOldest: 'CO',

@@ -6,7 +6,7 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "node build/main.js",
-    "dev": "npx tsc-watch --onSuccess \"ts-node src/main.ts\"",
+    "dev": "ts-node src/main.ts",
     "tsw": "tsc -w",
     "build": "tsc"
   },
@@ -23,7 +23,8 @@
   "dependencies": {
     "kucoin-node-sdk": "^1.0.4",
     "technicalindicators": "^3.1.0",
-    "tsconfig-paths": "^4.1.1"
+    "tsconfig-paths": "^4.1.1",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
     "@types/module-alias": "^2.0.1",
