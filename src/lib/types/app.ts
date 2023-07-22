@@ -1,3 +1,5 @@
+import { IDFAdvancedOrderPayload, IDFOrderPayload } from './datafeed'
+
 export interface ITimeframe {
   text: string
   value: number
@@ -5,8 +7,8 @@ export interface ITimeframe {
 
 export interface ILiveOrder {
   [pair: string]: {
-    mainOrder: string
-    SL?: string
-    TP?: string
+    mainOrder: IDFOrderPayload['data']
+    SL?: IDFAdvancedOrderPayload['data']
+    TP?: IDFAdvancedOrderPayload['data']
   }
 }

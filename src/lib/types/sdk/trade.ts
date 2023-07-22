@@ -19,9 +19,9 @@ export interface ITrade {
     cancelOrder: (symbol: string, orderId: string) => Promise<{ orderId: string }>
     cancelMultiOrders: (orderIds: string[]) => Promise<void>
     getOrder: () => Promise<void>
-    getStopOrderList: () => Promise<void>
+    getStopOrderList: () => Promise<IListStopOrders>
     getOrderByClientOid: () => Promise<void>
-    cancelSingleOrderByClientOid: () => Promise<void>
+    cancelSingleOrderByClientOid: (clientOid: string, symbol: string) => Promise<void>
   }
   Fills: {
     getFillsList: () => Promise<void>
@@ -53,4 +53,50 @@ export interface IGetOrderResponse {
 }
 export interface IOrderResponse {
   id: string
+}
+
+export interface IListStopOrders {
+  currentPage: number
+  pageSize: number
+  totalNum: number
+  totalPage: number
+  items: Item[]
+}
+
+export interface Item {
+  id: string
+  symbol: string
+  userId: string
+  status: string
+  type: string
+  side: string
+  price: null
+  size: string
+  funds: null
+  stp: null
+  timeInForce: string
+  cancelAfter: number
+  postOnly: boolean
+  hidden: boolean
+  iceberg: boolean
+  visibleSize: null
+  channel: string
+  clientOid: string
+  remark: null
+  tags: null
+  relatedNo: null
+  orderTime: number
+  domainId: string
+  tradeSource: string
+  tradeType: string
+  feeCurrency: string
+  takerFeeRate: string
+  makerFeeRate: string
+  createdAt: number
+  stop: string
+  stopTriggerTime: null
+  stopPrice: string
+  limitPrice: null
+  pop: null
+  activateCondition: null
 }

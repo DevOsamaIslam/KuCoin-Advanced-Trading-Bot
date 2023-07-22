@@ -1,3 +1,4 @@
+import Logger from 'app/Logger'
 import SDK from 'kucoin-node-sdk'
 import { ORDER_TYPE, TRADE_DIRECTION } from 'lib/constants/trade'
 import { asyncHandler } from 'lib/helpers/async'
@@ -5,6 +6,8 @@ import { afterFees, getPriceIncrementPrecision, getSizeIncrementPrecision } from
 import { getBase, getQuote } from 'lib/helpers/tickers'
 import { IOrderResponse } from 'lib/types/sdk/trade'
 import { IOrder, ITraderParams } from 'lib/types/Trader'
+
+const logger = Logger.getInstance()
 
 export class Trader {
   order: ITraderParams['order']
@@ -27,6 +30,7 @@ export class Trader {
       return { error }
     }
     if (this.SL) {
+      logger.info(`Creating SL order at`, this.SL)
       const SLorder: IOrder = {
         baseParams: {
           ...this.order.baseParams,
@@ -45,6 +49,7 @@ export class Trader {
       if (error) return { error, SLorder }
     }
     if (this.TP) {
+      logger.info(`Creating TP order at`, this.TP)
       const TPorder: IOrder = {
         baseParams: {
           ...this.order.baseParams,

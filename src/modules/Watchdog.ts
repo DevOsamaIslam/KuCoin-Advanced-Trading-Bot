@@ -32,7 +32,6 @@ export class Watchdog {
       if (!currentPair) continue
       setTimeout(() => {
         this.outpost(currentPair)
-        logger.verbose(`Watching for ${currentPair.symbol} on ${this.timeframe.text} timeframe`)
       }, 1000 * i)
     }
   }
@@ -44,12 +43,15 @@ export class Watchdog {
   outpost = async (pair: ITicker) => {
     // get the most up to date info for that ticker
     const history = await getHistory({ symbol: pair.symbol, timeframe: this.timeframe, lookbackPeriods: 200 })
-    if (!history) return setTimeout(() => this.outpost(pair), 1000)
+    if (!history) {
+      logger.error('failed to get history, retrying...')
+      return setTimeout(() => this.outpost(pair), 1000)
+    }
 
     // Initialize a variable to store the last candle data received from the data feed.
     // Initialize it with the current candle data
     let lastCandleData: ICandle | undefined = history.at(-1)
-    logger.info('Starting...')
+    logger.info(`Watching for ${pair.symbol} on ${this.timeframe.text} timeframe`)
     // Subscribe to the data feed for the specified trading pair and timeframe.
     getDatafeed().subscribe(`/market/candles:${pair.symbol}_${this.timeframe.text}`, async (payload: IDFKLines) => {
       // Extract the candlestick data from the payload.
@@ -67,7 +69,7 @@ export class Watchdog {
       if (!LIVE_ORDERS[pair.symbol] && lastCandleData && +startTime !== lastCandleData.timestamp) {
         // Add the last candle data to the historical data array.
         history.push(lastCandleData)
-
+        console.log(`lastCandleData: ${new Date()} ${JSON.stringify(lastCandleData)}`)
         // Reset the lastCandleData variable.
         lastCandleData = undefined
 
@@ -109,7 +111,10 @@ export class Watchdog {
     // get the precision of the currency
     const currency = CURRENCIES[getBase(pair.symbol)]
     const precision = currency?.baseIncrement.split('.')[1].length
-    if (!precision) return
+    if (!precision) {
+      logger.error('Precision not found', { precision })
+      return
+    }
     // calculate the order size by dividing the available equity by the current price
     const orderSize = roundDown(afterFees(Number(equity) / currentPrice), precision)
     const id = `${pair.symbol}_${Date.now().toString()}`
@@ -133,7 +138,7 @@ export class Watchdog {
       },
     }
     // execute the trade using the trader class
-    await new Trader({
+    const result = await new Trader({
       // object containing the base parameters of the order
       order: tradeOrder,
       // the stop loss level for the order
@@ -143,5 +148,6 @@ export class Watchdog {
       // the name of the strategy used
       strategy: this.strategy.name,
     }).execute()
+    logger.info(result)
   }
 }

@@ -1,10 +1,10 @@
 import { initialize } from 'app/init'
-import { TRUSTED_CURRENCIES } from 'app/trustedCurrencies.constants'
+import { TRUSTED_CURRENCIES } from 'lib/constants/currencies'
 
 import { refreshBalances } from 'lib/helpers/balance'
 import { refreshPairs, refreshTickersInfo } from 'lib/helpers/tickers'
 import { liveAdvancedOrders, liveOrders } from 'modules/datafeed'
-import { macdStrategy } from 'modules/strategies/macd/strategy'
+import { macdStrategy } from 'modules/strategies/macd'
 import { Watchdog } from 'modules/Watchdog'
 
 initialize()
@@ -14,8 +14,8 @@ refreshTickersInfo()
 liveOrders()
 liveAdvancedOrders()
 const timeframe = {
-  text: '1min',
-  value: 60 * 1000,
+  text: '15min',
+  value: 15 * 60 * 1000,
 }
 
 const strategy = {

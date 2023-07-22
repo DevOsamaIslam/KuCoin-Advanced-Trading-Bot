@@ -1,12 +1,12 @@
 {
   "name": "kucoin-advanced-trading-bot",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "type": "commonjs",
   "main": "src/main.ts",
   "scripts": {
     "start": "node build/main.js",
-    "dev": "ts-node src/main.ts",
+    "dev": "ts-node src/main.ts --preferTsExts",
     "tsw": "tsc -w",
     "build": "tsc"
   },
