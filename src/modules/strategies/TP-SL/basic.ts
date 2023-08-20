@@ -1,3 +1,4 @@
+import { TP_RATIO } from 'app/settings'
 import { IStrategyParams } from 'lib/types/strategy'
 
 export const previousCandles = ({ history, currentPrice }: IStrategyParams) => {
@@ -12,7 +13,7 @@ export const previousCandles = ({ history, currentPrice }: IStrategyParams) => {
   const downside = (currentPrice - SL) / currentPrice
 
   // Set the TP at x1.5 the percentage of the downside from the current price to the SL
-  const TP = currentPrice + currentPrice * (1.5 * Math.abs(downside))
+  const TP = currentPrice + currentPrice * (TP_RATIO * Math.abs(downside))
 
   return { SL, TP }
 }

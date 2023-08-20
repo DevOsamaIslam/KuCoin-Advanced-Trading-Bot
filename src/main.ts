@@ -14,8 +14,8 @@ refreshTickersInfo()
 liveOrders()
 liveAdvancedOrders()
 const timeframe = {
-  text: '15min',
-  value: 15 * 60 * 1000,
+  text: '30min',
+  value: 30 * 60 * 1000,
 }
 
 const strategy = {

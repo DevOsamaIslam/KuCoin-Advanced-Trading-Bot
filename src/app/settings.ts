@@ -6,3 +6,4 @@ export const API_KEY = process.env.API_KEY || ''
 export const API_SECRET = process.env.SECRET || ''
 export const API_PASSPHRASE = process.env.PASSPHRASE || ''
 export const FEES = 0.1
+export const TP_RATIO = 2

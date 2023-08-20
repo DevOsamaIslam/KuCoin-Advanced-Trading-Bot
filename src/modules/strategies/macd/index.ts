@@ -15,7 +15,7 @@ export const macdStrategy: $strategyFn = ({ history, currentPrice }) => {
   // Check if the MACD line crossed above the signal line
   if (macd.length < 50) return
   if (macd[macd.length - 1].MACD! > macd[macd.length - 1].signal! && macd[macd.length - 2].MACD! < macd[macd.length - 2].signal!) {
-    const { TP, SL } = setSLandTP(TPSLStrategies.atr, { history, currentPrice })
+    const { TP, SL } = setSLandTP(TPSLStrategies.previousCandles, { history, currentPrice })
     return {
       side: 'buy',
       TP: TP.toString(),
