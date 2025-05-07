@@ -1,10 +1,9 @@
 import { initialize } from 'app/init'
-import { TRUSTED_CURRENCIES } from 'lib/constants/currencies'
 
 import { refreshBalances } from 'lib/helpers/balance'
 import { refreshPairs, refreshTickersInfo } from 'lib/helpers/tickers'
 import { liveAdvancedOrders, liveOrders } from 'modules/datafeed'
-import { macdStrategy } from 'modules/strategies/macd'
+import { riderTheWaveStrategy } from 'modules/strategies/rider-the-wave'
 import { Watchdog } from 'modules/Watchdog'
 
 initialize()
@@ -13,23 +12,42 @@ refreshPairs()
 refreshTickersInfo()
 liveOrders()
 liveAdvancedOrders()
-const timeframe = {
-  text: '30min',
-  value: 30 * 60 * 1000,
-}
+// setTimeout(() => {
+//   dynamicArb()
+// }, 4000)
+// const timeframe = {
+//   text: '30min',
+//   value: 30 * 60 * 1000,
+// }
 
 const strategy = {
-  name: macdStrategy.name,
-  fn: macdStrategy,
+  name: riderTheWaveStrategy.name,
+  fn: riderTheWaveStrategy,
 }
 
 setTimeout(() => {
   new Watchdog({
     strategy,
-    pairs: [TRUSTED_CURRENCIES.ETHUSDT],
-    timeframe,
+    pairs: ['BTC-USDT'],
+    timeframe: {
+      text: '5m',
+      value: 5 * 60 * 1000,
+    },
   })
 }, 2000)
+
+// const strategy = {
+//   name: macdStrategy.name,
+//   fn: macdStrategy,
+// }
+
+// setTimeout(() => {
+//   new Watchdog({
+//     strategy,
+//     pairs: [TRUSTED_CURRENCIES.ETHUSDT],
+//     timeframe,
+//   })
+// }, 2000)
 
 // const symbol = 'BTC-USDT'
 // getHistory({

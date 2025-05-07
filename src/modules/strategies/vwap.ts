@@ -1,9 +1,9 @@
 import { ICandle } from 'lib/types/data'
-import { $strategyFn } from 'lib/types/strategy'
+import { TStrategyFn } from 'lib/types/strategy'
 import { VWAP } from 'technicalindicators'
 import { previousCandles } from './TP-SL/basic'
 
-export const vwapStrategy: $strategyFn = ({ history, currentPrice }) => {
+export const vwapStrategy: TStrategyFn = ({ history, currentPrice }) => {
   // let ema = EMA.calculate({ period: 200, values: history.map(c => c.close) })
 
   // get VWAP

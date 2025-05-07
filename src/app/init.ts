@@ -20,7 +20,7 @@ export const initialize = () => {
 export const getDatafeed = (): IDatafeedObject => {
   if (datafeed) return datafeed
 
-  datafeed = new SDK.websocket.Datafeed(true)
+  datafeed = new SDK.websocket.Datafeed()
   datafeed.connectSocket()
   return datafeed
 }

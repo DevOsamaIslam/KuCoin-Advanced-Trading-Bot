@@ -1,20 +1,24 @@
+import { ITimeframe } from './app'
 import { ICandle } from './data'
 import { IBaseParams, ITraderParams } from './Trader'
 
 export interface IStrategy {
   name: string
-  fn: $strategyFn
+  fn: TStrategyFn
 }
 
-export type $strategyFn = (params: IStrategyParams) => IStrategyResponse | undefined
+export type TStrategyFn = (params: IStrategyParams) => TStrategyResponse | undefined
 
 export interface IStrategyParams {
+  symbol: string
+  timeframe: ITimeframe
   currentPrice: number
   history: ICandle[]
 }
 
-export interface IStrategyResponse {
+export type TStrategyResponse = {
   side: IBaseParams['side']
-  TP: ITraderParams['TP']
-  SL: ITraderParams['SL']
+  TP?: ITraderParams['TP']
+  SL?: ITraderParams['SL']
+  closeCondition?: () => Promise<boolean>
 }

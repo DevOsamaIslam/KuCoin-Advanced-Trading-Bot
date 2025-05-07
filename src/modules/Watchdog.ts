@@ -10,7 +10,7 @@ import { PAIRS, getBase, getQuote } from 'lib/helpers/tickers'
 import { IOrder } from 'lib/types/Trader'
 import { ICandle } from 'lib/types/data'
 import { IDFKLines } from 'lib/types/datafeed'
-import { IStrategyResponse } from 'lib/types/strategy'
+import { TStrategyResponse } from 'lib/types/strategy'
 import { ITicker } from 'lib/types/tickers'
 import { IWatchdogParams } from 'lib/types/watchdog'
 import { Trader } from './Trader'
@@ -53,7 +53,7 @@ export class Watchdog {
     let lastCandleData: ICandle | undefined = history.at(-1)
     logger.info(`Watching for ${pair.symbol} on ${this.timeframe.text} timeframe`)
     // Subscribe to the data feed for the specified trading pair and timeframe.
-    getDatafeed().subscribe(`/market/candles:${pair.symbol}_${this.timeframe.text}`, async (payload: IDFKLines) => {
+    getDatafeed().subscribe(`/market/candles:${pair.symbol}_1min`, async (payload: IDFKLines) => {
       // Extract the candlestick data from the payload.
       const {
         data: { candles },
@@ -83,7 +83,7 @@ export class Watchdog {
         const currentPrice = candleData.close
 
         // Invoke the provided strategy function to generate a trading signal.
-        const order = this.strategy.fn({ currentPrice, history })
+        const order = this.strategy.fn({ symbol: pair.symbol, timeframe: this.timeframe, currentPrice, history })
 
         // If the strategy does not generate a trading signal, return without processing.
         if (order) {
@@ -103,7 +103,7 @@ export class Watchdog {
     equity,
     currentPrice,
   }: {
-    order: IStrategyResponse
+    order: TStrategyResponse
     pair: ITicker
     equity: string
     currentPrice: number
@@ -141,10 +141,14 @@ export class Watchdog {
     const result = await new Trader({
       // object containing the base parameters of the order
       order: tradeOrder,
+      // the time frame of the order
+      timeframe: this.timeframe,
       // the stop loss level for the order
       SL: order.SL,
       // the take profit level for the order
       TP: order.TP,
+      // the close condition for the order
+      closeCondition: order.closeCondition,
       // the name of the strategy used
       strategy: this.strategy.name,
     }).execute()

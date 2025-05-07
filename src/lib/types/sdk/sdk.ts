@@ -27,7 +27,7 @@ export interface IRest {
 }
 
 export interface IWebSocket {
-  Datafeed: (isPublic: boolean) => void
+  Datafeed: (isPublic?: boolean) => void
 }
 
 export interface ISpan {

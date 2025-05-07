@@ -16,4 +16,5 @@ export const getHistory = async ({ symbol, timeframe, lookbackPeriods = 1500 }: 
   }
   const [data] = await asyncHandler<string[][]>(rest.Market.Histories.getMarketCandles(symbol, timeframe.text, span))
   if (data) return convertRawHistory(data.reverse())
+  return []
 }

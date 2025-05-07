@@ -18,6 +18,7 @@ export const refreshPairs = async () => {
       SEGMENTED_PAIRS[quoteSymbol] ? SEGMENTED_PAIRS[quoteSymbol].push(tick) : (SEGMENTED_PAIRS[quoteSymbol] = [tick])
     })
   }
+  // console.log({ SEGMENTED_PAIRS, PAIRS })
 }
 
 export const refreshTickersInfo = async () => {

@@ -1,6 +1,11 @@
 import { ORDER_TYPE, SELF_TRADE_PREVENTION, TIME_IN_FORCE, TRADE_DIRECTION } from 'lib/constants/trade'
 import { IBaseParams, IOrderParams } from '../Trader'
 
+interface IBaseResponse<T = any> {
+  code: string
+  data: any
+}
+
 export interface ITrade {
   Orders: {
     postOrder: (baseParams: IBaseParams, orderParams: IOrderParams) => Promise<IOrderResponse>
@@ -11,7 +16,7 @@ export interface ITrade {
     getOrdersList: () => Promise<void>
     getV1HistoricalOrdersList: () => Promise<void>
     getRecentOrders: () => Promise<void>
-    getOrderByID: () => Promise<void>
+    getOrderByID: (orderId: string) => Promise<IBaseResponse<IGetOrderResponse>>
     getSingleActiveOrderByClientOid: () => Promise<void>
   }
   StopOrder: {
